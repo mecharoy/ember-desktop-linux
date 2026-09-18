@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Ember
+Comment=A journal that writes itself
+Exec=ember-desktop
+Icon=ember-desktop
+Terminal=false
+Categories=Office;Utility;
+StartupWMClass=ember-desktop
+Actions=capture;
+
+[Desktop Action capture]
+Name=Quick note
+Exec=ember-desktop --capture

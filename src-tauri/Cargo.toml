@@ -1,0 +1,61 @@
+[package]
+name = "ember-desktop"
+version = "0.5.2"
+description = "Ember - a journal that writes itself"
+authors = ["Ember"]
+edition = "2021"
+
+[lib]
+# The `_lib` suffix keeps the lib name apart from the bin name (cargo#8519).
+name = "ember_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-opener = "2"
+tauri-plugin-sql = { version = "2", features = ["sqlite"] }
+tauri-plugin-notification = "2"
+tauri-plugin-global-shortcut = "2"
+tauri-plugin-autostart = "2"
+tauri-plugin-http = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-fs = "2"
+# Launching Ember again shows the running one instead of failing on the hotkey.
+tauri-plugin-single-instance = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+keyring = "3"
+# Finds `claude` and `ollama` the way a shell would (PATHEXT on Windows).
+which = "6"
+# Phone link: the server, the local model relay, and the sealing.
+axum = { version = "0.8", default-features = false, features = ["http1", "tokio", "json"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+futures-util = "0.3"
+aes-gcm = "0.10"
+pbkdf2 = "0.12"
+sha2 = "0.10"
+rand = "0.8"
+base64 = "0.22"
+
+# The evening reminder uses the WinRT "Reminder" toast: it stays on screen.
+[target.'cfg(target_os = "windows")'.dependencies]
+tauri-winrt-notification = "0.7"
+
+# One OS keychain per platform. On Linux it is the Secret Service (GNOME Keyring,
+# KWallet, KeePassXC): the kernel keyring ("linux-native") forgets everything at
+# reboot, which would drop API keys and phone pairing keys.
+[target.'cfg(target_os = "windows")'.dependencies.keyring]
+version = "3"
+features = ["windows-native"]
+
+[target.'cfg(target_os = "macos")'.dependencies.keyring]
+version = "3"
+features = ["apple-native"]
+
+[target.'cfg(target_os = "linux")'.dependencies.keyring]
+version = "3"
+features = ["sync-secret-service", "crypto-rust"]

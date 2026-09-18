@@ -1,0 +1,389 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  /* Height of the bottom tab bar, so sheets and sticky bars can sit above it. */
+  --nav-h: 64px;
+}
+
+html, body, #root {
+  height: 100%;
+  background: #f6f1e7;
+  overscroll-behavior: none;
+}
+
+body {
+  @apply font-sans text-ink antialiased;
+  font-size: 15px;
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+  user-select: none;
+}
+
+/* Text you wrote or read stays selectable; the app's chrome does not, so a
+   long press on a button doesn't start selecting it. */
+input, textarea, .selectable {
+  user-select: text;
+}
+
+::selection {
+  background: rgba(179, 68, 26, 0.18);
+}
+
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* The capture bar is a frameless window: only its card is painted. */
+html.capture-window,
+html.capture-window body,
+html.capture-window #root {
+  background: transparent;
+}
+
+/* With a mouse: thin scrollbars, and buttons answer to hovering. */
+@media (hover: hover) and (pointer: fine) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #d3c8b4 transparent;
+  }
+  .btn-subtle:not(:disabled):hover,
+  .btn-ghost:not(:disabled):hover {
+    background-color: #eee7da;
+    color: #28231e;
+  }
+  .btn-primary:not(:disabled):hover {
+    background-color: #943712;
+  }
+  .btn-danger:not(:disabled):hover {
+    background-color: #f5e1dc;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid rgba(179, 68, 26, 0.55);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------- motion ---------- */
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* New writing settles onto the page like ink: a slight rise and blur. */
+@keyframes ink-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ember-breathe {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.7);
+    opacity: 0.55;
+  }
+}
+
+@keyframes ember-halo {
+  0% {
+    box-shadow: 0 0 0 0 rgba(179, 68, 26, 0.35);
+  }
+  70%, 100% {
+    box-shadow: 0 0 0 7px rgba(179, 68, 26, 0);
+  }
+}
+
+@keyframes caret {
+  0%, 49% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+@layer components {
+  .page {
+    animation: page-in 320ms cubic-bezier(0.22, 0.8, 0.24, 1) both;
+  }
+  .ink-in {
+    animation: ink-in 420ms cubic-bezier(0.22, 0.8, 0.24, 1) both;
+  }
+  .fade-up {
+    animation: page-in 260ms cubic-bezier(0.22, 0.8, 0.24, 1) both;
+  }
+  .sheet-up {
+    animation: sheet-up 280ms cubic-bezier(0.22, 0.8, 0.24, 1) both;
+  }
+  .fade-in {
+    animation: fade-in 200ms ease-out both;
+  }
+
+  .page-title {
+    @apply font-serif text-[28px] font-normal leading-tight tracking-[-0.015em] text-ink;
+  }
+  .page-subtitle {
+    @apply mt-0.5 text-[13.5px] text-ink-faint;
+  }
+  .section-title {
+    @apply font-serif text-[20px] leading-snug text-ink;
+  }
+  .label {
+    @apply text-[13.5px] text-ink-soft;
+  }
+  .hint {
+    @apply text-[13px] leading-relaxed text-ink-faint;
+  }
+
+  /* 16px text: smaller makes some Android keyboards zoom the page. */
+  .input {
+    @apply min-h-[44px] rounded-lg border border-rule bg-sheet px-3 py-2.5 text-[16px] text-ink outline-none transition-colors placeholder:text-ink-faint/80 focus:border-ink-faint;
+  }
+  .btn-primary {
+    @apply inline-flex min-h-[44px] items-center justify-center rounded-lg bg-ember px-5 py-2.5 text-[15px] font-medium text-paper transition-[background-color,transform] duration-150 active:scale-[0.97] active:bg-ember-deep disabled:opacity-50 disabled:active:scale-100;
+  }
+  .btn-subtle {
+    @apply inline-flex min-h-[42px] items-center justify-center rounded-lg border border-rule-strong px-4 py-2 text-[14px] text-ink-soft transition-[background-color,transform] duration-150 active:scale-[0.97] active:bg-paper-deep disabled:opacity-40 disabled:active:scale-100;
+  }
+  .btn-ghost {
+    @apply inline-flex min-h-[40px] items-center justify-center rounded-lg px-3 py-2 text-[14px] text-ink-faint transition-colors duration-150 active:bg-paper-deep active:text-ink disabled:opacity-40;
+  }
+  .btn-danger {
+    @apply inline-flex min-h-[42px] items-center justify-center rounded-lg border border-danger/40 px-4 py-2 text-[14px] text-danger transition-colors active:bg-danger-wash disabled:opacity-40;
+  }
+
+  /* A small outlined button for actions inside a card (unpin, restore…). */
+  .btn-chip {
+    @apply inline-flex min-h-[30px] items-center justify-center rounded-full border border-rule-strong px-3 py-1 text-[12.5px] text-ink-soft transition-[background-color,color,transform] duration-150 active:scale-[0.97] active:bg-paper-deep disabled:opacity-40;
+  }
+  .btn-chip:not(:disabled):hover {
+    @apply bg-paper-deep text-ink;
+  }
+  .btn-chip.danger:not(:disabled):hover {
+    @apply border-danger/50 bg-danger-wash text-danger;
+  }
+
+  /* The mood and energy slider (FaceSlider): a coloured track, a round thumb. */
+  .face-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 10px;
+    border-radius: 9999px;
+    outline: none;
+    cursor: pointer;
+  }
+  .face-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 9999px;
+    background: #fcf9f3;
+    border: 4px solid var(--thumb, #b3441a);
+    box-shadow: 0 1px 4px rgba(40, 35, 30, 0.3);
+    transition: transform 150ms;
+  }
+  .face-slider:active::-webkit-slider-thumb {
+    transform: scale(1.12);
+  }
+  .face-slider.unset {
+    opacity: 0.55;
+  }
+  .face-slider.unset::-webkit-slider-thumb {
+    border-color: #c7baa3;
+  }
+  .face-slider:focus-visible {
+    box-shadow: 0 0 0 3px #f2e0d2;
+  }
+
+  /* Small segmented toggles (chart ranges, weekly/monthly). */
+  .seg {
+    @apply rounded-md px-2.5 py-1.5 text-[13px] text-ink-faint transition-colors;
+  }
+  .seg[aria-pressed="true"] {
+    @apply bg-paper-deep text-ink;
+  }
+
+  /* The small ember that breathes while Ember is working on a reply. */
+  .ember-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 35% 35%, #d9703f, #b3441a 60%, #86310f);
+  }
+  .ember-dot.live {
+    animation: ember-breathe 1.8s ease-in-out infinite, ember-halo 1.8s ease-out infinite;
+  }
+
+  /* The caret at the end of a reply that is still arriving. */
+  .stream-caret {
+    display: inline-block;
+    width: 2px;
+    height: 1.05em;
+    margin-left: 2px;
+    vertical-align: -0.15em;
+    background: #b3441a;
+    animation: caret 1s steps(1) infinite;
+  }
+
+  /* ---------- the handwritten journal page ----------
+     Colours come from components/paper.ts as custom properties on the page.
+     Every line of text sits on the page's ruling: all text uses the same
+     line height (--rule), and every gap is a whole number of lines. */
+  .paper-sheet {
+    --rule: 34px;
+    position: relative;
+    color: var(--paper-ink);
+    background-color: var(--paper-bg);
+    background-image:
+      linear-gradient(to bottom, transparent calc(var(--rule) - 1px), var(--paper-line) calc(var(--rule) - 1px)),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .05 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-size: 100% var(--rule), 160px 160px;
+    background-position: 0 0, 0 0;
+    background-repeat: repeat-y, repeat;
+    padding: var(--rule) 16px var(--rule) 54px;
+    border-radius: 2px 4px 4px 2px;
+    box-shadow:
+      0 1px 1px rgba(40, 35, 30, 0.08),
+      0 10px 24px -14px rgba(40, 35, 30, 0.35);
+  }
+  /* The margin line. */
+  .paper-sheet::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 42px;
+    width: 1.5px;
+    background: var(--paper-margin);
+    opacity: 0.75;
+  }
+  /* Punched holes down the left edge. */
+  .paper-sheet::after {
+    content: "";
+    position: absolute;
+    top: calc(var(--rule) * 1.5);
+    bottom: calc(var(--rule) * 1.5);
+    left: 13px;
+    width: 12px;
+    background: radial-gradient(circle at 6px 6px, var(--paper-hole) 5px, transparent 5.5px) 0 0 / 12px 132px repeat-y;
+    opacity: 0.9;
+  }
+
+  .hand {
+    @apply font-hand;
+    font-size: 23px;
+    line-height: var(--rule);
+    color: var(--paper-ink);
+    font-weight: 450;
+    letter-spacing: 0.005em;
+  }
+  .hand-field {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    outline: none;
+    resize: none;
+    overflow: hidden;
+  }
+  .hand-field::placeholder {
+    color: var(--paper-ink);
+    opacity: 0.38;
+  }
+  .hand-field:focus,
+  .hand-field:focus-visible {
+    outline: none;
+  }
+  .hand-field:focus {
+    background: var(--paper-focus);
+  }
+  .hand-label {
+    @apply font-hand;
+    display: block;
+    font-size: 19px;
+    line-height: var(--rule);
+    color: var(--paper-soft);
+    font-weight: 600;
+  }
+  .hand-title {
+    font-size: 32px;
+    font-weight: 650;
+    line-height: calc(var(--rule) * 1);
+    height: var(--rule);
+  }
+
+  /* Washi tape across the top of an entry. */
+  .paper-tape {
+    position: absolute;
+    top: -9px;
+    left: 50%;
+    width: 96px;
+    height: 24px;
+    transform: translateX(-50%) rotate(-2.5deg);
+    background: var(--paper-tape);
+    opacity: 0.82;
+    box-shadow: 0 1px 1px rgba(40, 35, 30, 0.08);
+    clip-path: polygon(3% 0, 97% 4%, 100% 50%, 97% 96%, 2% 100%, 0 50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+}

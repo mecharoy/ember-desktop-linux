@@ -1,0 +1,88 @@
+name: release
+
+# Builds installers for macOS (Apple Silicon + Intel) and Windows and attaches
+# them to a draft GitHub release. Trigger by pushing a tag:
+#   git tag v0.2.0 && git push --tags
+# The version in the release name comes from src-tauri/tauri.conf.json, so keep
+# package.json, src-tauri/Cargo.toml and tauri.conf.json in sync.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            args: '--target aarch64-apple-darwin'
+          - platform: macos-latest
+            args: '--target x86_64-apple-darwin'
+          - platform: windows-latest
+            args: ''
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - run: npm ci
+
+      - name: typecheck and unit tests
+        run: npm run typecheck && npx vitest run
+
+      - uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: '.'
+          tagName: v__VERSION__
+          releaseName: 'Ember v__VERSION__'
+          releaseBody: |
+            Download the installer for your system below.
+
+            - **Windows:** the `.msi` or `-setup.exe`. SmartScreen may warn because the app is not signed: click *More info*, then *Run anyway*.
+            - **macOS, Apple Silicon (M1 and later):** the `aarch64` `.dmg`.
+            - **macOS, Intel:** the `x64` `.dmg`.
+
+            macOS will say "Ember is damaged and can't be opened". The file is fine; the app is just not signed. After dragging Ember to Applications, run this once in Terminal:
+
+                xattr -dr com.apple.quarantine /Applications/Ember.app
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
+
+  # The in-app update check reads latest.json from the newest *published*
+  # release, so installs only see an update once this draft is published.
+  manifest:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Attach latest.json for the in-app update check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
+          ASSETS=$(gh release view "v$VERSION" --json assets --jq '.assets[].name')
+          VERSION="$VERSION" REPO="$GITHUB_REPOSITORY" ASSETS="$ASSETS" node scripts/write-latest-json.mjs > latest.json
+          cat latest.json
+          gh release upload "v$VERSION" latest.json --clobber

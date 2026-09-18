@@ -1,0 +1,115 @@
+name: linux-build
+
+# Builds and checks Ember on Linux, twice:
+#   ubuntu  - typecheck, unit tests, Rust tests, .deb/.rpm/AppImage, and a short
+#             headless start-up test (Xvfb + a private D-Bus session).
+#   arch    - inside an Arch Linux container: Rust tests, a release build and the
+#             real packaging/arch/PKGBUILD, so the pacman package names are checked.
+# Runs by hand (Actions tab > linux-build > Run workflow), on pushes to main and on
+# pull requests. Installers are attached to the run as downloadable artifacts.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential pkg-config file patchelf xdg-utils \
+            libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev \
+            libssl-dev libdbus-1-dev libxdo-dev \
+            xvfb dbus-x11 gnome-keyring
+
+      - run: npm ci
+
+      - name: typecheck and unit tests
+        run: npm run typecheck && npx vitest run
+
+      # tauri::generate_context! reads ../dist, so build the web part first.
+      - name: web build
+        run: npm run build
+
+      - name: Rust tests
+        working-directory: src-tauri
+        run: cargo test
+
+      - name: build .deb, .rpm and AppImage
+        run: npm run tauri build
+
+      - name: start-up test (headless)
+        run: |
+          # Alive after 20 s means it started without crashing (timeout exits 124).
+          set +e
+          xvfb-run -a dbus-run-session -- timeout 20 src-tauri/target/release/ember-desktop > run.log 2>&1
+          code=$?
+          cat run.log
+          if [ "$code" -ne 124 ]; then echo "Ember exited early with code $code"; exit 1; fi
+          if grep -qi "panicked" run.log; then echo "Ember panicked"; exit 1; fi
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ember-linux-ubuntu
+          path: |
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/rpm/*.rpm
+            src-tauri/target/release/bundle/appimage/*.AppImage
+          if-no-files-found: error
+
+  arch:
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - name: system packages (the same ones LINUX.md lists)
+        run: |
+          pacman -Syu --noconfirm --needed git \
+            webkit2gtk-4.1 gtk3 libayatana-appindicator dbus openssl \
+            rust nodejs npm pkgconf librsvg xdotool
+
+      - uses: actions/checkout@v7
+
+      - run: npm ci
+
+      - name: typecheck and unit tests
+        run: npm run typecheck && npx vitest run
+
+      - name: web build
+        run: npm run build
+
+      - name: Rust tests
+        working-directory: src-tauri
+        run: cargo test
+
+      # makepkg refuses to run as root. It builds the app itself (npm ci + tauri
+      # build --no-bundle), so this proves the PKGBUILD end to end.
+      - name: makepkg
+        run: |
+          useradd -m builder
+          chown -R builder:builder .
+          cd packaging/arch
+          su builder -c "makepkg -f --noconfirm --nodeps"
+          ls -la *.pkg.tar.*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ember-linux-arch
+          path: packaging/arch/*.pkg.tar.*
+          if-no-files-found: error

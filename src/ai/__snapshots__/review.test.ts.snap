@@ -1,0 +1,20 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`buildReviewUserPrompt > assembles the week, days, profile and standing cards (snapshot) 1`] = `
+"USER: Amy
+WEEK: 2026-06-29 (Monday) to 2026-07-05 (Sunday)
+
+THIS WEEK'S EXTRACTED DAYS — 1 of 7 days recorded (one JSON per day: mood, energy, themes, habits, people, emotions, sleep, strengths/struggles):
+2026-07-01: {"mood":6}
+
+CURRENT PROFILE SUMMARY (rewrite this, folding in the week):
+(none yet — write the first one from this week's data alone)
+
+CURRENT "You're good at" CARDS (replace with this week's evidence-backed claims):
+[]
+
+CURRENT "Worth your attention" CARDS (replace likewise):
+[]
+
+Return the JSON object now."
+`;

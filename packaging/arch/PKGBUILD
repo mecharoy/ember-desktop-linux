@@ -1,0 +1,37 @@
+# Builds Ember from this source folder (no download): from packaging/arch run
+#   makepkg -si
+pkgname=ember-desktop
+pkgver=0.5.2
+pkgrel=1
+pkgdesc="Ember: a local-first journal that writes itself"
+arch=('x86_64' 'aarch64')
+url="https://github.com/mecharoy"
+license=('MIT')
+depends=('webkit2gtk-4.1' 'gtk3' 'libayatana-appindicator' 'dbus' 'openssl')
+makedepends=('rust' 'nodejs' 'npm' 'pkgconf')
+optdepends=(
+  'gnome-keyring: stores API keys and phone pairing keys (Secret Service)'
+  'kwallet: alternative Secret Service'
+  'keepassxc: alternative Secret Service'
+  'ollama: local model'
+  'xdg-user-dirs: creates ~/Documents for the daily backup'
+)
+options=('!lto')
+
+_src="$startdir/../.."
+
+build() {
+  cd "$_src"
+  npm ci
+  npm run tauri build -- --no-bundle
+}
+
+package() {
+  cd "$_src"
+  install -Dm755 src-tauri/target/release/ember-desktop "$pkgdir/usr/bin/ember-desktop"
+  ln -s ember-desktop "$pkgdir/usr/bin/ember"
+  install -Dm644 packaging/arch/ember-desktop.desktop "$pkgdir/usr/share/applications/ember-desktop.desktop"
+  install -Dm644 src-tauri/icons/128x128.png "$pkgdir/usr/share/icons/hicolor/128x128/apps/ember-desktop.png"
+  install -Dm644 src-tauri/icons/32x32.png "$pkgdir/usr/share/icons/hicolor/32x32/apps/ember-desktop.png"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
