@@ -129,3 +129,9 @@ Location: src-tauri/Cargo.toml (keyring feature "linux-native")
 Action: Reading the keyring crate before Linux work, 2026-09-19.
 Cause: "linux-native" stores secrets in the kernel keyring, which is empty after a reboot.
 Fix: Linux now uses "sync-secret-service" + "crypto-rust" (GNOME Keyring / KWallet / KeePassXC).
+
+Problem: Test open_starts_the_first_terminal_on_the_path failed only on Arch: got "claude", expected "-e claude".
+Location: src-tauri/src/terminal.rs (test), GitHub Actions job "arch"
+Action: First CI run of linux-build, 2026-09-19.
+Cause: The fake terminal script used `echo "$@"`. On Arch /bin/sh is bash, and its echo treats a leading -e as its own option; on Ubuntu (dash) it printed it. A test bug, not an app bug.
+Fix: The script now uses printf '%s\n' "$*", which behaves the same in every shell.

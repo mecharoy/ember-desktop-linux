@@ -105,7 +105,7 @@ mod tests {
         std::fs::create_dir_all(&dir).unwrap();
         let out = dir.join("out.txt");
         let fake = dir.join("konsole");
-        std::fs::write(&fake, format!("#!/bin/sh\necho \"$@\" > {}\n", out.display())).unwrap();
+        std::fs::write(&fake, format!("#!/bin/sh\nprintf '%s\\n' \"$*\" > {}\n", out.display())).unwrap();
         std::fs::set_permissions(&fake, std::fs::Permissions::from_mode(0o755)).unwrap();
         std::env::set_var("PATH", &dir);
         std::env::remove_var("TERMINAL");
