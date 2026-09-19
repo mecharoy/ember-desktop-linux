@@ -25,6 +25,7 @@ const add = (key, name) => {
 add("windows-x86_64", pick(/x64-setup\.exe$/) ?? pick(/x64.*\.msi$/));
 add("darwin-aarch64", pick(/aarch64\.dmg$/));
 add("darwin-x86_64", pick(/x64\.dmg$/));
+add("linux-x86_64", pick(/amd64\.AppImage$/) ?? pick(/amd64\.deb$/) ?? pick(/x86_64\.pkg\.tar\.zst$/));
 
 process.stdout.write(
   JSON.stringify(

@@ -1,88 +1,85 @@
 name: release
 
-# Builds installers for macOS (Apple Silicon + Intel) and Windows and attaches
-# them to a draft GitHub release. Trigger by pushing a tag:
-#   git tag v0.2.0 && git push --tags
-# The version in the release name comes from src-tauri/tauri.conf.json, so keep
-# package.json, src-tauri/Cargo.toml and tauri.conf.json in sync.
+# Publishes the Linux installers as a DRAFT GitHub release. Trigger by pushing a tag
+# that matches the version in src-tauri/tauri.conf.json:
+#   git tag v0.5.2 && git push --tags
+# or by hand: Actions > release > Run workflow (uses the version in tauri.conf.json).
+# Keep package.json, src-tauri/Cargo.toml, src-tauri/tauri.conf.json and
+# packaging/arch/PKGBUILD in sync.
+#
+# The in-app update check reads latest.json from the newest *published* release,
+# so installs only see an update once you publish the draft.
 on:
   push:
     tags: ['v*']
   workflow_dispatch:
 
 jobs:
+  # Same checks and builds as every push (typecheck, tests, .deb/.rpm/AppImage,
+  # start-up test, Arch package). Nothing is released if any of it fails.
   build:
-    permissions:
-      contents: write
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - platform: macos-latest
-            args: '--target aarch64-apple-darwin'
-          - platform: macos-latest
-            args: '--target x86_64-apple-darwin'
-          - platform: windows-latest
-            args: ''
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - uses: actions/checkout@v7
+    uses: ./.github/workflows/linux-build.yml
 
-      - uses: actions/setup-node@v7
-        with:
-          node-version: lts/*
-          cache: npm
-
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
-
-      - uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './src-tauri -> target'
-
-      - run: npm ci
-
-      - name: typecheck and unit tests
-        run: npm run typecheck && npx vitest run
-
-      - uses: tauri-apps/tauri-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          projectPath: '.'
-          tagName: v__VERSION__
-          releaseName: 'Ember v__VERSION__'
-          releaseBody: |
-            Download the installer for your system below.
-
-            - **Windows:** the `.msi` or `-setup.exe`. SmartScreen may warn because the app is not signed: click *More info*, then *Run anyway*.
-            - **macOS, Apple Silicon (M1 and later):** the `aarch64` `.dmg`.
-            - **macOS, Intel:** the `x64` `.dmg`.
-
-            macOS will say "Ember is damaged and can't be opened". The file is fine; the app is just not signed. After dragging Ember to Applications, run this once in Terminal:
-
-                xattr -dr com.apple.quarantine /Applications/Ember.app
-          releaseDraft: true
-          prerelease: false
-          args: ${{ matrix.args }}
-
-  # The in-app update check reads latest.json from the newest *published*
-  # release, so installs only see an update once this draft is published.
-  manifest:
+  release:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v7
 
-      - name: Attach latest.json for the in-app update check
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: version
+        id: version
         run: |
           VERSION=$(node -p "require('./src-tauri/tauri.conf.json').version")
-          ASSETS=$(gh release view "v$VERSION" --json assets --jq '.assets[].name')
-          VERSION="$VERSION" REPO="$GITHUB_REPOSITORY" ASSETS="$ASSETS" node scripts/write-latest-json.mjs > latest.json
-          cat latest.json
-          gh release upload "v$VERSION" latest.json --clobber
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          for f in package.json; do
+            [ "$(node -p "require('./$f').version")" = "$VERSION" ] || { echo "$f version differs from tauri.conf.json ($VERSION)"; exit 1; }
+          done
+          grep -q "^version = \"$VERSION\"" src-tauri/Cargo.toml || { echo "Cargo.toml version differs from $VERSION"; exit 1; }
+          grep -q "^pkgver=$VERSION\$" packaging/arch/PKGBUILD || { echo "PKGBUILD pkgver differs from $VERSION"; exit 1; }
+          if [ "$GITHUB_REF_TYPE" = "tag" ] && [ "$GITHUB_REF_NAME" != "v$VERSION" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match version v$VERSION"; exit 1
+          fi
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ember-linux-*
+          merge-multiple: true
+          path: dist-release
+
+      - name: files and latest.json
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # Flat folder of installers; the artifact zips keep their sub-folders.
+          mkdir -p assets
+          find dist-release -type f \( -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' -o -name '*.pkg.tar.zst' \) -exec cp {} assets/ \;
+          ls -la assets
+          [ "$(ls assets | wc -l)" -ge 4 ] || { echo "Expected .deb, .rpm, .AppImage and .pkg.tar.zst"; exit 1; }
+          ASSETS=$(ls assets) REPO="$GITHUB_REPOSITORY" node scripts/write-latest-json.mjs > assets/latest.json
+          cat assets/latest.json
+
+      - name: draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          cat > notes.md <<'NOTES'
+          Download the file for your system below.
+
+          - **Arch / Manjaro / EndeavourOS:** `ember-desktop-*-x86_64.pkg.tar.zst`, then `sudo pacman -U <file>`.
+          - **Debian / Ubuntu:** the `.deb`, then `sudo apt install ./<file>.deb`.
+          - **Fedora / openSUSE:** the `.rpm`, then `sudo dnf install ./<file>.rpm`.
+          - **Anything else:** the `.AppImage`, then `chmod +x <file>` and run it.
+
+          Ember keeps API keys and phone pairing keys in the Secret Service (GNOME Keyring, KWallet or KeePassXC), so one of those must be running.
+          The Ctrl+Shift+J capture hotkey works on X11 only. On Wayland, bind a key to `ember-desktop --capture`. See LINUX.md.
+          NOTES
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            gh release upload "v$VERSION" assets/* --clobber
+          else
+            gh release create "v$VERSION" assets/* \
+              --draft --target "$GITHUB_SHA" \
+              --title "Ember for Linux v$VERSION" --notes-file notes.md
+          fi

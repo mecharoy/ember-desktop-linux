@@ -41,3 +41,13 @@ Open TCP 47821 and UDP 47820 on the firewall (ufw/firewalld/nftables) for the ph
 ## Not yet tested
 
 Written on Windows with no Linux desktop at hand. Nothing here has been built or run on Arch. See error.txt for what was and wasn't checked.
+
+## Releasing
+
+Bump the version in `package.json`, `src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml` and `packaging/arch/PKGBUILD` (the workflow refuses to run if they differ), then:
+
+```bash
+git tag v0.5.3 && git push --tags
+```
+
+`.github/workflows/release.yml` runs the full Linux build and tests, then makes a **draft** release with the `.deb`, `.rpm`, AppImage, Arch package and `latest.json`. Publish the draft when it looks right; the in-app update check reads `latest.json` from the newest published release of `mecharoy/ember-desktop-linux` (`DEFAULT_UPDATE_SOURCE` in `src/update/update.ts`), so the repo must be public for installed apps to see updates.

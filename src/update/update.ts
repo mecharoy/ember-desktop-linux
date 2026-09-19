@@ -19,7 +19,7 @@ import { getVersion } from "@tauri-apps/api/app";
 import { getSetting, setSetting } from "../db/settings";
 
 /** The repository releases are published from. A link pasted in Settings wins over this. */
-export const DEFAULT_UPDATE_SOURCE = "https://github.com/mecharoy/emberapp";
+export const DEFAULT_UPDATE_SOURCE = "https://github.com/mecharoy/ember-desktop-linux";
 
 const GITHUB_REPO = /^https:\/\/github\.com\/([A-Za-z0-9_.-]+)\/([A-Za-z0-9_.-]+?)(?:\.git)?(?:\/.*)?$/;
 
