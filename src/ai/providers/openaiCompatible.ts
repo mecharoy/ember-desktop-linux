@@ -77,7 +77,9 @@ async function callEndpoint(
 
   const outgoing = toOpenAiMessages(messages, system);
   const maxTokens = replyCeiling(config, wantedTokens, estimateTokens(JSON.stringify(outgoing)));
-  if (wantedTokens && maxTokens !== undefined && maxTokens < MIN_JOB_REPLY_TOKENS) {
+  // Refuse only when the allowance cut the reply below what the job needs.
+  // A short job (the checklist asks for 600) is sent as asked.
+  if (wantedTokens && maxTokens !== undefined && maxTokens < Math.min(wantedTokens, MIN_JOB_REPLY_TOKENS)) {
     throw new ProviderError(
       "This is too much for the free tier to take in one go.",
       "The free tier counts what Ember sends and the reply together, and this job needs more than it allows a minute. " +

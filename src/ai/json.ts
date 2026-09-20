@@ -5,5 +5,14 @@
 export function extractJson(raw: string): unknown {
   const trimmed = raw.trim();
   const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-  return JSON.parse(fenced ? fenced[1] : trimmed);
+  const body = fenced ? fenced[1] : trimmed;
+  try {
+    return JSON.parse(body);
+  } catch (e) {
+    // Small models add a sentence before or after the object.
+    const start = body.indexOf("{");
+    const end = body.lastIndexOf("}");
+    if (start === -1 || end <= start) throw e;
+    return JSON.parse(body.slice(start, end + 1));
+  }
 }

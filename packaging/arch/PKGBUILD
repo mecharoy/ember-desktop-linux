@@ -1,7 +1,7 @@
 # Builds Ember from this source folder (no download): from packaging/arch run
 #   makepkg -si
 pkgname=ember-desktop
-pkgver=0.5.2
+pkgver=0.5.3
 pkgrel=1
 pkgdesc="Ember: a local-first journal that writes itself"
 arch=('x86_64' 'aarch64')

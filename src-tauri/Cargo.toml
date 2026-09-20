@@ -1,6 +1,6 @@
 [package]
 name = "ember-desktop"
-version = "0.5.2"
+version = "0.5.3"
 description = "Ember - a journal that writes itself"
 authors = ["Ember"]
 edition = "2021"

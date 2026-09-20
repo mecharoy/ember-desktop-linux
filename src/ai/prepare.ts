@@ -6,27 +6,17 @@
 //   checklist, except in friend style. The conversation then carries the
 //   briefing instead of the memory, so every turn stays small and quick.
 
-import { z } from "zod";
 import { getProvider } from "./factory";
 import { extractJson } from "./json";
 import { contextBudget } from "./budget";
 import { estimateTokens } from "./tokens";
-import { generateAgenda } from "./agenda";
+import { generateAgenda, parseChecklist } from "./agenda";
 import { gatherTodayMaterial } from "./context";
 import { pickRelevant, clip } from "./relevance";
 import { memoryPool } from "./memoryFiles";
 import { saveBriefing } from "../db/agendas";
 import type { AgendaItem } from "../db/types";
 import type { ConversationApproach } from "./prompts/style";
-
-const Item = z.object({ text: z.string().trim().min(1).max(160), topic: z.string().trim().max(80).nullish() });
-
-const PrepSchema = z.object({
-  briefing: z.string().trim().min(1).max(2000),
-  past: z.array(Item).max(4).default([]),
-  today: z.array(Item).max(5).default([]),
-  future: z.array(Item).max(4).default([]),
-});
 
 export function prepSystemPrompt(withChecklist: boolean, approach: ConversationApproach): string {
   const lean =
@@ -68,16 +58,10 @@ export interface PrepResult {
   items: AgendaItem[] | null;
 }
 
-function toItems(parsed: z.infer<typeof PrepSchema>): AgendaItem[] {
-  const items: AgendaItem[] = [];
-  for (const [section, prefix] of [
-    ["past", "p"],
-    ["today", "t"],
-    ["future", "f"],
-  ] as const) {
-    parsed[section].forEach((i, n) => items.push({ id: `${prefix}${n + 1}`, section, text: i.text, state: "open", topic: i.topic || null }));
-  }
-  return items.slice(0, 8);
+/** The briefing as a small model may write it: text, or a list of lines. */
+function briefingText(v: unknown): string {
+  const text = Array.isArray(v) ? v.map((x) => `- ${String(x).replace(/^-\s*/, "")}`).join("\n") : typeof v === "string" ? v : "";
+  return text.trim().slice(0, 2000);
 }
 
 /** Runs the preparation for a day. A failure leaves the conversation to go
@@ -108,9 +92,13 @@ Return the JSON now.`;
     const prompt = attempt === 0 ? material : `${clip(material, budget.totalTokens - 800)}\n\nYour previous response could not be used: ${lastError}\nReturn ONLY the corrected JSON object.`;
     try {
       const raw = await provider.complete([{ role: "user", content: prompt }], system, { maxTokens: 600 });
-      const parsed = PrepSchema.parse(extractJson(raw));
-      await saveBriefing(date, parsed.briefing);
-      const items = withChecklist ? toItems(parsed) : [];
+      const parsed = extractJson(raw) as Record<string, unknown>;
+      const items = withChecklist ? parseChecklist(parsed) : [];
+      // The checklist is what the person sees; a reply with items but no
+      // briefing still counts, and one with neither is retried.
+      const briefing = briefingText(parsed?.briefing);
+      if (!briefing && items.length === 0) throw new Error("the reply had neither a briefing nor checklist items");
+      if (briefing) await saveBriefing(date, briefing);
       return { items: withChecklist && items.length > 0 ? items : null };
     } catch (e) {
       lastError = e instanceof Error ? e.message : String(e);

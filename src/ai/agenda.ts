@@ -6,23 +6,46 @@
 // Like a therapy session's agenda: agreed at the start, it tells both sides
 // what is left and when the conversation is complete.
 
-import { z } from "zod";
 import { getProvider } from "./factory";
 import { extractJson } from "./json";
 import { gatherCounselorLayers } from "./context";
 import type { AgendaItem } from "../db/types";
 import type { ConversationApproach } from "./prompts/style";
 
-const ItemSchema = z.object({
-  text: z.string().trim().min(1).max(160),
-  topic: z.string().trim().max(80).nullish(),
-});
+const TEXT_MAX = 160;
+const SECTION_MAX = { past: 4, today: 5, future: 4 } as const;
 
-const AgendaSchema = z.object({
-  past: z.array(ItemSchema).max(4).default([]),
-  today: z.array(ItemSchema).max(5).default([]),
-  future: z.array(ItemSchema).max(4).default([]),
-});
+/** One item as a small model may write it: an object, or just the text. */
+function looseItem(v: unknown): { text: string; topic: string | null } | null {
+  const o = typeof v === "string" ? { text: v } : v && typeof v === "object" ? (v as Record<string, unknown>) : null;
+  if (!o || typeof o.text !== "string") return null;
+  const text = o.text.trim().slice(0, TEXT_MAX).trim();
+  if (!text) return null;
+  const topic = typeof o.topic === "string" && o.topic.trim() ? o.topic.trim().slice(0, 80) : null;
+  return { text, topic };
+}
+
+/** Turns a model's parsed checklist into items. Small models bend the shape
+ *  (bare strings, one item too many, long text), so nothing here rejects the
+ *  whole reply: bad items are dropped and long ones cut. */
+export function parseChecklist(parsed: unknown): AgendaItem[] {
+  const src = parsed && typeof parsed === "object" ? (parsed as Record<string, unknown>) : {};
+  const items: AgendaItem[] = [];
+  for (const [section, prefix] of [
+    ["past", "p"],
+    ["today", "t"],
+    ["future", "f"],
+  ] as const) {
+    const raw = src[section];
+    const list = Array.isArray(raw) ? raw : raw === undefined || raw === null ? [] : [raw];
+    list
+      .map(looseItem)
+      .filter((i): i is { text: string; topic: string | null } => i !== null)
+      .slice(0, SECTION_MAX[section])
+      .forEach((i, n) => items.push({ id: `${prefix}${n + 1}`, section, text: i.text, state: "open", topic: i.topic }));
+  }
+  return items.slice(0, 8);
+}
 
 export const AGENDA_SYSTEM_PROMPT = `You are Ember's planning step. Before a conversation
 with someone about their day, you read what Ember knows and write a short
@@ -104,29 +127,14 @@ Write the checklist JSON now.`;
         : `${material}\n\nYour previous response could not be used: ${lastError}\nReturn ONLY the corrected JSON object.`;
     try {
       const raw = await provider.complete([{ role: "user", content: prompt }], AGENDA_SYSTEM_PROMPT, { maxTokens: 700 });
-      const parsed = AgendaSchema.parse(extractJson(raw));
-      const items = toItems(parsed);
-      if (items.length === 0) return null;
+      const items = parseChecklist(extractJson(raw));
+      if (items.length === 0) throw new Error("the reply had no checklist items");
       return items;
     } catch (e) {
       lastError = e instanceof Error ? e.message : String(e);
     }
   }
   return null;
-}
-
-function toItems(parsed: z.infer<typeof AgendaSchema>): AgendaItem[] {
-  const items: AgendaItem[] = [];
-  for (const [section, prefix] of [
-    ["past", "p"],
-    ["today", "t"],
-    ["future", "f"],
-  ] as const) {
-    parsed[section].forEach((i, n) => {
-      items.push({ id: `${prefix}${n + 1}`, section, text: i.text, state: "open", topic: i.topic || null });
-    });
-  }
-  return items.slice(0, 8);
 }
 
 /** A new id for an item they add themselves. */

@@ -44,3 +44,27 @@ describe("parseAgendaItems", () => {
     expect(parseAgendaItems("not json")).toEqual([]);
   });
 });
+
+describe("parseChecklist (small-model output)", () => {
+  it("takes bare strings, trims long text and extra items instead of failing", async () => {
+    const { parseChecklist } = await import("./agenda");
+    const long = "x".repeat(300);
+    const items = parseChecklist({
+      past: ["The call with Dad", { text: long, topic: 7 }, "a", "b", "c"],
+      today: [{ text: "The lab mess", topic: "lab" }, { text: " " }, 5],
+      future: "Friday",
+    });
+    expect(items.map((i) => i.id)).toEqual(["p1", "p2", "p3", "p4", "t1", "f1"]);
+    expect(items[0]).toMatchObject({ text: "The call with Dad", topic: null });
+    expect(items[1].text).toHaveLength(160);
+    expect(items[1].topic).toBeNull();
+    expect(items[4]).toMatchObject({ section: "today", topic: "lab" });
+  });
+});
+
+describe("extractJson (small-model output)", () => {
+  it("finds the object inside chatter", async () => {
+    const { extractJson } = await import("./json");
+    expect(extractJson('Sure! Here is the checklist:\n{"today": []}\nHope it helps.')).toEqual({ today: [] });
+  });
+});

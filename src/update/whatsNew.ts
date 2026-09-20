@@ -9,6 +9,12 @@ export interface Highlight {
 }
 
 export const RELEASE_NOTES: Record<string, Highlight[]> = {
+  "0.5.3": [
+    {
+      title: "Checklists on every model",
+      text: "The checklist before a conversation now works with free hosted models and local ones too, not only the big paid ones.",
+    },
+  ],
   "0.5.2": [
     {
       title: "Themes and people, day by day",

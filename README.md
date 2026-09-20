@@ -13,6 +13,8 @@ Pick one in Settings:
 - **Claude subscription.** Your Claude Pro or Max plan, through Claude Code.
 - **Anthropic.** An [Anthropic](https://console.anthropic.com) API key.
 
+Every model gets the same features, including the checklist Ember drafts before a conversation; free and local models work as well as the paid ones.
+
 Keys stay in your system's keychain. Your journal is a SQLite database on your computer. Export everything any time from Settings.
 
 ## Your phone
