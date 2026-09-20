@@ -1,8 +1,12 @@
 # Ember
 
-A journal that writes itself. Windows and macOS app, with a companion Android app.
+A journal that writes itself. The Linux app, with a companion Android app.
 
-Jot quick notes during the day: press Ctrl+Shift+J (Cmd+Shift+J on a Mac) anywhere, or use the tray icon. In the evening Ember asks you a few questions about your day, then writes the entry for you on a handwritten page. Over time it picks up your moods, habits, sleep and the people and themes that keep coming up.
+Jot quick notes during the day: press Ctrl+Shift+J anywhere (on Wayland, see LINUX.md), or use the tray icon. In the evening Ember asks you a few questions about your day, then writes the entry for you on a handwritten page. Over time it picks up your moods, habits, sleep and the people and themes that keep coming up.
+
+## Download
+
+Get the latest from [Releases](https://github.com/mecharoy/ember-desktop-linux/releases): a `.deb` (Debian, Ubuntu), an `.rpm` (Fedora), an AppImage (any distro) or an Arch package (`.pkg.tar.zst`). Ember checks this repo for new versions and tells you when one is out. LINUX.md has the details for Arch and for the distro packages Ember needs.
 
 ## AI
 
@@ -30,7 +34,7 @@ Ember is a reflection tool, not therapy.
 
 ## Build
 
-Needs Node 22+ and Rust.
+Needs Node 22+ and Rust, plus the WebKitGTK 4.1 and GTK 3 development packages (see LINUX.md).
 
 ```bash
 npm ci
