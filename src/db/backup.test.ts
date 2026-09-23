@@ -42,8 +42,8 @@ describe("summarizeBackup", () => {
     expect(await summarizeBackup(reader)).toEqual({ name: "", entries: 0, notes: 0, lastDay: null });
   });
 
-  it("says plainly when the file isn't an Ember journal", async () => {
+  it("says plainly when the file isn't an Elytra journal", async () => {
     await freshDb(false);
-    await expect(summarizeBackup(reader)).rejects.toThrow("isn't an Ember backup");
+    await expect(summarizeBackup(reader)).rejects.toThrow("has no journal in it");
   });
 });

@@ -24,11 +24,11 @@ export interface FortnightNumbers {
   avgSleepHours: number | null;
 }
 
-export const FORTNIGHT_SYSTEM_PROMPT = `You are Ember's memory keeper.
+export const FORTNIGHT_SYSTEM_PROMPT = `You are Elytra's memory keeper.
 Every two weeks you fold the user's newest journal entries into a running
 summary. The evening conversation will read ONLY your summary plus the
 entries written after it — so anything you drop from the summary is gone
-from Ember's memory for good, and anything you keep costs space every night.
+from Elytra's memory for good, and anything you keep costs space every night.
 
 How to write it:
 - Start from the PREVIOUS SUMMARY and update it with the NEW ENTRIES. Keep

@@ -1,6 +1,6 @@
 [Desktop Entry]
 Type=Application
-Name=Ember
+Name=Elytra
 Comment=A journal that writes itself
 Exec=ember-desktop
 Icon=ember-desktop

@@ -1,6 +1,6 @@
 import { getDb } from "./client";
 
-// Sync between Ember on a computer and Ember on a phone (migration 0011).
+// Sync between Elytra on a computer and Elytra on a phone (migration 0011).
 //
 // Triggers log every change into sync_changes. collectChanges() reads what a
 // peer hasn't seen yet, with the rows attached; applyChanges() writes a
@@ -146,7 +146,16 @@ async function changedAt(table: string, pk: string): Promise<string | null> {
   return rows[0]?.changed_at ?? null;
 }
 
-/** Changes a peer hasn't seen: past `sinceRev`, and not ones that came from it. */
+/**
+ * Changes a peer hasn't seen: past `sinceRev`, and not ones that came from it.
+ *
+ * The origin tag is an optimisation AND part of how a reset travels, so it
+ * stays — but it is only true while the peer keeps its journal. When a device
+ * is reinstalled, cleared or restored it loses rows it wrote itself, and those
+ * are tagged with its own id forever. `forgetPeerOrigin` drops the tags the
+ * moment we learn a peer holds nothing of ours, which is the only way those
+ * rows can ever be offered again (error.txt, 2026-09-22).
+ */
 export async function collectChanges(sinceRev: number, peerId: string, limit = 300): Promise<SyncBatch> {
   const db = await getDb();
   const logged = await db.select<{ tbl: string; pk: string; rev: number; changed_at: string; deleted: number }[]>(
@@ -630,6 +639,28 @@ export async function prepareSyncRequest(peerId: string, limit = 200): Promise<P
   };
 }
 
+/**
+ * Forget that these changes came from this peer.
+ *
+ * `origin` exists so a change is not echoed straight back to whoever wrote it.
+ * It is a permanent tag, but "you wrote it" is only evidence that you STILL
+ * HAVE it while the pairing holds. When a device is reinstalled, cleared or
+ * restored, it loses rows it originally wrote — and because they are tagged
+ * with its own id, neither side will ever offer them again. The rows exist on
+ * one device, are wanted on the other, and are invisible to the sync forever.
+ *
+ * Found on a real pairing: three journal entries written on the phone had
+ * reached the PC, the phone was reinstalled, and the PC would not give them
+ * back (error.txt, 2026-09-22).
+ *
+ * So the moment we learn a peer has nothing of ours, we drop its tags and the
+ * ordinary `rev > since` rule takes over.
+ */
+async function forgetPeerOrigin(peerId: string): Promise<void> {
+  const db = await getDb();
+  await db.execute("UPDATE sync_changes SET origin = NULL WHERE origin = $1", [peerId]);
+}
+
 export async function answerSyncRequest(
   peerId: string,
   peerName: string,
@@ -640,6 +671,10 @@ export async function answerSyncRequest(
   const lastSync = known?.last_sync_at ?? null;
   // No record of this device: it gets everything, whatever it says it has.
   const since = known ? Number(request.since) || 0 : 0;
+  // We know it, and yet it has received nothing of ours: it was reinstalled,
+  // cleared or restored. Anything it once sent us is tagged with its id and
+  // would be withheld; it needs that back more than anyone.
+  if (known && since === 0) await forgetPeerOrigin(peerId);
   const reset = await applyRemoteReset(request.resetAt, since, peerId);
   const resetAt = await getResetAt();
   const applied = await applyChanges(Array.isArray(request.changes) ? request.changes : [], peerId, {
@@ -662,7 +697,9 @@ export async function finishSyncRound(
     resetAt: reply.fresh ? undefined : staleBefore(lastSync, await getResetAt()),
   });
   if (reply.fresh && prepared.sentRev > 0) {
-    // It lost what we had sent (its journal was restored): send it all again.
+    // It lost what we had sent (its journal was restored): send it all again,
+    // including whatever it wrote itself before losing it.
+    await forgetPeerOrigin(peerId);
     await savePeerProgress(peerId, { sentRev: 0, receivedRev: Number(reply.upTo) || 0 });
     return { applied, reset, more: true };
   }

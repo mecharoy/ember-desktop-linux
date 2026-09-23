@@ -1,6 +1,6 @@
 /**
  * Reasoning models stream their scratchpad as ordinary content, wrapped in
- * `<think>…</think>`. Ember's chat is a conversation, so that has to go: it
+ * `<think>…</think>`. Elytra's chat is a conversation, so that has to go: it
  * reads as the model talking to itself, and on a capped free tier it also
  * eats the reply's token budget.
  *

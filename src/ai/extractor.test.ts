@@ -176,7 +176,7 @@ describe("new fields (activities, thinking traps, routine)", () => {
     expect(x.rhythm).toEqual({ first_contact: null, work_start: null, dinner: null });
   });
 
-  it("keep only thinking traps the user actually said, never Ember's words", () => {
+  it("keep only thinking traps the user actually said, never Elytra's words", () => {
     const x = ExtractionSchema.parse({
       ...JSON.parse(VALID),
       thinking_traps: [

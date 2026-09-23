@@ -6,9 +6,9 @@
 //   POST /ember/call   sealed request, sealed reply (sync goes to the webview)
 //   POST /ember/chat   sealed request, sealed stream from the computer's model:
 //                      the local model directly, or else whatever AI provider
-//                      Ember on the computer uses (through the webview)
+//                      Elytra on the computer uses (through the webview)
 //
-// A UDP responder on DISCOVERY_PORT answers phones looking for Ember.
+// A UDP responder on DISCOVERY_PORT answers phones looking for Elytra.
 
 use crate::lan_proto::*;
 use crate::local_model::LocalModel;
@@ -336,13 +336,13 @@ async fn call(State(ctx): State<Ctx>, Json(body): Json<SealedBody>) -> Response 
                 "payload": call.payload,
             });
             if ctx.app.emit("lan:request", event).is_err() {
-                Err("Ember on the computer isn't ready.".into())
+                Err("Elytra on the computer isn't ready.".into())
             } else {
                 match tokio::time::timeout(REPLY_TIMEOUT, rx).await {
                     Ok(Ok(result)) => result,
                     _ => {
                         ctx.lan.0.lock().unwrap().pending.remove(&call.id);
-                        Err("Ember on the computer didn't answer in time.".into())
+                        Err("Elytra on the computer didn't answer in time.".into())
                     }
                 }
             }
@@ -379,7 +379,7 @@ async fn chat(State(ctx): State<Ctx>, Json(body): Json<SealedBody>) -> Response 
     let request_id = call.id.clone();
 
     if !model.uses_local() {
-        // Not on a local model: Ember's own provider answers in the webview
+        // Not on a local model: Elytra's own provider answers in the webview
         // (desktopLink.ts) and pushes Ollama-shaped lines back here, so the
         // phone reads them exactly as it reads the local model.
         let (push_tx, mut push_rx) = tokio::sync::mpsc::channel::<ChatPush>(64);
@@ -398,7 +398,7 @@ async fn chat(State(ctx): State<Ctx>, Json(body): Json<SealedBody>) -> Response 
                 lan.0.lock().unwrap().chats.remove(&request_id);
             };
             if asked.is_err() {
-                let status = send(FRAME_STATUS, br#"{"status":503,"error":"Ember on the computer isn't ready."}"#);
+                let status = send(FRAME_STATUS, br#"{"status":503,"error":"Elytra on the computer isn't ready."}"#);
                 let _ = tx.send(status).await;
                 let _ = tx.send(send(FRAME_END, b"")).await;
                 finish(&lan);
@@ -487,7 +487,7 @@ async fn chat(State(ctx): State<Ctx>, Json(body): Json<SealedBody>) -> Response 
 }
 
 async fn not_found(_: HeaderMap) -> Response {
-    plain_error(StatusCode::NOT_FOUND, "Not an Ember address.")
+    plain_error(StatusCode::NOT_FOUND, "Not an Elytra address.")
 }
 
 async fn discovery_responder(app: AppHandle, lan: Lan, mut stop: oneshot::Receiver<()>, port: u16) {

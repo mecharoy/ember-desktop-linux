@@ -8,12 +8,12 @@ import { getSetting, setSetting } from "./db/settings";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Documents/Ember, where the daily copy goes. */
+/** Documents/Elytra, where the daily copy goes. */
 export function backupFolder(): Promise<string> {
   return invoke<string>("backup_folder");
 }
 
-/** Writes Documents/Ember/Ember backup.db now. Throws with a readable message. */
+/** Writes Documents/Elytra/Elytra backup.db now. Throws with a readable message. */
 export async function backupNow(): Promise<void> {
   try {
     await snapshotDatabase(await invoke<string>("backup_snapshot_path"));
@@ -44,9 +44,9 @@ export async function pickBackup(): Promise<BackupSummary | null> {
   const picked = await open({
     multiple: false,
     directory: false,
-    title: "Pick your Ember backup",
+    title: "Pick your Elytra backup",
     defaultPath: await backupFolder().catch(() => undefined),
-    filters: [{ name: "Ember backup", extensions: ["db"] }],
+    filters: [{ name: "Elytra backup", extensions: ["db"] }],
   });
   if (!picked) return null;
   const bytes = await readFile(picked);
@@ -58,7 +58,7 @@ export async function pickBackup(): Promise<BackupSummary | null> {
   return readStagedBackup();
 }
 
-/** Puts the picked backup in place of the current journal and reloads Ember. */
+/** Puts the picked backup in place of the current journal and reloads Elytra. */
 export async function restorePickedBackup(): Promise<void> {
   noteJournalRestore();
   await closeDb();

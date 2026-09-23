@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { listen } from "@tauri-apps/api/event";
 import { isReminderBannerVisible, skipTonight, snoozeReminder } from "../scheduler";
+import Wingbeat from "./Wingbeat";
 
 /** The in-app face of the evening reminder: visible whenever the
  * reminder slot is open, with the snooze options the OS notification can't
@@ -35,10 +36,10 @@ export default function ReminderBanner({ onTalk }: { onTalk?: () => void }) {
   }
 
   return (
-    <div className="ink-in flex flex-col gap-3 rounded-xl bg-ember-wash/60 px-4 py-3.5">
+    <div className="ink-in flex flex-col gap-3 rounded-xl bg-moss-wash/60 px-4 py-3.5">
       <div className="flex items-center gap-3">
-        <span className="ember-dot live" aria-hidden="true" />
-        <span className="flex-1 font-serif text-[17px] text-ink">Ready to talk about today?</span>
+        <Wingbeat />
+        <span className="flex-1 font-serif text-[17px] text-fg">Ready to talk about today?</span>
       </div>
       <div className="flex flex-wrap items-center gap-1">
         {onTalk && (

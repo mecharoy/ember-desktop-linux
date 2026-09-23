@@ -1,6 +1,12 @@
-# Ember — a journal that writes itself
+# Elytra — write it down, let it open
 
 *A local desktop journaling companion for people who hate journaling.*
+
+> This file is the product spec: what the app does. How it **looks** — the
+> palette and its contrast figures, the three typefaces and what each is for,
+> the seam and punctation motifs, the beetle and how it is driven — lives in
+> the "Design language" section of `CLAUDE.md`. Read that before changing any
+> visual choice. (Renamed from Ember, 2026-09-21.)
 
 ---
 
@@ -79,7 +85,7 @@ When the session ends, the AI composes the entry from: every capture no entry co
 - **Counselor's note** — the AI's own insight, clearly marked as its perspective: a pattern it noticed, a gentle challenge, or an acknowledgment. This is the "added insight" — it must be specific, never horoscope-fluff.
 - **Trackers** (auto-extracted, shown as chips): mood /10, energy /10, habits touched, people mentioned, themes.
 
-Ember **saves the entry itself** as soon as it is written; saving marks the day complete (streak++). The user can then **edit any part and save again, or regenerate with a note** ("make it shorter", "you overweighted the vendor thing") — a regenerated entry is saved too. Two things are never automatic: an entry the user has edited by hand is only replaced after they confirm, and when the AI fails, the raw-notes template it falls back to is *not* saved, since that would mark the day as written when it isn't.
+Elytra **saves the entry itself** as soon as it is written; saving marks the day complete (streak++). The user can then **edit any part and save again, or regenerate with a note** ("make it shorter", "you overweighted the vendor thing") — a regenerated entry is saved too. Two things are never automatic: an entry the user has edited by hand is only replaced after they confirm, and when the AI fails, the raw-notes template it falls back to is *not* saved, since that would mark the day as written when it isn't.
 
 #### Notes carry forward until they are journaled
 
@@ -146,7 +152,7 @@ The sleep finding always compares against their usual: if short nights are norma
 A permanent small-print line: *"Patterns, not causes — treat these as things to test, not facts."* No coefficients, no p-values, ever.
 
 #### G. Emotional vocabulary (unlocks: 20 entries)
-Horizontal bars of emotions across entries, toggleable 4w / all-time and **your words / Ember's labels**. It defaults to the feeling words the user typed themselves (`emotions_named`, from their messages and the check-in): the AI's labels ("frustrated" for "ugh") measure the AI's vocabulary, not theirs. Days extracted before the field existed can be filled in with "Re-analyse all". *Why:* people who journal name maybe three emotions; seeing the distribution ("everything is either 'stressed' or 'fine'") is itself an insight, and watching it diversify over months is quiet progress.
+Horizontal bars of emotions across entries, toggleable 4w / all-time and **your words / Elytra's labels**. It defaults to the feeling words the user typed themselves (`emotions_named`, from their messages and the check-in): the AI's labels ("frustrated" for "ugh") measure the AI's vocabulary, not theirs. Days extracted before the field existed can be filled in with "Re-analyse all". *Why:* people who journal name maybe three emotions; seeing the distribution ("everything is either 'stressed' or 'fine'") is itself an insight, and watching it diversify over months is quiet progress.
 
 #### H. People (unlocks: 10 entries, hideable)
 Who shows up in your life: name · mentions · sentiment tint · sparkline, ordered by who came up most recently — not by count, which would be a ranking. Deliberately gentle — no "you've neglected X" nudges. Click → entries mentioning them.
@@ -155,7 +161,7 @@ Who shows up in your life: name · mentions · sentiment tint · sparkline, orde
 Two AI-curated cards from the weekly review job. Every claim must carry its evidence and link to it: *"You consistently follow through on commitments to other people — 9 of 10 mentions"* / *"Sleep under 6h preceded 4 of your 5 lowest-mood days."* Strengths are stated plainly; focus areas are framed as invitations, never verdicts.
 
 #### J. Reviews (weekly letter + monthly report)
-Once a week is over — from the Monday after, or on Sunday once that Sunday's entry is saved — the AI writes a short **week-in-review letter**. Each review records which days it was written from (`source_days`); if the week gains a day later (a late entry, a re-read), it is rewritten. "Update this week's review" writes a so-far review of the week in progress on demand. The card header says what a review rests on ("Week of Aug 31 · from 1 day · written Sep 6"), a thin week gets a short letter with no pattern claims, and every claim links to the days it cites. The letter opens the next chat once, while it's news (written after their last entry, within a week). Once a month with entries is over, a **monthly report**: five numbers computed by the app (days journaled, average mood, average energy, top theme, best week), a short letter around them, and one thing that changed since the month before. The monthly report also carries a **formulation — "the 5 Ps"** clinicians use to sum up what's going on: what was hard (presenting), background the user described (predisposing — only what they said, never speculation), what set it off (precipitating), what kept it going (perpetuating) and what helped (protective). Each point is one plain sentence with the days it rests on; points citing no day of that month are dropped in code, at most 4 per heading, none with fewer than 4 days. Reviews are archived and browsable under Weekly / Monthly tabs; a **Memory** tab shows every fortnightly memory summary (§5.3.1) in full, so nothing Ember remembers is hidden. The review jobs run on launch, every ~30 minutes, and right after each entry is extracted.
+Once a week is over — from the Monday after, or on Sunday once that Sunday's entry is saved — the AI writes a short **week-in-review letter**. Each review records which days it was written from (`source_days`); if the week gains a day later (a late entry, a re-read), it is rewritten. "Update this week's review" writes a so-far review of the week in progress on demand. The card header says what a review rests on ("Week of Aug 31 · from 1 day · written Sep 6"), a thin week gets a short letter with no pattern claims, and every claim links to the days it cites. The letter opens the next chat once, while it's news (written after their last entry, within a week). Once a month with entries is over, a **monthly report**: five numbers computed by the app (days journaled, average mood, average energy, top theme, best week), a short letter around them, and one thing that changed since the month before. The monthly report also carries a **formulation — "the 5 Ps"** clinicians use to sum up what's going on: what was hard (presenting), background the user described (predisposing — only what they said, never speculation), what set it off (precipitating), what kept it going (perpetuating) and what helped (protective). Each point is one plain sentence with the days it rests on; points citing no day of that month are dropped in code, at most 4 per heading, none with fewer than 4 days. Reviews are archived and browsable under Weekly / Monthly tabs; a **Memory** tab shows every fortnightly memory summary (§5.3.1) in full, so nothing Elytra remembers is hidden. The review jobs run on launch, every ~30 minutes, and right after each entry is extracted.
 
 #### K. Wellbeing checks (always shown; questionnaires opt-in in Settings)
 Standard screening questionnaires, asked word for word as published, answered by the user every two weeks: the **WHO-5 Well-Being Index** (on by default), and opt-in **PHQ-9** (depression) and **GAD-7** (anxiety). All three ask about the last two weeks, so none is offered again sooner. When one is due, the evening check-in offers it ("Take it now" / "Not today", which snoozes to tomorrow); it can also be taken from this module. Each row shows the latest score with its published band (WHO-5 below 50 = worth a closer look; PHQ-9 0-4/5-9/10-14/15-19/20-27 and GAD-7 0-4/5-9/10-14/15-21, with 10 as the usual point where doctors look closer) and a sparkline of past scores. **A score is never inferred from journal text** — that would be neither valid nor the user's. **PHQ-9 question 9** (thoughts of being better off dead or of self-harm): any answer above "Not at all" shows help first — tell someone you trust, see a doctor soon, local emergency number, findahelpline.com — before the score, and regardless of the total, as the instrument's manual advises. Item answers stay local; only totals and bands reach a review prompt. Always worded "screens, doesn't diagnose". Licences: WHO-5 © WHO 2024, CC BY-NC-SA 3.0 IGO; PHQ-9/GAD-7 free to reproduce (Spitzer, Williams, Kroenke et al., Pfizer grant).
@@ -164,10 +170,10 @@ Standard screening questionnaires, asked word for word as published, answered by
 The check-in carries an optional **sleep diary**, the questions insomnia therapy (CBT-I) uses: got into bed, got up, minutes to fall asleep, quality 1-5. The module shows the last 28 days: usual bedtime and time up with their spread (±minutes), hours asleep, time to fall asleep, quality, and **sleep efficiency** (asleep ÷ time in bed; CBT-I aims for 85%+, computed only when the user gave hours slept). Findings, each only past its bar: falling asleep took 30+ minutes on at least half of 6+ noted nights; efficiency under 85% over 5+ nights; bedtime spread of ±60 minutes or more; and, over all history, mood after nights rated 4-5 vs 1-2 (10 a side, 0.8 gap).
 
 #### M. Activities & mood (unlocks: 10 entries with activities)
-After **behavioural activation**, a first-line depression treatment: doing things that give enjoyment or achievement lifts mood, and dropping them lets it sink. The extractor records the day's activities with **pleasure** and **mastery** 0-3, only as the user's own words show them (null otherwise) — the module says these are Ember's reading. A table shows each activity seen on 2+ days: days, average enjoyment and achievement, and a mood comparison held to the usual bar. A **pull-back notice** appears when enjoyable activities (pleasure 2+) per journaled day in the last 14 days fall below 60% of the 28 days before (6+ journaled days each side).
+After **behavioural activation**, a first-line depression treatment: doing things that give enjoyment or achievement lifts mood, and dropping them lets it sink. The extractor records the day's activities with **pleasure** and **mastery** 0-3, only as the user's own words show them (null otherwise) — the module says these are Elytra's reading. A table shows each activity seen on 2+ days: days, average enjoyment and achievement, and a mood comparison held to the usual bar. A **pull-back notice** appears when enjoyable activities (pleasure 2+) per journaled day in the last 14 days fall below 60% of the 28 days before (6+ journaled days each side).
 
 #### N. Thinking patterns (unlocks: 10 entries; hideable)
-The **thinking traps** of cognitive behavioural therapy — all-or-nothing, overgeneralising, mental filter, discounting the good, mind reading, fortune telling, catastrophising, emotional reasoning, "should" rules, labelling, personalising — each with a one-line plain definition. The extractor may record one only from the user's own messages, with an exact quote; **the app checks in code that the quote is really in what they typed** (their messages and check-in text, never Ember's lines or the entry) and drops it otherwise. Shown for a trap seen on 2+ days: days (and in the last 8 weeks), up to 3 quotes linking to their days, and themes it clusters with. Framed "worth noticing, not a judgement".
+The **thinking traps** of cognitive behavioural therapy — all-or-nothing, overgeneralising, mental filter, discounting the good, mind reading, fortune telling, catastrophising, emotional reasoning, "should" rules, labelling, personalising — each with a one-line plain definition. The extractor may record one only from the user's own messages, with an exact quote; **the app checks in code that the quote is really in what they typed** (their messages and check-in text, never Elytra's lines or the entry) and drops it otherwise. Shown for a trap seen on 2+ days: days (and in the last 8 weeks), up to 3 quotes linking to their days, and themes it clusters with. Framed "worth noticing, not a judgement".
 
 #### O. Daily routine (unlocks: a week with an anchor on 3+ days)
 After the **Social Rhythm Metric (SRM-5)** from interpersonal and social rhythm therapy: five daily anchors — getting up and going to bed (sleep diary; tonight's bedtime is tomorrow's check-in), first contact with another person, starting work or study, dinner (extracted when mentioned). Scored as the SRM-5 does: within a week, an anchor seen on 3+ days has a usual time (its mean); a day within 45 minutes of it is a hit; the week's score is hits ÷ anchors counted, 0-7 ("the routine held on about N of 7 days"). Shows the last full week, a 12-week sparkline, and each anchor's usual time with hits over 28 days; with 6+ scored weeks, mood in the steadier half vs the less regular half (0.8 gap).
@@ -218,7 +224,7 @@ Four interchangeable implementations, selected in Settings:
 
 - **ClaudeSubscriptionProvider** — spawns `claude -p <prompt> --output-format stream-json` (headless Claude Code) from the Rust side and streams its stdout. The spawn deliberately cuts the CLI off from the user's own Claude Code environment — `--tools ""`, `--strict-mcp-config`, `--setting-sources ""`, `--disable-slash-commands` — for two reasons at once. Containment: without them the CLI loads whatever MCP servers, plugins and hooks the user has configured globally, so a journaling turn could reach their mail or files. Cost: those same things were measured at ~5,900 tokens billed on *every single message* here, against a few hundred once dropped. Turn 2 onwards passes `--resume <session_id>` (captured from the CLI's own stream-json output) instead of replaying the transcript, which makes the prefix a prompt-cache read — measured at 3,282 cached-read against 61 newly-written tokens, roughly 14x cheaper than the same turn without it. A turn that errored or was stopped forgets its session id, so a half-written exchange can never be resumed into. This is the officially supported way to use a **Claude Pro/Max subscription** in your own personal app: the Agent SDK / headless CLI authenticates through your Claude Code login, and Anthropic explicitly covers "personal projects" and "third-party apps that authenticate with your Claude subscription through the Agent SDK" under the plan. What is **not** allowed is extracting the OAuth token and calling the API directly with it — so the app always goes through the CLI/SDK, never touches the token. Requirements: Claude Code installed and logged in (`claude login`). Trade-offs: ~1–3 s of process spin-up before the first token, and usage draws from your plan's limits (Anthropic has announced a separate monthly Agent SDK credit for Pro/Max — $20/mo on Pro, $100/$200 on Max 5x/20x — currently paused/rolling out; either way a few chats a day is well within bounds).
 - **AnthropicProvider** — calls `https://api.anthropic.com/v1/messages` with SSE streaming through Tauri's HTTP plugin (no CORS issues). It has no session to resume, so it marks two cache breakpoints instead: the system prompt, and the last message of the previous turn. Everything up to there reads from cache and only the new message is charged in full; without them the cost of a chat grows with the square of its length. Default model `claude-sonnet-5` for chat & journal writing; `claude-haiku-4-5-20251001` as a cheap option for extraction. API key stored via the OS keychain — never in plaintext config. A day is roughly one chat (~4–8k tokens), one entry generation, one extraction — comfortably under a few cents/day.
-- **CloudProvider** — the same OpenAI-compatible request as LocalProvider (they share `openaiCompatible.ts`), sent to a hosted endpoint with `Authorization: Bearer <key>`. It exists so Ember can run at no cost on a machine that cannot hold a local model: every provider in the picker has a standing free tier that needs no card. Only those hosts are reachable — each one is listed in the Tauri http allowlist, so a mistyped or malicious endpoint is blocked before the request leaves. The key lives in the OS keychain under its own name (`cloud_api_key`), separate from the Anthropic key, so switching provider never overwrites the other. Trade-offs, both surfaced in the UI: free tiers are rate-limited (a 429 is reported as such, with the provider's own message), and the journal text does leave the machine, which is the whole difference from LocalProvider. Free model names churn, so the model is a free-text field with the preset's current default prefilled.
+- **CloudProvider** — the same OpenAI-compatible request as LocalProvider (they share `openaiCompatible.ts`), sent to a hosted endpoint with `Authorization: Bearer <key>`. It exists so Elytra can run at no cost on a machine that cannot hold a local model: every provider in the picker has a standing free tier that needs no card. Only those hosts are reachable — each one is listed in the Tauri http allowlist, so a mistyped or malicious endpoint is blocked before the request leaves. The key lives in the OS keychain under its own name (`cloud_api_key`), separate from the Anthropic key, so switching provider never overwrites the other. Trade-offs, both surfaced in the UI: free tiers are rate-limited (a 429 is reported as such, with the provider's own message), and the journal text does leave the machine, which is the whole difference from LocalProvider. Free model names churn, so the model is a free-text field with the preset's current default prefilled.
 - **LocalProvider** — POSTs to a configurable base URL (default `http://localhost:11434/v1/chat/completions`) with the OpenAI schema, streaming. Model name free-text (e.g. `llama3.1:8b`, `qwen2.5:14b`). 8B-class models hold the counselor conversation acceptably but are noticeably weaker at extraction JSON discipline and insight quality — the extractor prompt therefore demands strict JSON and the app validates/retries once on parse failure.
 
 > **One misconception to clear up:** a *local app* is not the same as *offline AI*. The app, your data, and the database are always local — but the subscription and API providers still send the conversation over the network to Anthropic. Only the LocalProvider path is fully offline. A good setup: **subscription provider for chat/journal/insights quality, local model as the offline fallback.**
@@ -229,12 +235,12 @@ Four interchangeable implementations, selected in Settings:
 - With the local provider selected, **nothing ever leaves the machine**.
 - With Anthropic, only the minimum context is sent per call (see §5.3): today's captures, the current conversation, and the compact profile summary — never the raw full history.
 - Settings includes **Export everything** (JSON + Markdown of all entries) and **Delete everything**.
-- The only other network contact is the **update check** (§3.5): one request to GitHub when Ember opens, if an update source is set, which can be switched off. It sends nothing about the user.
+- The only other network contact is the **update check** (§3.5): one request to GitHub when Elytra opens, if an update source is set, which can be switched off. It sends nothing about the user.
 
 ### 3.5 Updates and feedback
 
-- **Updates.** Each release carries the installers and a `latest.json` (written by the release workflow; Tauri's updater shape without signatures). Ember reads it from the newest *published* release of the update source — a GitHub repository built in, or pasted in Settings — compares versions, and only if newer shows a slim banner: **Download** opens the installer in the browser (Windows gets the `-setup.exe` directly; a Mac gets the release page, since the webview can't tell Apple Silicon from Intel), **Later** hides that version. Settings has "Check for updates" and a switch for the launch check. Every failure is silent. Only GitHub hosts are in the http allowlist, and only GitHub links from the manifest are ever opened.
-- **Feedback.** Ember has no server, so feedback lands in the repository's **GitHub Issues**: Settings → Updates & feedback builds a pre-filled "new issue" page (kind → label, the user's text, and optionally "Ember x.y.z · system") and opens it in the browser, where the user reviews and submits. **Copy text** covers anyone without a GitHub account. Nothing is sent from the app; nothing from the journal is added.
+- **Updates.** Each release carries the installers and a `latest.json` (written by the release workflow; Tauri's updater shape without signatures). Elytra reads it from the newest *published* release of the update source — a GitHub repository built in, or pasted in Settings — compares versions, and only if newer shows a slim banner: **Download** opens the installer in the browser (Windows gets the `-setup.exe` directly; a Mac gets the release page, since the webview can't tell Apple Silicon from Intel), **Later** hides that version. Settings has "Check for updates" and a switch for the launch check. Every failure is silent. Only GitHub hosts are in the http allowlist, and only GitHub links from the manifest are ever opened.
+- **Feedback.** Elytra has no server, so feedback lands in the repository's **GitHub Issues**: Settings → Updates & feedback builds a pre-filled "new issue" page (kind → label, the user's text, and optionally "Elytra x.y.z · system") and opens it in the browser, where the user reviews and submits. **Copy text** covers anyone without a GitHub account. Nothing is sent from the app; nothing from the journal is added.
 
 ---
 
@@ -466,7 +472,7 @@ The wrap-up offer ("Want me to write today's entry?") appears at the mode's natu
 
 #### 5.2.7 Conversation style (tone × approach)
 
-Picked at setup (above the get-to-know-you questions, replacing the old free-text "How should Ember be with you?") and in Settings → Evening conversation; stored as `conversation_tone` and `conversation_approach`. The words shown and the instruction the prompt carries live together in `src/ai/prompts/style.ts`, and the prompt gets them under "HOW YOU SOUND".
+Picked at setup (above the get-to-know-you questions, replacing the old free-text "How should Elytra be with you?") and in Settings → Evening conversation; stored as `conversation_tone` and `conversation_approach`. The words shown and the instruction the prompt carries live together in `src/ai/prompts/style.ts`, and the prompt gets them under "HOW YOU SOUND".
 
 | Tone | What it tells the model |
 |---|---|
@@ -484,12 +490,12 @@ Style never changes the safety rules, the one-question-per-message rule or the d
 
 #### 5.2.8 Prompt summaries in Settings
 
-Settings → "Ember's instructions" shows two to four plain sentences per job (conversation, journal, insights, weekly, monthly, memory) instead of the full prompts (changed in 1.0.0). The conversation summary names the chosen style. The summaries live in `src/components/PromptViewer.tsx` and must be updated when a prompt's job changes; the verbatim prompts stay in the open-source code.
+Settings → "Elytra's instructions" shows two to four plain sentences per job (conversation, journal, insights, weekly, monthly, memory) instead of the full prompts (changed in 1.0.0). The conversation summary names the chosen style. The summaries live in `src/components/PromptViewer.tsx` and must be updated when a prompt's job changes; the verbatim prompts stay in the open-source code.
 
 #### 5.2.6 The system prompt (assembled per session)
 
 ```
-You are Ember, {user_name}'s private evening companion — a counselor who
+You are Elytra, {user_name}'s private evening companion — a counselor who
 has known them a while. You are NOT a form and NOT a therapist replacement.
 
 Tonight has two jobs: helping them recall and make sense of the whole day,
@@ -723,12 +729,12 @@ Build order rationale: value ships at every phase; risky integrations (global ho
 Captures shouldn't require being at the desk. The design extends the daily
 loop to the phone **without giving the desktop app any network capability**
 (§3.4 stays intact): the phone writes files, a sync tool the user already
-trusts moves them, and Ember watches a folder.
+trusts moves them, and Elytra watches a folder.
 
 ### 8.1 Architecture — the capture inbox
 
 ```
- phone (Ember Capture app)          any file-sync tool           desktop (Ember)
+ phone (Elytra Capture app)          any file-sync tool           desktop (Elytra)
  ┌──────────────────────┐   ┌───────────────────────────┐   ┌─────────────────────┐
  │ mood + note, any len │ → │ Syncthing (recommended) / │ → │ watches inbox folder │
  │ cap-<uuid>.json into │   │ Drive / iCloud / OneDrive │   │ every 30s, imports,  │
@@ -747,11 +753,11 @@ trusts moves them, and Ember watches a folder.
 - **Import is idempotent.** `captures.external_id` (migration 0005) is
   UNIQUE; re-synced or re-listed files insert-or-ignore, so duplicates are
   impossible no matter how flaky the transport is.
-- **Deletion is the ack.** After a successful import Ember deletes the file;
+- **Deletion is the ack.** After a successful import Elytra deletes the file;
   the sync tool propagates the deletion back and the phone's outbox stays
   tidy. Invalid files are left in place, never deleted — they're someone's
   thought, even if malformed.
-- **Ember stays offline.** The desktop only ever reads/deletes files in one
+- **Elytra stays offline.** The desktop only ever reads/deletes files in one
   user-chosen local folder (Settings → "Capture inbox folder"). All
   networking belongs to the sync tool, outside the app and outside rule 1.
 - **Trust boundary:** inbox content is data, never instructions. Text is
@@ -791,7 +797,7 @@ The transport actually running. Full design:
 `docs/superpowers/specs/2026-09-01-phone-capture-cloudflare-sync-design.md`.
 
 ```
- phone (Ember Capture)          Cloudflare Worker + D1        desktop (Ember + sync/pull.mjs)
+ phone (Elytra Capture)          Cloudflare Worker + D1        desktop (Elytra + sync/pull.mjs)
  ┌──────────────────────┐  POST  ┌────────────────────────┐  GET  ┌──────────────────────────┐
  │ queue note locally,  │ ─────▶ │ /captures  DEVICE_TOKEN │ ◀──── │ pull.mjs writes          │
  │ POST it, delete on   │        │ /captures?since=        │       │ cap-<uuid>.json into the │
@@ -800,12 +806,12 @@ The transport actually running. Full design:
                                                                                 │ spawned as a
                                                                                 │ separate process
                                                                                 ▼ at session start
-                                                              Ember's unchanged importInboxCaptures()
+                                                              Elytra's unchanged importInboxCaptures()
 ```
 
-- **Ember still makes no network calls.** `sync/pull.mjs` is a standalone
+- **Elytra still makes no network calls.** `sync/pull.mjs` is a standalone
   Node script run as its own OS process (via the shell plugin, scoped to
-  that one command), so §3.4 and hard rule 1 hold literally. Ember only
+  that one command), so §3.4 and hard rule 1 hold literally. Elytra only
   ever reads and deletes files in the configured inbox folder, exactly as
   before — `src/db/captureImport.ts` is untouched by this transport.
 - **The pull happens at session start**, not on a timer: `CounselorChat`
@@ -829,7 +835,7 @@ The transport actually running. Full design:
   `mobile/README.md`, "Why sending happens in JavaScript".
 
 **Known fragility:** the desktop's path to `sync/pull.mjs` is baked in at
-compile time from `CARGO_MANIFEST_DIR`, so an installed Ember looks for the
+compile time from `CARGO_MANIFEST_DIR`, so an installed Elytra looks for the
 script inside the source repo. Moving or renaming that folder stops the
 auto-pull silently (`Command.execute()` resolves rather than throwing on a
 failed spawn). Bundling the script as a Tauri resource would remove the

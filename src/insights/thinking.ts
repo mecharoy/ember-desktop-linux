@@ -86,7 +86,7 @@ export const MAX_TRAPS_PER_DAY = 5;
 
 /**
  * Keeps only traps of a known type whose quote really is in what the user
- * typed (their messages and check-in text, not Ember's or the entry's), one
+ * typed (their messages and check-in text, not Elytra's or the entry's), one
  * per quote, at most MAX_TRAPS_PER_DAY.
  */
 export function groundThinkingTraps(

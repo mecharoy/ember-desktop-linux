@@ -1,0 +1,186 @@
+/* Elytra mascot — v1.0 (generated 2026-09-19)
+   One SVG, eight looping states, driven by [data-state] on the host element.
+   Colours: override the --b-* tokens on .beetle (or on :root) to retheme. */
+.beetle, elytra-beetle{
+  --b-body:#1D221D; --b-eye:#F3F2EA; --b-wing:#D3D8BF; --b-gloss:#F3F2EA;
+  --b-moss:#6E9C6C; --b-forest:#3D5A3A;
+  --serif:'Instrument Serif',Georgia,serif;   /* only used for the sleeping "z" */
+}
+.beetle[data-theme="dark"], elytra-beetle[data-theme="dark"]{
+  --b-body:#E4E6D8; --b-eye:#1D221D; --b-wing:#8FA88C; --b-gloss:#CFE3CC;
+}
+/* =========================================================
+   THE BEETLE
+   Rest pose: covers parted ~18°, flight wings showing, slow flutter.
+   Covers close only for the save-snap and for sleeping.
+   ========================================================= */
+.beetle{display:block;position:relative}
+.beetle svg{display:block;width:100%;height:100%;overflow:visible}
+.beetle svg *{transform-box:fill-box}
+.b-root{transform-origin:50% 50%;transition:transform .5s ease}
+.b-body{transform-origin:50% 60%;animation:breathe 3.4s ease-in-out infinite alternate}
+.b-head{transform-origin:50% 100%;transition:transform .45s cubic-bezier(.34,1.3,.5,1)}
+.b-ant{transition:transform .5s cubic-bezier(.34,1.4,.5,1)}
+.b-ant-l,.b-ant-l .b-ant-in{transform-origin:100% 100%}
+.b-ant-r,.b-ant-r .b-ant-in{transform-origin:0 100%}
+.b-ant-l .b-ant-in{animation:swayL 3.6s ease-in-out infinite alternate}
+.b-ant-r .b-ant-in{animation:swayR 3.6s ease-in-out infinite alternate .4s}
+.b-eyes{transition:transform .4s ease}
+.b-eye{transform-origin:50% 50%;animation:blink 4.8s infinite}
+.b-ely{transition:transform .4s cubic-bezier(.34,1.3,.5,1)}
+.b-ely-l,.b-ely-l .b-ely-in{transform-origin:100% 0}
+.b-ely-r,.b-ely-r .b-ely-in{transform-origin:0 0}
+.b-ely-l{transform:rotate(-18deg) scaleX(.95)}
+.b-ely-r{transform:rotate(18deg) scaleX(.95)}
+.b-wing{opacity:1;transition:transform .35s ease,opacity .3s ease}
+.b-wing-l,.b-wing-l .b-wing-in{transform-origin:100% 0}
+.b-wing-r,.b-wing-r .b-wing-in{transform-origin:0 0}
+.b-wing-l .b-wing-in{animation:flutterL 3.2s ease-in-out infinite alternate}
+.b-wing-r .b-wing-in{animation:flutterR 3.2s ease-in-out infinite alternate}
+.b-legs{transform-origin:50% 50%;transition:transform .35s ease}
+.b-femur{stroke-width:3.8}
+.b-tibia{stroke-width:2.4}
+.b-tarsus{stroke-width:1.5}
+.b-claw{stroke-width:1.3}
+.b-leg{transition:transform .4s cubic-bezier(.34,1.3,.5,1)}
+/* each leg hinges at its coxa (where it meets the body) */
+.b-leg-lf{transform-origin:100% 66%}  .b-leg-rf{transform-origin:0 66%}
+.b-leg-lm{transform-origin:100% 14%}  .b-leg-rm{transform-origin:0 14%}
+.b-leg-lh{transform-origin:100% 0}    .b-leg-rh{transform-origin:0 0}
+.b-leg-lh{animation:shiftL 7s ease-in-out infinite}
+.b-leg-rh{animation:shiftR 7s ease-in-out infinite 3.5s}
+.b-leg-lf{animation:shiftL 9s ease-in-out infinite 2s}
+.b-leg-rf{animation:shiftR 9s ease-in-out infinite 6s}
+.b-fx>*{opacity:0}
+.b-ring,.b-burst{transform-origin:50% 50%}
+.b-z{font-family:var(--serif);font-style:italic}
+
+/* listening — you're typing (loop: quick antenna twitches, bob, faster flutter) */
+[data-state="listening"] .b-ant-l{transform:rotate(16deg)}
+[data-state="listening"] .b-ant-r{transform:rotate(-16deg)}
+[data-state="listening"] .b-ant-l .b-ant-in{animation:twitchL 1.4s ease-in-out infinite}
+[data-state="listening"] .b-ant-r .b-ant-in{animation:twitchR 1.4s ease-in-out infinite .7s}
+[data-state="listening"] .b-head{transform:rotate(-6deg)}
+[data-state="listening"] .b-ely-l{transform:rotate(-26deg) scaleX(.93)}
+[data-state="listening"] .b-ely-r{transform:rotate(26deg) scaleX(.93)}
+[data-state="listening"] .b-wing-l .b-wing-in{animation:flutterL 1s ease-in-out infinite alternate}
+[data-state="listening"] .b-wing-r .b-wing-in{animation:flutterR 1s ease-in-out infinite alternate}
+[data-state="listening"] .b-body{animation:bob 1.4s ease-in-out infinite}
+
+/* thinking — you've paused (loop: looks around, head tilts, antennae see-saw) */
+[data-state="thinking"] .b-ant-l{transform:rotate(22deg)}
+[data-state="thinking"] .b-ant-r{transform:rotate(10deg)}
+[data-state="thinking"] .b-ant-l .b-ant-in{animation:ponderL 6s ease-in-out infinite}
+[data-state="thinking"] .b-ant-r .b-ant-in{animation:ponderR 6s ease-in-out infinite}
+[data-state="thinking"] .b-head{animation:tiltLoop 6s ease-in-out infinite}
+[data-state="thinking"] .b-eyes{animation:lookAround 6s ease-in-out infinite}
+[data-state="thinking"] .b-wing-l .b-wing-in{animation:flutterL 4.5s ease-in-out infinite alternate}
+[data-state="thinking"] .b-wing-r .b-wing-in{animation:flutterR 4.5s ease-in-out infinite alternate}
+[data-state="thinking"] .b-dot{animation:dotfade 3s ease-in-out infinite}
+[data-state="thinking"] .b-dot:nth-child(2){animation-delay:.4s}
+[data-state="thinking"] .b-dot:nth-child(3){animation-delay:.8s}
+
+/* saving — covers snap shut, ring, reopen (loop 1.6s) */
+[data-state="saving"] .b-ely{transform:none;transition:none}
+[data-state="saving"] .b-ely-l .b-ely-in{animation:saveL 2.8s cubic-bezier(.4,0,.2,1) infinite}
+[data-state="saving"] .b-ely-r .b-ely-in{animation:saveR 2.8s cubic-bezier(.4,0,.2,1) infinite}
+[data-state="saving"] .b-wing{animation:wingSave 2.8s ease infinite}
+[data-state="saving"] .b-ring{animation:ring 2.8s ease-out infinite}
+[data-state="saving"] .b-ant-l{transform:rotate(10deg)}
+[data-state="saving"] .b-ant-r{transform:rotate(-10deg)}
+[data-state="saving"] .b-body{animation:settle 2.8s ease infinite}
+
+/* flying — page transition (loop: rapid flap, hover, bank) */
+[data-state="flying"] .b-ely-l{transform:rotate(-48deg) scaleX(.8)}
+[data-state="flying"] .b-ely-r{transform:rotate(48deg) scaleX(.8)}
+[data-state="flying"] .b-wing-l .b-wing-in{animation:flapL .16s linear infinite alternate}
+[data-state="flying"] .b-wing-r .b-wing-in{animation:flapR .16s linear infinite alternate}
+[data-state="flying"] .b-leg{animation:none;transform:scale(.72)}
+[data-state="listening"] .b-leg-lf{animation:none;transform:rotate(8deg)}
+[data-state="listening"] .b-leg-rf{animation:none;transform:rotate(-8deg)}
+[data-state="celebrate"] .b-leg-lf{animation:kickL 3.2s ease-in-out infinite}
+[data-state="celebrate"] .b-leg-rf{animation:kickR 3.2s ease-in-out infinite}
+[data-state="celebrate"] .b-leg-lh,[data-state="celebrate"] .b-leg-rh{animation:none;transform:scale(1.06)}
+[data-state="sleeping"] .b-leg{animation:none;transform:scale(.9)}
+[data-state="flying"] .b-body{animation:hover .8s ease-in-out infinite}
+[data-state="flying"] .b-root{transform:rotate(-8deg)}
+[data-state="flying"] .b-ant-l{transform:rotate(-14deg)}
+[data-state="flying"] .b-ant-r{transform:rotate(14deg)}
+
+/* loading — sync (loop: covers pump open/closed, eyes scan) */
+[data-state="loading"] .b-ely{transform:none;transition:none}
+[data-state="loading"] .b-ely-l .b-ely-in{animation:loadL 2.2s ease-in-out infinite}
+[data-state="loading"] .b-ely-r .b-ely-in{animation:loadR 2.2s ease-in-out infinite}
+[data-state="loading"] .b-wing-l .b-wing-in{animation:flapL .4s ease-in-out infinite alternate}
+[data-state="loading"] .b-wing-r .b-wing-in{animation:flapR .4s ease-in-out infinite alternate}
+[data-state="loading"] .b-eyes{animation:scan 2.2s ease-in-out infinite}
+[data-state="loading"] .b-body{animation:bob 2.2s ease-in-out infinite}
+
+/* celebrate — streak / milestone (loop 1.6s: double hop, covers flare, burst, antennae wiggle) */
+[data-state="celebrate"] .b-body{animation:hop 3.2s cubic-bezier(.3,0,.2,1) infinite}
+[data-state="celebrate"] .b-ely-l .b-ely-in{animation:flareL 3.2s ease infinite}
+[data-state="celebrate"] .b-ely-r .b-ely-in{animation:flareR 3.2s ease infinite}
+[data-state="celebrate"] .b-wing-l .b-wing-in{animation:flapL .2s linear infinite alternate}
+[data-state="celebrate"] .b-wing-r .b-wing-in{animation:flapR .2s linear infinite alternate}
+[data-state="celebrate"] .b-ant-l .b-ant-in{animation:wiggleL .9s ease-in-out infinite}
+[data-state="celebrate"] .b-ant-r .b-ant-in{animation:wiggleR .9s ease-in-out infinite}
+[data-state="celebrate"] .b-burst{animation:burst 3.2s ease-out infinite}
+[data-state="celebrate"] .b-eyes{transform:translateY(-1.5px)}
+
+/* sleeping — covers closed, antennae down, eyes shut (loop: slow breath, z's) */
+[data-state="sleeping"] .b-ely-l{transform:rotate(0) scaleX(1)}
+[data-state="sleeping"] .b-ely-r{transform:rotate(0) scaleX(1)}
+[data-state="sleeping"] .b-wing{opacity:0;transform:scale(.6)}
+[data-state="sleeping"] .b-ant-l{transform:rotate(-44deg)}
+[data-state="sleeping"] .b-ant-r{transform:rotate(44deg)}
+[data-state="sleeping"] .b-ant-in{animation:none}
+[data-state="sleeping"] .b-eye{animation:none;transform:scaleY(.1)}
+[data-state="sleeping"] .b-head{transform:rotate(4deg) translateY(2px)}
+[data-state="sleeping"] .b-body{animation:breathe 5.5s ease-in-out infinite alternate}
+[data-state="sleeping"] .b-z{animation:zrise 3.2s ease-out infinite}
+[data-state="sleeping"] .b-z:nth-child(2){animation-delay:1.4s}
+
+@keyframes breathe{from{transform:scaleY(1)}to{transform:scaleY(1.02)}}
+@keyframes swayL{from{transform:rotate(-4deg)}to{transform:rotate(5deg)}}
+@keyframes swayR{from{transform:rotate(4deg)}to{transform:rotate(-5deg)}}
+@keyframes twitchL{0%,55%,100%{transform:rotate(0)}65%{transform:rotate(7deg)}80%{transform:rotate(-3deg)}}
+@keyframes twitchR{0%,55%,100%{transform:rotate(0)}65%{transform:rotate(-7deg)}80%{transform:rotate(3deg)}}
+@keyframes ponderL{0%,30%,100%{transform:rotate(0)}48%,62%{transform:rotate(-18deg)}}
+@keyframes ponderR{0%,30%,100%{transform:rotate(0)}48%,62%{transform:rotate(-24deg)}}
+@keyframes tiltLoop{0%,100%{transform:rotate(0)}14%,30%{transform:rotate(7deg)}46%,62%{transform:rotate(-6deg)}76%,88%{transform:rotate(3deg)}}
+@keyframes lookAround{0%,100%{transform:translate(0,0)}14%,30%{transform:translate(2.8px,-2.2px)}46%,62%{transform:translate(-2.8px,-1.6px)}76%,88%{transform:translate(1.2px,1.4px)}}
+@keyframes blink{0%,91%,97%,100%{transform:scaleY(1)}93%,95%{transform:scaleY(.08)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
+@keyframes hover{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes flutterL{from{transform:rotate(-3deg)}to{transform:rotate(4deg)}}
+@keyframes flutterR{from{transform:rotate(3deg)}to{transform:rotate(-4deg)}}
+@keyframes flapL{from{transform:rotate(-12deg)}to{transform:rotate(16deg)}}
+@keyframes flapR{from{transform:rotate(12deg)}to{transform:rotate(-16deg)}}
+@keyframes saveL{0%{transform:rotate(-18deg) scaleX(.95)}26%,30%{transform:rotate(-36deg) scaleX(.9)}36%{transform:rotate(3deg) scaleX(1)}41%{transform:rotate(-1deg) scaleX(1)}45%,74%{transform:rotate(0) scaleX(1)}100%{transform:rotate(-18deg) scaleX(.95)}}
+@keyframes saveR{0%{transform:rotate(18deg) scaleX(.95)}26%,30%{transform:rotate(36deg) scaleX(.9)}36%{transform:rotate(-3deg) scaleX(1)}41%{transform:rotate(1deg) scaleX(1)}45%,74%{transform:rotate(0) scaleX(1)}100%{transform:rotate(18deg) scaleX(.95)}}
+@keyframes wingSave{0%,30%{opacity:1}37%,76%{opacity:0}100%{opacity:1}}
+@keyframes ring{0%,35%{transform:scale(.55);opacity:0}40%{opacity:.85}72%,100%{transform:scale(1.3);opacity:0}}
+@keyframes settle{0%,35%{transform:translateY(0) scale(1)}40%{transform:translateY(2px) scale(1.03,.96)}50%,100%{transform:translateY(0) scale(1)}}
+@keyframes loadL{0%,100%{transform:rotate(-6deg) scaleX(.98)}50%{transform:rotate(-36deg) scaleX(.9)}}
+@keyframes loadR{0%,100%{transform:rotate(6deg) scaleX(.98)}50%{transform:rotate(36deg) scaleX(.9)}}
+@keyframes scan{0%,100%{transform:translateX(-2.4px)}50%{transform:translateX(2.4px)}}
+@keyframes hop{0%,100%{transform:translateY(0) scale(1)}10%{transform:translateY(3px) scale(1.07,.9)}30%{transform:translateY(-38px) scale(.98,1.04)}44%{transform:translateY(0) scale(1)}48%{transform:translateY(2px) scale(1.05,.94)}62%{transform:translateY(-16px)}74%{transform:translateY(0)}}
+@keyframes flareL{0%,10%{transform:rotate(0)}24%,40%{transform:rotate(-26deg) scaleX(.88)}52%,100%{transform:rotate(0)}}
+@keyframes flareR{0%,10%{transform:rotate(0)}24%,40%{transform:rotate(26deg) scaleX(.88)}52%,100%{transform:rotate(0)}}
+@keyframes wiggleL{0%,100%{transform:rotate(0)}25%{transform:rotate(20deg)}75%{transform:rotate(-10deg)}}
+@keyframes wiggleR{0%,100%{transform:rotate(0)}25%{transform:rotate(-20deg)}75%{transform:rotate(10deg)}}
+@keyframes burst{0%,22%{transform:scale(.35);opacity:0}32%{opacity:1}58%,100%{transform:scale(1.25);opacity:0}}
+@keyframes shiftL{0%,72%,100%{transform:rotate(0)}78%{transform:rotate(-4deg)}86%{transform:rotate(1deg)}}
+@keyframes shiftR{0%,72%,100%{transform:rotate(0)}78%{transform:rotate(4deg)}86%{transform:rotate(-1deg)}}
+@keyframes kickL{0%,44%,100%{transform:rotate(0)}26%{transform:rotate(22deg)}62%{transform:rotate(12deg)}}
+@keyframes kickR{0%,44%,100%{transform:rotate(0)}26%{transform:rotate(-22deg)}62%{transform:rotate(-12deg)}}
+@keyframes zrise{0%{transform:translate(0,0);opacity:0}20%{opacity:.7}100%{transform:translate(9px,-24px);opacity:0}}
+@keyframes dotfade{0%,100%{opacity:0}35%,65%{opacity:1}}
+
+/* Accessibility: honour the OS "reduce motion" setting — freeze on each state's resting pose.
+   Opt a single instance out (e.g. a film) with data-motion="always". */
+@media (prefers-reduced-motion: reduce){
+  .beetle:not([data-motion="always"]) svg *{
+    animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important
+  }
+}

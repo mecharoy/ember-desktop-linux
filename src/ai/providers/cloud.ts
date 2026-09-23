@@ -16,7 +16,7 @@ export const DEFAULT_CLOUD_MAX_TOKENS = 900;
 
 /**
  * A hosted OpenAI-compatible endpoint reached with a bearer token — used for
- * the providers that give away a standing free tier, so Ember can run at no
+ * the providers that give away a standing free tier, so Elytra can run at no
  * cost without a local model. Text does leave the machine here, which is why
  * it is a separate choice from `local` and never the default.
  *

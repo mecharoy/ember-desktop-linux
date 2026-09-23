@@ -22,11 +22,11 @@ function Choice<T extends string>({
           aria-checked={value === o.id}
           onClick={() => onChange(o.id)}
           className={`rounded-xl border px-4 py-2.5 text-left transition-colors duration-200 ${
-            value === o.id ? "border-ember/50 bg-ember-wash/50" : "border-rule bg-sheet/50"
+            value === o.id ? "border-moss/50 bg-moss-wash/50" : "border-line bg-surface/50"
           }`}
         >
-          <span className="text-[15px] text-ink">{o.label}</span>
-          <span className="mt-0.5 block text-[13px] text-ink-faint">{o.blurb}</span>
+          <span className="text-[15px] text-fg">{o.label}</span>
+          <span className="mt-0.5 block text-[13px] text-fg-faint">{o.blurb}</span>
         </button>
       ))}
     </div>
@@ -49,7 +49,7 @@ export default function StylePicker({
     <div className="flex flex-col gap-5">
       <Choice label="Tone" options={TONES} value={tone} onChange={onTone} />
       <Choice label="Approach" options={APPROACHES} value={approach} onChange={onApproach} />
-      <p className="hint">Ember is not a therapist. In a crisis, it points you to real help.</p>
+      <p className="hint">Elytra is not a therapist. In a crisis, it points you to real help.</p>
     </div>
   );
 }

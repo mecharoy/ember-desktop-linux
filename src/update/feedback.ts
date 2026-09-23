@@ -1,4 +1,4 @@
-// Feedback. Ember has no server, so feedback lands where the
+// Feedback. Elytra has no server, so feedback lands where the
 // developer already reads things: the GitHub repository's Issues. The app
 // builds a pre-filled "new issue" link and opens it in the browser; the user
 // reviews it there and presses Submit themselves. Nothing is sent from the
@@ -22,7 +22,7 @@ export const MAX_FEEDBACK_CHARS = 4000;
 export interface FeedbackInput {
   kind: FeedbackKind;
   text: string;
-  /** e.g. "Ember 0.3.0 · Windows"; null when they chose not to include it. */
+  /** e.g. "Elytra 0.3.0 · Windows"; null when they chose not to include it. */
   about: string | null;
 }
 

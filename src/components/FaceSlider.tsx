@@ -30,7 +30,7 @@ function colorAt(kind: Kind, t: number): string {
 }
 
 function Face({ kind, t, color, faded }: { kind: Kind; t: number; color: string; faded: boolean }) {
-  const ink = "#28231e";
+  const ink = "#1d221d";
   const mouthY = kind === "mood" ? 42 : 43;
   // Mood: -1 frown … +1 grin. Energy keeps a mild mouth that opens up high.
   const curve = kind === "mood" ? (t - 0.45) * 2 : (t - 0.3) * 1.2;
@@ -99,11 +99,11 @@ export default function FaceSlider({
       <div className="flex items-baseline justify-between gap-3">
         <span className="label">{label}</span>
         {value !== null ? (
-          <button type="button" onClick={() => onChange(null)} className="text-[12px] text-ink-faint hover:text-ink">
+          <button type="button" onClick={() => onChange(null)} className="text-[12px] text-fg-faint hover:text-fg">
             clear
           </button>
         ) : (
-          <span className="text-[12px] italic text-ink-faint">slide to set</span>
+          <span className="text-[12px] italic text-fg-faint">slide to set</span>
         )}
       </div>
       <div className="flex items-center gap-4">
@@ -124,7 +124,7 @@ export default function FaceSlider({
             className={`face-slider w-full ${value === null ? "unset" : ""}`}
             style={{ background: track, ["--thumb" as string]: color }}
           />
-          <span className="font-serif text-[15px] text-ink" style={{ opacity: value === null ? 0.45 : 1 }}>
+          <span className="font-serif text-[15px] text-fg" style={{ opacity: value === null ? 0.45 : 1 }}>
             {value === null ? "—" : `${value}/10 · ${WORDS[kind][value - 1]}`}
           </span>
         </div>

@@ -190,7 +190,7 @@ export function counselorSystemPrompt(l: CounselorPromptLayers): string {
   counselor remembers last session:
 ${l.topics ?? "(none yet)"}`;
 
-  return `You are Ember, ${who} private companion for talking through the day — someone
+  return `You are Elytra, ${who} private companion for talking through the day — someone
 who has known them a while. You are NOT a form and NOT a therapist replacement.
 ${when}${lookingBack}
 

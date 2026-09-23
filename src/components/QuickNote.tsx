@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { emit } from "@tauri-apps/api/event";
 import { countCapturesForDate, createCapture } from "../db/captures";
 import { localDateKey } from "../time";
+import { flash } from "../mascot/pulse";
 
 const MOODS = [
   { emoji: "😞", label: "down" },
@@ -44,6 +45,7 @@ export default function QuickNote({ open, onClose }: { open: boolean; onClose: (
     try {
       await createCapture(trimmed, mood);
       await emit("captures:updated");
+      flash("saving");
       setText("");
       setMood(null);
       onClose();
@@ -54,12 +56,12 @@ export default function QuickNote({ open, onClose }: { open: boolean; onClose: (
 
   return (
     <div className="fixed inset-0 z-40 flex flex-col justify-end md:items-center md:justify-center">
-      <button aria-label="Close" onClick={onClose} className="fade-in absolute inset-0 bg-ink/25" />
-      <div className="sheet-up relative rounded-t-2xl border-t border-rule bg-sheet px-5 pb-5 pt-3 shadow-[0_-8px_30px_-12px_rgba(40,35,30,0.35)] md:w-[560px] md:rounded-2xl md:border md:pt-5 md:shadow-[0_18px_50px_-18px_rgba(40,35,30,0.45)]">
-        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-rule-strong md:hidden" aria-hidden="true" />
+      <button aria-label="Close" onClick={onClose} className="fade-in absolute inset-0 bg-fg/25" />
+      <div className="sheet-up relative rounded-t-2xl border-t border-line bg-surface px-5 pb-5 pt-3 shadow-[0_-8px_30px_-12px_rgba(40,35,30,0.35)] md:w-[560px] md:rounded-2xl md:border md:pt-5 md:shadow-[0_18px_50px_-18px_rgba(40,35,30,0.45)]">
+        <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-line-strong md:hidden" aria-hidden="true" />
         <div className="mb-2 flex items-baseline justify-between">
-          <h2 className="font-serif text-[19px] text-ink">A quick note</h2>
-          <span className="text-[12.5px] tabular-nums text-ink-faint">
+          <h2 className="font-serif text-[19px] text-fg">A quick note</h2>
+          <span className="text-[12.5px] tabular-nums text-fg-faint">
             {count} {count === 1 ? "note" : "notes"} today
           </span>
         </div>
@@ -74,8 +76,8 @@ export default function QuickNote({ open, onClose }: { open: boolean; onClose: (
               handleSave();
             }
           }}
-          placeholder="What's on your mind?"
-          className="selectable block w-full resize-none bg-transparent font-serif text-[18px] leading-[1.5] text-ink outline-none placeholder:text-ink-faint/80 focus-visible:outline-none"
+          placeholder="What just happened?"
+          className="selectable block w-full resize-none bg-transparent text-[17px] leading-[1.5] text-fg outline-none placeholder:text-fg-faint/80 focus-visible:outline-none"
         />
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-0.5" role="group" aria-label="Mood">
@@ -88,7 +90,7 @@ export default function QuickNote({ open, onClose }: { open: boolean; onClose: (
                 aria-label={label}
                 title={label}
                 className={`flex h-9 w-9 items-center justify-center rounded-full text-[20px] leading-none transition duration-150 active:scale-90 ${
-                  mood === emoji ? "bg-paper-deep" : "opacity-45 grayscale"
+                  mood === emoji ? "bg-surface-high" : "opacity-45 grayscale"
                 }`}
               >
                 {emoji}

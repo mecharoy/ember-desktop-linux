@@ -5,9 +5,9 @@ import { ModuleCard } from "./ModuleCard";
 function Stat({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
     <div className="flex min-w-[110px] flex-col gap-1">
-      <span className="text-[12px] text-ink-faint">{label}</span>
-      <span className="font-serif text-[22px] leading-none text-ink">{value}</span>
-      {note && <span className="text-[11px] text-ink-faint">{note}</span>}
+      <span className="text-[12px] text-fg-faint">{label}</span>
+      <span className="font-serif text-[22px] leading-none text-fg">{value}</span>
+      {note && <span className="text-[11px] text-fg-faint">{note}</span>}
     </div>
   );
 }
@@ -28,7 +28,7 @@ export default function SleepModule({
   const mins = (v: number | null) => (v === null ? null : `±${Math.round(v)} min`);
 
   return (
-    <ModuleCard title="Sleep" aside={<span className="text-[12px] text-ink-faint">last {SLEEP_WINDOW_DAYS} days · {s.nights} nights noted</span>}>
+    <ModuleCard title="Sleep" aside={<span className="text-[12px] text-fg-faint">last {SLEEP_WINDOW_DAYS} days · {s.nights} nights noted</span>}>
       <div className="flex flex-wrap gap-x-8 gap-y-4">
         <Stat label="Usual bedtime" value={s.usualBed ?? "–"} note={mins(s.bedSpreadMin) ?? undefined} />
         <Stat label="Usual time up" value={s.usualWake ?? "–"} note={mins(s.wakeSpreadMin) ?? undefined} />
@@ -47,7 +47,7 @@ export default function SleepModule({
             <li key={f.sentence}>
               <button
                 onClick={() => onOpen(f)}
-                className="w-full rounded-md px-2 py-2 text-left font-serif text-[16px] leading-snug text-ink transition-colors hover:bg-paper-deep"
+                className="w-full rounded-md px-2 py-2 text-left font-serif text-[16px] leading-snug text-fg transition-colors hover:bg-surface-high"
                 title="Open the entries behind this"
               >
                 {f.sentence}

@@ -17,7 +17,7 @@ import type { Capture, Entry } from "../db/types";
 import type { JournalFocus } from "./navigation";
 import EntryFields, { type EntryDraft } from "../components/EntryFields";
 import { DEFAULT_PAPER, paperById, paperStyle } from "../components/paper";
-import { useBackButton } from "../useBackButton";
+import { BACK_PAGE, useBackButton } from "../useBackButton";
 
 function toDraft(e: Entry): EntryDraft {
   return {
@@ -43,13 +43,13 @@ function shortDate(dateKey: string): string {
 /** Notes jotted on a day, shown beside a page being written for it. */
 function DayNotes({ notes }: { notes: Capture[] }) {
   return (
-    <section className="flex flex-col gap-1 border-t border-rule pt-4">
-      <h2 className="font-serif text-[15px] italic text-ink-faint">Notes from that day</h2>
+    <section className="flex flex-col gap-1 border-t border-line pt-4">
+      <h2 className="spec">Notes from that day</h2>
       <ul className="flex flex-col">
         {notes.map((c) => (
           <li key={c.id} className="flex items-baseline gap-3 py-1.5">
-            <span className="w-10 shrink-0 text-[12.5px] tabular-nums text-ink-faint">{c.created_at.slice(11, 16)}</span>
-            <span className="selectable font-serif text-[16px] leading-snug text-ink">
+            <span className="w-10 shrink-0 text-[12.5px] tabular-nums text-fg-faint">{c.created_at.slice(11, 16)}</span>
+            <span className="selectable font-serif text-[16px] leading-snug text-fg">
               {c.mood_emoji && <span className="mr-1.5 text-[14px]">{c.mood_emoji}</span>}
               {c.text}
             </span>
@@ -63,24 +63,22 @@ function DayNotes({ notes }: { notes: Capture[] }) {
 /** One entry in the list: a strip of its page, in its own paper and hand. */
 function PageCard({ entry, fallbackPaper, index, onOpen }: { entry: Entry; fallbackPaper: string; index: number; onOpen: () => void }) {
   const paperId = paperById(entry.paper ?? fallbackPaper).id;
-  const tilt = [-0.7, 0.5, -0.3, 0.8][index % 4];
-  const firstLine = entry.narrative.split(/\n/)[0] ?? "";
+  const tilt = [-0.55, 0.4, -0.25, 0.6][index % 4];
+  const preview = entry.narrative.replace(/\s+/g, " ").trim();
   return (
     <button
       onClick={onOpen}
-      className="paper-sheet block w-full text-left"
-      style={{ ...paperStyle(paperId), transform: `rotate(${tilt}deg)`, paddingTop: 0, paddingBottom: 0, paddingLeft: 52 }}
+      className="paper-sheet page-card block w-full text-left"
+      style={{ ...paperStyle(paperId), "--tilt": `${tilt}deg` } as React.CSSProperties}
     >
-      <div className="flex items-baseline justify-between gap-3">
-        <span className="hand min-w-0 flex-1 truncate" style={{ fontSize: 26, fontWeight: 650 }}>
-          {entry.title || "Untitled"}
-        </span>
-        <span className="hand shrink-0" style={{ fontSize: 18, color: "var(--paper-soft)" }}>
-          {shortDate(entry.date)}
-        </span>
-      </div>
-      <p className="hand truncate" style={{ fontSize: 20, color: "var(--paper-soft)" }}>
-        {firstLine || " "}
+      <span className="hand block truncate" style={{ fontSize: 25, fontWeight: 650 }}>
+        {entry.title || "Untitled"}
+      </span>
+      <span className="hand block" style={{ fontSize: 18, color: "var(--paper-soft)" }}>
+        {shortDate(entry.date)}
+      </span>
+      <p className="hand page-card-preview" style={{ fontSize: 19, color: "var(--paper-soft)" }}>
+        {preview}
       </p>
     </button>
   );
@@ -140,7 +138,7 @@ export default function Journal({
   }, [active]);
 
   // Back closes an open page and returns to the list.
-  useBackButton(active && selectedDate !== null, () => closeDay());
+  useBackButton(active && selectedDate !== null, () => closeDay(), BACK_PAGE);
 
   const entryByDate = useMemo(() => {
     const map = new Map<string, Entry>();
@@ -186,6 +184,7 @@ export default function Journal({
 
   function selectDate(dateKey: string) {
     if (dateKey > today) return;
+    setShowCalendar(false); // put the calendar away once it has found the day
     const entry = entryByDate.get(dateKey);
     setSelectedDate(dateKey);
     setSavedAt(null);
@@ -373,11 +372,11 @@ export default function Journal({
   if (selectedDate !== null) {
     return (
       <div className="flex h-full flex-col">
-        <header className="flex items-center gap-2 border-b border-rule px-2 py-1.5">
-          <button onClick={closeDay} className="btn-ghost text-ink-soft" aria-label="Back to the journal">
+        <header className="flex items-center gap-2 border-b border-line px-2 py-1.5">
+          <button onClick={closeDay} className="btn-ghost text-fg-dim" aria-label="Back to the journal">
             &larr; Journal
           </button>
-          <span className="ml-auto pr-3 text-[13px] text-ink-faint">{shortDate(selectedDate)}</span>
+          <span className="ml-auto pr-3 text-[13px] text-fg-faint">{shortDate(selectedDate)}</span>
         </header>
         <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-10 pt-5">
           {draft ? (
@@ -413,7 +412,7 @@ export default function Journal({
                         </button>
                       )}
                       {confirmDelete && (
-                        <span className="flex basis-full flex-wrap items-center gap-2 text-[13.5px] text-ink-soft">
+                        <span className="flex basis-full flex-wrap items-center gap-2 text-[13.5px] text-fg-dim">
                           Delete this entry? The conversation and notes stay.
                           <button onClick={handleDelete} className="btn-danger">
                             Delete
@@ -462,9 +461,9 @@ export default function Journal({
                   })}
                 </p>
               </div>
-              <p className="font-serif text-[18px] leading-relaxed text-ink-soft">
+              <p className="font-serif text-[18px] leading-relaxed text-fg-dim">
                 {unwrittenDays.has(selectedDate)
-                  ? "You talked with Ember on this day, but the entry was never written."
+                  ? "You talked with Elytra on this day, but the entry was never written."
                   : "Nothing was written for this day."}
               </p>
               <div className="flex flex-col gap-2.5">
@@ -477,8 +476,8 @@ export default function Journal({
               </div>
               <p className="hint">
                 {unwrittenDays.has(selectedDate)
-                  ? "It opens on the Today tab, where you can keep talking or have Ember write the entry."
-                  : "Talking it through opens that day’s check-in and conversation on the Today tab, and Ember writes the entry from it."}
+                  ? "It opens on the Today tab, where you can keep talking or have Elytra write the entry."
+                  : "Talking it through opens that day’s check-in and conversation on the Today tab, and Elytra writes the entry from it."}
               </p>
               {dayNotes && dayNotes.length > 0 && <DayNotes notes={dayNotes} />}
             </div>
@@ -498,7 +497,7 @@ export default function Journal({
             <p className="page-subtitle">
               {entries.length > 0
                 ? `${entries.length} entr${entries.length === 1 ? "y" : "ies"} so far`
-                : "Your entries will collect here"}
+                : "Days you have written up collect here"}
             </p>
           </div>
           <button
@@ -511,9 +510,9 @@ export default function Journal({
         </div>
 
         {focus && (
-          <div className="fade-up flex items-center gap-2 rounded-full bg-ember-wash/70 py-1 pl-3.5 pr-1 text-[13px] text-ember-deep">
+          <div className="fade-up flex items-center gap-2 rounded-full bg-moss-wash/70 py-1 pl-3.5 pr-1 text-[13px] text-moss">
             <span className="min-w-0 flex-1 truncate">
-              {focus.label ?? "from Insights"} · {visibleEntries.length} entr{visibleEntries.length === 1 ? "y" : "ies"}
+              {focus.label ?? "from Patterns"} · {visibleEntries.length} entr{visibleEntries.length === 1 ? "y" : "ies"}
             </span>
             {onClearFocus && (
               <button
@@ -527,20 +526,36 @@ export default function Journal({
           </div>
         )}
 
+        {/* The calendar is an overlay over the drawer, not a panel that shoves
+            it down the page. It is a way of FINDING a day — a filter you hold
+            up to the drawer and then put away again. */}
         {showCalendar && (
-          <div className="fade-up rounded-xl border border-rule bg-sheet/60 px-3 pb-3 pt-2">
+          <div
+            className="fade-in fixed inset-0 z-40 flex items-end justify-center px-4 pb-[calc(var(--nav-h)+12px)] pt-6 sm:items-center sm:pb-6"
+            style={{ background: "var(--scrim)" }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Pick a day"
+            onClick={() => setShowCalendar(false)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="part-open w-full max-w-sm rounded-2xl border border-line-strong bg-surface px-3 pb-3 pt-2 shadow-[0_2px_6px_rgba(0,0,0,0.5),0_24px_60px_-20px_rgba(0,0,0,0.9)]"
+            >
             <div className="mb-1 flex items-center justify-between">
               <button onClick={() => shiftMonth(-1)} className="btn-ghost h-10 w-10 text-[20px]" aria-label="Previous month">
                 &lsaquo;
               </button>
-              <span className="font-serif text-[17px] text-ink">{monthLabel}</span>
+              <span className="spec text-fg">{monthLabel}</span>
               <button onClick={() => shiftMonth(1)} className="btn-ghost h-10 w-10 text-[20px]" aria-label="Next month">
                 &rsaquo;
               </button>
             </div>
-            <div className="grid grid-cols-7 text-center text-[11.5px] text-ink-faint">
+            <div className="grid grid-cols-7 text-center text-[11.5px] text-fg-faint">
               {WEEKDAY_LABELS.map((d, i) => (
-                <span key={i}>{d}</span>
+                <span key={i} className="font-mono uppercase tracking-[0.06em]">
+                  {d}
+                </span>
               ))}
             </div>
             <div className="mt-1 grid grid-cols-7 gap-y-1">
@@ -549,6 +564,10 @@ export default function Journal({
                 const entry = entryByDate.get(dateKey);
                 const isFuture = dateKey > today;
                 const talked = !entry && unwrittenDays.has(dateKey);
+                // The cell wears that day's paper, so its number has to wear that
+                // paper's INK — every one is contrast-checked at 7:1 on its own
+                // paper (components/paper.ts). The app's own pale text on a pale
+                // card was unreadable.
                 return (
                   <button
                     key={i}
@@ -556,24 +575,35 @@ export default function Journal({
                     onClick={() => selectDate(dateKey)}
                     aria-label={`${shortDate(dateKey)}${entry ? `: ${entry.title}` : talked ? ": talked, not written up" : ""}`}
                     className={`relative mx-auto flex h-10 w-10 items-center justify-center rounded-full text-[14px] tabular-nums transition-colors duration-200 ${
-                      entry ? "text-ink" : talked ? "text-ink" : isFuture ? "text-rule-strong" : "text-ink-faint active:bg-paper-deep"
-                    } ${dateKey === today ? "ring-1 ring-ember/50" : ""}`}
-                    style={entry ? { background: paperById(entry.paper ?? defaultPaper).bg, boxShadow: "inset 0 0 0 1px rgba(40,35,30,0.12)" } : undefined}
+                      entry ? "" : talked ? "text-fg" : isFuture ? "text-line-strong" : "text-fg-faint active:bg-surface-high"
+                    } ${dateKey === today ? "ring-1 ring-moss/50" : ""}`}
+                    style={
+                      entry
+                        ? {
+                            background: paperById(entry.paper ?? defaultPaper).bg,
+                            color: paperById(entry.paper ?? defaultPaper).ink,
+                            boxShadow: "inset 0 0 0 1px rgba(29,34,29,0.12)",
+                          }
+                        : undefined
+                    }
                   >
                     {Number(dateKey.slice(-2))}
-                    {entry && <span className="absolute bottom-[4px] h-1 w-1 rounded-full bg-ember" />}
-                    {talked && <span className="absolute bottom-[4px] h-1 w-1 rounded-full ring-1 ring-ember" />}
+                    {talked && <span className="absolute bottom-[4px] h-1 w-1 rounded-full ring-1 ring-moss" />}
                   </button>
                 );
               })}
             </div>
-            <p className="hint mt-2 px-1">Tap a day to read it, or to write about one that has no entry.</p>
+            <p className="hint mt-2 px-1">A day with an entry shows its paper. Pick any day to read it, or to write it up.</p>
+            <button onClick={() => setShowCalendar(false)} className="btn-subtle mt-3 w-full">
+              Close
+            </button>
+            </div>
           </div>
         )}
 
         {!focus && unwritten.some((u) => u.date < today) && (
           <div className="flex flex-col gap-1">
-            <h2 className="font-serif text-[15px] italic text-ink-faint">Talked, but not written up</h2>
+            <h2 className="spec">Talked, not written up</h2>
             <div className="-mx-1 flex flex-wrap gap-1.5">
               {unwritten
                 .filter((u) => u.date < today)
@@ -581,7 +611,7 @@ export default function Journal({
                   <button
                     key={u.date}
                     onClick={() => selectDate(u.date)}
-                    className="min-h-[36px] rounded-full border border-rule px-3 text-[13.5px] text-ink-soft active:bg-paper-deep"
+                    className="min-h-[36px] rounded-full border border-line px-3 text-[13.5px] text-fg-dim active:bg-surface-high"
                   >
                     {shortDate(u.date)}
                   </button>
@@ -592,10 +622,10 @@ export default function Journal({
 
         {visibleEntries.length === 0 ? (
           <div className="flex flex-col items-start gap-3 pt-4">
-            <p className="font-serif text-[17px] leading-relaxed text-ink-soft">
+            <p className="text-[15.5px] leading-relaxed text-fg-dim">
               {focus
-                ? "No saved entries match this filter."
-                : "No entries yet. Talk through a day on the Today tab, or write one yourself."}
+                ? "Nothing saved matches this filter."
+                : "Nothing here yet. Talk a day through on the Today tab, or write one yourself."}
             </p>
             {!focus && (
               <button onClick={() => selectDate(today)} className="btn-subtle">
@@ -604,7 +634,7 @@ export default function Journal({
             )}
           </div>
         ) : (
-          <ul className="flex flex-col gap-4 px-1">
+          <ul className="grid grid-cols-1 gap-5 px-1 md:grid-cols-2 md:gap-6">
             {visibleEntries.map((e, i) => (
               <li key={e.id}>
                 <PageCard entry={e} fallbackPaper={defaultPaper} index={i} onOpen={() => selectDate(e.date)} />

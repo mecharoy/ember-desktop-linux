@@ -1,6 +1,6 @@
 // Grouping notes by the day they were dropped.
 //
-// Ember used to show, discuss and journal only the notes whose timestamp fell
+// Elytra used to show, discuss and journal only the notes whose timestamp fell
 // on today. Nothing was ever deleted, but a note written on Tuesday became
 // invisible at midnight whether or not it had ever been turned into a journal
 // entry — so a day you didn't get round to writing up was simply lost.

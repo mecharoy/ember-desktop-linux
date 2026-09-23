@@ -33,7 +33,7 @@ function rated(values: (number | null)[]): { avg: number; n: number } | null {
 }
 
 /** Most frequent first; activities seen on fewer than 2 days are left out. */
-export function activityStats(rows: DayRow[]): ActivityStat[] {
+export function activityStats(rows: DayRow[], staleBefore: string | null = null): ActivityStat[] {
   const map = new Map<string, { key: string; dates: Set<string>; pleasure: (number | null)[]; mastery: (number | null)[] }>();
   for (const r of rows) {
     for (const a of r.x.activities) {
@@ -52,6 +52,8 @@ export function activityStats(rows: DayRow[]): ActivityStat[] {
   const tracked = rows.filter((r) => r.mood !== null);
   return Array.from(map.entries())
     .filter(([, agg]) => agg.dates.size >= 2)
+    // Not done since staleBefore: no longer part of their days, so not listed.
+    .filter(([, agg]) => !staleBefore || [...agg.dates].some((d) => d >= staleBefore))
     .map(([c, agg]) => {
       const has = (r: DayRow) => r.x.activities.some((a) => canon(a.key) === c);
       const withDays = tracked.filter(has);

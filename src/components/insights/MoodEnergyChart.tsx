@@ -33,16 +33,16 @@ function ChartTooltip({ active, payload }: TooltipPayload) {
   const p = payload?.[0]?.payload;
   if (!active || !p) return null;
   return (
-    <div className="max-w-60 rounded-md border border-rule bg-sheet px-3 py-2 text-[12px] shadow-[0_4px_14px_rgba(40,35,30,0.12)]">
-      <div className="text-ink">{p.date}</div>
-      <div className="mt-0.5 text-ink-soft">
+    <div className="max-w-60 rounded-md border border-line bg-surface px-3 py-2 text-[12px] shadow-[0_4px_14px_rgba(40,35,30,0.12)]">
+      <div className="text-fg">{p.date}</div>
+      <div className="mt-0.5 text-fg-dim">
         {p.mood !== null && (
           <span>
             <Swatch color={SERIES.mood} />
             mood {p.mood}
           </span>
         )}
-        {p.mood !== null && p.energy !== null && <span className="text-ink-faint"> · </span>}
+        {p.mood !== null && p.energy !== null && <span className="text-fg-faint"> · </span>}
         {p.energy !== null && (
           <span>
             <Swatch color={SERIES.energy} />
@@ -51,8 +51,8 @@ function ChartTooltip({ active, payload }: TooltipPayload) {
         )}
         {p.mood === null && p.energy === null && <span>no entry</span>}
       </div>
-      {p.summary && <div className="mt-1 font-serif text-[14px] leading-snug text-ink">{p.summary}</div>}
-      {p.mood !== null && <div className="mt-1 text-[11px] text-ink-faint">Tap to open the entry</div>}
+      {p.summary && <div className="mt-1 font-serif text-[14px] leading-snug text-fg">{p.summary}</div>}
+      {p.mood !== null && <div className="mt-1 text-[11px] text-fg-faint">Tap to open the entry</div>}
     </div>
   );
 }
@@ -83,7 +83,7 @@ export default function MoodEnergyChart({
       aside={
         <div className="flex items-center gap-4">
           {/* direct series labels — identity never rides on color alone */}
-          <span className="flex items-center gap-3 text-[12px] text-ink-soft">
+          <span className="flex items-center gap-3 text-[12px] text-fg-dim">
             <span className="flex items-center gap-1.5">
               <span className="h-0.5 w-3 rounded-full" style={{ background: SERIES.mood }} /> mood
             </span>

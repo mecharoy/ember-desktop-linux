@@ -57,7 +57,7 @@ export function counselorCompactPrompt(l: CompactPromptLayers): string {
     ? `This conversation is about ${l.todayLine} (${l.lookingBack.daysAgo === 1 ? "yesterday" : `${l.lookingBack.daysAgo} days ago`}); today is really ${l.lookingBack.realTodayLine}. Talk about that day in the past tense.`
     : `Today is ${l.todayLine}.`;
 
-  return `You are Ember, ${who} companion for talking through the day. You are not a
+  return `You are Elytra, ${who} companion for talking through the day. You are not a
 form and not a therapist. ${when}
 
 MOST IMPORTANT

@@ -215,13 +215,14 @@ export type SettingKey =
   | "assessments_enabled" // comma-separated instruments the user opted into
   | "assessments_snoozed_until" // YYYY-MM-DD: don't offer a due questionnaire before this day
   | "update_source" // GitHub repository (or latest.json link) updates and feedback go through; empty = built-in default
-  | "update_auto_check" // "1" = look for a newer release when Ember opens
+  | "update_auto_check" // "1" = look for a newer release when Elytra opens
   | "update_checked_at" // ISO timestamp of the last successful look
   | "update_dismissed_version" // a release the user said "later" to; not offered again on launch
   | "last_seen_version" // the version whose "What's new" card was last shown or skipped
   | "journal_paper" // default paper for journal entries (components/paper.ts id)
-  | "backup_copy" // "1" = keep a daily copy in Documents/Ember
+  | "backup_copy" // "1" = keep a daily copy in Documents/Elytra
   | "backup_last_at" // ISO timestamp of the last copy written
+  | "streak_cheered" // the run length the beetle last celebrated, so it hops once per milestone
   | "install_id" // random id of the install this journal belongs to; see src/install.ts
   | "jobs_last_error" // what the last background review run couldn't write, "" if nothing
   | "claude_cli_path" // optional override; empty string means auto-detect
@@ -234,6 +235,6 @@ export type SettingKey =
   | "usual_dinner" // "HH:MM" their usual dinner
   | "day_reminders" // "1" = on the phone, a note reminder at those three times
   | "writing_style_sample" // their own writing, so entries sound like them
-  | "context_mode" // auto | full | compact: how much Ember sends the model (ai/budget.ts); this device only
+  | "context_mode" // auto | full | compact: how much Elytra sends the model (ai/budget.ts); this device only
   | "insight_patterns" // JSON: links and suggestions from ai/patterns.ts
   | "codex_cli_path"; // optional override for the codex binary

@@ -1,4 +1,4 @@
-// Topics Ember keeps working through with them across conversations
+// Topics Elytra keeps working through with them across conversations
 // (migration 0013). Written after a conversation by ai/topics.ts; read when
 // the next checklist is made and by the counselor prompt.
 

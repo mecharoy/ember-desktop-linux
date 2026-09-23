@@ -7,7 +7,7 @@ import {
   type DayRow,
 } from "../../insights/stats";
 import { ModuleCard } from "./ModuleCard";
-import { CHROME, EMBER_RAMP, REDUCED_MOTION, SERIES } from "./palette";
+import { CHROME, WING_RAMP, REDUCED_MOTION, SERIES } from "./palette";
 
 interface BarTooltipProps {
   active?: boolean;
@@ -19,7 +19,7 @@ function BarTooltip({ active, payload, formatter }: BarTooltipProps) {
   const p = payload?.[0]?.payload;
   if (!active || !p) return null;
   return (
-    <div className="rounded-md border border-rule bg-sheet px-2.5 py-1.5 text-[12px] text-ink shadow-[0_4px_14px_rgba(40,35,30,0.12)]">
+    <div className="rounded-md border border-line bg-surface px-2.5 py-1.5 text-[12px] text-fg shadow-[0_4px_14px_rgba(40,35,30,0.12)]">
       {formatter(p)}
     </div>
   );
@@ -51,7 +51,7 @@ export default function WeekRhythm({ rows, captureTimes }: { rows: DayRow[]; cap
     <ModuleCard title="Week rhythm">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <div>
-          <p className="hint mb-2">Mood by weekday.</p>
+          <p className="hint mb-2">Mood by weekday, last 3 months.</p>
           <div className="h-36">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={weekdays.map((w) => ({ ...w, avg: w.avg ?? 0 }))} margin={{ top: 4, right: 52, bottom: 0, left: -28 }}>
@@ -97,7 +97,7 @@ export default function WeekRhythm({ rows, captureTimes }: { rows: DayRow[]; cap
                     />
                   }
                 />
-                <Bar dataKey="count" fill={EMBER_RAMP[2]} radius={[4, 4, 0, 0]} {...animation} />
+                <Bar dataKey="count" fill={WING_RAMP[2]} radius={[4, 4, 0, 0]} {...animation} />
               </BarChart>
             </ResponsiveContainer>
           </div>

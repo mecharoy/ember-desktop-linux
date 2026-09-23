@@ -1,11 +1,11 @@
-import { EMBER_RAMP } from "./palette";
+import { WING_RAMP } from "./palette";
 
 /** Tiny inline SVG sparkline (weekly counts, oldest→newest). */
 export default function Sparkline({
   values,
   width = 72,
   height = 20,
-  stroke = EMBER_RAMP[1],
+  stroke = WING_RAMP[1],
 }: {
   values: number[];
   width?: number;

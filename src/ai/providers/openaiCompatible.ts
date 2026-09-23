@@ -35,11 +35,11 @@ export interface OpenAiCompatibleConfig {
 
 const UNREACHABLE_HINT: Record<OpenAiCompatibleConfig["kind"], string> = {
   local:
-    "Is Ollama/LM Studio running? Note: Ember's security policy only allows " +
+    "Is Ollama/LM Studio running? Note: Elytra's security policy only allows " +
     "localhost endpoints (http://localhost:… or http://127.0.0.1:…) — LAN or " +
     "remote URLs are blocked. Check Settings > Local endpoint base URL.",
   cloud:
-    "Check the endpoint address in Settings. Ember's network policy only allows " +
+    "Check the endpoint address in Settings. Elytra's network policy only allows " +
     "the providers listed there — any other host is blocked, even with a valid key.",
 };
 
@@ -82,7 +82,7 @@ async function callEndpoint(
   if (wantedTokens && maxTokens !== undefined && maxTokens < Math.min(wantedTokens, MIN_JOB_REPLY_TOKENS)) {
     throw new ProviderError(
       "This is too much for the free tier to take in one go.",
-      "The free tier counts what Ember sends and the reply together, and this job needs more than it allows a minute. " +
+      "The free tier counts what Elytra sends and the reply together, and this job needs more than it allows a minute. " +
         "Gemini (Google AI Studio) has room for it: switch in Settings > AI provider.",
     );
   }

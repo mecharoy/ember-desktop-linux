@@ -37,7 +37,7 @@ export function prepSystemPrompt(withChecklist: boolean, approach: ConversationA
    the word in [brackets] in memory, e.g. "dispute-with-dad" — when an item
    continues one, else null.`
     : "";
-  return `You prepare Ember for a conversation with someone about their day. The
+  return `You prepare Elytra for a conversation with someone about their day. The
 conversation runs on a small AI model that can only hold a little, so you
 read the material and write what it needs to know. ${lean}
 

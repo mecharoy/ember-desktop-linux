@@ -31,6 +31,10 @@ import { getSetting } from "../db/settings";
 import { extractCovered, markCovered } from "../ai/agenda";
 import { parseStyle } from "../ai/prompts/style";
 import type { AgendaItem } from "../db/types";
+import Wingbeat from "./Wingbeat";
+import DaySeam from "./DaySeam";
+import Beetle from "../mascot/Beetle";
+import { typing, useMascotClaim } from "../mascot/pulse";
 
 // A synthetic first turn so the API (which expects the conversation to open
 // with a user message) has something to respond to for the AI's own opening
@@ -41,8 +45,6 @@ const KICKOFF_PAST = "Let's look back on that day.";
 const KICKOFFS = new Set(["Let's begin tonight's check-in.", KICKOFF, KICKOFF_PAST]);
 
 const MAX_INPUT_HEIGHT_PX = 160;
-
-type View = "notes" | "conversation" | "journal";
 
 interface DisplayError {
   message: string;
@@ -57,22 +59,28 @@ function toDisplayError(e: unknown): DisplayError {
 
 type Turn = { history: { role: "user" | "assistant"; content: string }[]; sessionId: number };
 
-/** The conversation for one day: today, or an earlier day picked from
- * the Journal calendar. Everything below keys off `date`, never the clock. */
+/**
+ * One day, as a single column: the notes it collected, the conversation, and
+ * the entry it became — in that order, all scrolling together, with the
+ * composer pinned underneath.
+ *
+ * There are no sub-tabs. The three bands are divided by nothing but a labelled
+ * punctation rule (DaySeam), so the whole day is one thing you scroll rather
+ * than three places you switch between.
+ *
+ * Everything below keys off `date`, never the clock.
+ */
 export default function CounselorChat({
   date,
   notes,
-  notesCount = 0,
 }: {
   date: string;
-  /** The day's notes, shown as the first of the three pages on a phone. Gets a
-   *  callback that turns to the conversation. */
+  /** The day's notes, the top band of the column. Gets a callback that brings
+   *  the talk into view and puts the cursor in the composer. */
   notes?: (goTalk: () => void) => React.ReactNode;
-  notesCount?: number;
 }) {
   const [session, setSession] = useState<Session | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [view, setView] = useState<View>("conversation");
   // Set when the user — or the counselor, on their say-so — asks for the
   // journal; EntryReview writes and saves it, then clears this.
   const [writeNow, setWriteNow] = useState(false);
@@ -92,6 +100,8 @@ export default function CounselorChat({
   agendaRef.current = agenda;
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const talkRef = useRef<HTMLDivElement>(null);
+  const entryRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const stopRef = useRef<(() => void) | null>(null);
   const lastTurnRef = useRef<Turn | null>(null);
@@ -112,9 +122,6 @@ export default function CounselorChat({
       const s = await getOrCreateTodaySession(date);
       setSession(s);
       const loaded = await listMessages(s.id);
-      // A day with nothing said yet opens on its notes; the check-in waits
-      // under Talk.
-      setView(s.status === "wrapped" ? "journal" : loaded.length > 0 || !notes ? "conversation" : "notes");
       firstNewIdRef.current = loaded.reduce((max, m) => Math.max(max, m.id), 0) + 1;
       setMessages(loaded);
       setAgenda(await getAgenda(date));
@@ -132,13 +139,16 @@ export default function CounselorChat({
     };
   }, []);
 
-  // While the conversation is on screen, background jobs keep off the model.
+  // While a live conversation is on screen, background jobs keep off the model.
+  // The whole day is one page now, so this is "the talk is open", not "the
+  // Talk tab is showing".
+  const talking = session !== null && session.status !== "wrapped";
   useEffect(() => {
-    if (view !== "conversation") return;
+    if (!talking) return;
     noteConversation();
     const timer = setInterval(noteConversation, 60_000);
     return () => clearInterval(timer);
-  }, [view]);
+  }, [talking]);
 
   // The other device wrote to this day (a sync): show it, unless a reply is
   // arriving here right now, in which case the next sync brings it.
@@ -159,10 +169,23 @@ export default function CounselorChat({
 
   // Autoscroll only when the user is already near the bottom — never yank
   // the view away from something they scrolled up to reread.
+  //
+  // And never on the first pass. The whole day is one column now, so "scroll
+  // to the last message" on mount means "scroll the notes off the top of the
+  // screen", which is the opposite of what opening a day should do. A day
+  // always opens at its beginning.
+  const settled = useRef(false);
+  useEffect(() => {
+    settled.current = false;
+  }, [date]);
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
-    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+    if (!settled.current) {
+      settled.current = true;
+      return;
+    }
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 160;
     if (nearBottom) {
       bottomRef.current?.scrollIntoView({ behavior: streaming !== null ? "auto" : "smooth" });
     }
@@ -184,7 +207,13 @@ export default function CounselorChat({
     return prompt;
   }
 
-  /** Wrap the session, switch to the day's journal, and have it written + saved. */
+  /** Brings a band of the day into view. The column's own scroller, not the
+   *  window's, so `scrollIntoView` is aimed at the right box. */
+  function reveal(ref: React.RefObject<HTMLDivElement | null>) {
+    ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  /** Wrap the session, scroll down to the entry, and have it written + saved. */
   async function requestWrite() {
     if (!session) return;
     await makeRoomForConversation();
@@ -192,8 +221,10 @@ export default function CounselorChat({
       await wrapSession(session.id);
       setSession({ ...session, status: "wrapped" });
     }
-    setView("journal");
     setWriteNow(true);
+    // The entry is the bottom of the column; writing it is the one moment the
+    // page should move on its own.
+    requestAnimationFrame(() => reveal(entryRef));
   }
 
   async function runTurn(historyForModel: Turn["history"], sessionId: number) {
@@ -368,7 +399,6 @@ export default function CounselorChat({
     setError(null);
     setDraft("");
     setWriteNow(false);
-    setView("conversation");
     setSession({ ...session, status: "open" });
     if (redoCheckIn) {
       // A new check-in gets a new checklist.
@@ -384,15 +414,39 @@ export default function CounselorChat({
     if (!session) return;
     await reopenSession(session.id);
     setSession({ ...session, status: "open" });
-    setView("conversation");
+    requestAnimationFrame(() => inputRef.current?.focus());
   }
 
+  // Above the early return below: a hook after a conditional `return` runs on
+  // some renders and not others, which is React error #310 and takes the whole
+  // app down with it.
+  //
+  // Two states, not one. Reading the day before a conversation starts is the
+  // beetle FLYING — it has gone off to fetch something — while waiting on a
+  // reply is thinking. Thinking outranks flying (mascot/pulse.ts), so the
+  // chat claim has to stand down while the day is being read or the flight
+  // would never show.
+  const readingTheDay = agendaState === "making";
+  useMascotClaim("prepare", "flying", readingTheDay);
+  useMascotClaim("chat", "thinking", busy && !readingTheDay);
+
   if (!session) {
-    return <p className="py-2 text-[13px] text-ink-faint">Loading&hellip;</p>;
+    return <p className="py-2 text-[13px] text-fg-faint">Loading&hellip;</p>;
   }
 
   const isToday = date === localDateKey();
-  const showChecklist = !friendMode && (agenda !== null || agendaState !== "idle");
+  const talkStarted = messages.length > 0;
+  const isWrapped = session.status === "wrapped";
+  // Choosing to write the entry ENDS the preparation. The checklist is made in
+  // the background when a conversation starts, and it used to land on screen
+  // afterwards even if you had meanwhile pressed "Write it from my notes" — so
+  // pressing write appeared to open a checklist, on a day that was already
+  // being written. Nothing cancels the request itself (it is harmless and its
+  // result is kept for the date); it simply stops being shown.
+  const writingInstead = isWrapped || writeNow;
+  const preparing = agendaState === "making" && !writingInstead;
+  const showChecklist =
+    !friendMode && !writingInstead && !(isWrapped && !talkStarted) && (agenda !== null || agendaState !== "idle");
   const checklist = (compact: boolean) => (
     <ChecklistPanel
       compact={compact}
@@ -415,156 +469,134 @@ export default function CounselorChat({
   const started = messages.length > 0;
   const wrapped = session.status === "wrapped";
 
-  const tabs: { id: View; label: string }[] = [
-    ...(notes ? [{ id: "notes" as const, label: notesCount > 0 ? `Notes · ${notesCount}` : "Notes" }] : []),
-    { id: "conversation", label: "Talk" },
-    { id: "journal", label: isToday ? "Journal" : "The entry" },
-  ];
+  /** From the reminder banner up in the notes: bring the talk into view and
+   *  put the cursor where you would type. */
+  function goTalk() {
+    reveal(talkRef);
+    inputRef.current?.focus();
+  }
 
   return (
     <div className="flex h-full flex-col">
-      {/* The day's pages: its notes, the conversation, the entry it produces. */}
-      <div className="flex border-b border-rule px-5" role="group" aria-label="Show">
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setView(t.id)}
-            aria-pressed={view === t.id}
-            className={`-mb-px flex-1 border-b-2 pb-2.5 pt-1 text-[14.5px] transition-colors duration-200 ${
-              view === t.id ? "border-ember text-ink" : "border-transparent text-ink-faint"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <div className="flex min-h-0 flex-1">
+      <div ref={scrollerRef} className="min-h-0 flex-1 overflow-y-auto">
+        <div className="flex flex-col gap-8 px-5 pb-10 pt-2">
+          {/* 1 — what you noted while the day was happening. */}
+          {notes && notes(goTalk)}
 
-      {view === "conversation" && started && (
-        <div className="flex min-h-[44px] flex-wrap items-center justify-end gap-1 px-3 pt-1">
-          {!wrapped && !confirmRestart && (
-            <>
-              <button onClick={() => setConfirmRestart(true)} disabled={busy} className="btn-ghost">
-                Start over
-              </button>
-              <button onClick={requestWrite} disabled={busy} className="btn-subtle min-h-[36px] py-1.5">
-                Wrap up &amp; write
-              </button>
-            </>
-          )}
-          {!wrapped && confirmRestart && (
-            <span className="flex flex-wrap items-center justify-end gap-1 text-[13.5px] text-ink-faint">
-              Clear this conversation and start again from
-              <button onClick={() => handleRestart(true)} className="btn-ghost text-ember">
-                The check-in
-              </button>
-              <button onClick={() => handleRestart(false)} className="btn-ghost text-ember">
-                Just the talk
-              </button>
-              <button onClick={() => setConfirmRestart(false)} className="btn-ghost">
-                Keep it
-              </button>
-            </span>
-          )}
-          {wrapped && (
-            <button onClick={handleReopen} className="btn-ghost">
-              Keep talking
-            </button>
-          )}
-        </div>
-      )}
+          {/* 2 — the talk. */}
+          <section ref={talkRef} className="flex flex-col gap-4">
+            <DaySeam label="The talk" />
 
-      {/* Stays mounted across tabs, like the conversation itself: leaving this
-          tab mid-generation must not cut off the entry it's writing. */}
-      <div className={view === "journal" ? "flex min-h-0 flex-1 flex-col" : "hidden"}>
-        <EntryReview
-          sessionId={session.id}
-          date={date}
-          transcript={visibleMessages.map((m) => ({ role: m.role, content: m.content }))}
-          writeNow={writeNow}
-          onWriteHandled={() => setWriteNow(false)}
-          onRequestWrite={requestWrite}
-        />
-      </div>
-      {view === "notes" && notes ? (
-        <div className="min-h-0 flex-1 overflow-y-auto">{notes(() => setView("conversation"))}</div>
-      ) : null}
-      {/* Kept mounted while another tab is shown, so a half-filled check-in
-          isn't lost by looking at the notes. */}
-      {!started && !wrapped && (
-        <div className={view === "conversation" ? "flex min-h-0 flex-1 flex-col" : "hidden"}>
-          {agendaState === "making" && <div className="px-5 pt-5">{checklist(true)}</div>}
-          <div className={agendaState === "making" ? "hidden" : "flex min-h-0 flex-1 flex-col"}>
-            <CheckInForm date={date} busy={busy} onStart={handleStart} onSkip={handleStart} />
-          </div>
-        </div>
-      )}
-      {view === "conversation" && (started || wrapped) && (
-        <div className="flex min-h-0 flex-1">
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-          {showChecklist && <div className="md:hidden">{checklist(true)}</div>}
-          <div ref={scrollerRef} className="min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-5">
-            {visibleMessages.length === 0 && wrapped && (
-              <p className="py-6 text-center font-serif text-[15px] italic text-ink-faint">
-                No conversation this time. The entry was written from your notes.
-              </p>
+            {/* While the day is being read, say so plainly and hold the
+                attention here. A collapsed "Getting ready…" row next to a
+                bright button in the entry band sent people off to write the
+                entry instead of having the conversation that was starting. */}
+            {preparing ? (
+              <div className="punct-field flex items-center gap-3 rounded-xl px-5 py-5" role="status">
+                <Wingbeat />
+                <span className="text-[15px] leading-snug text-fg-dim">Reading your day before we start&hellip;</span>
+              </div>
+            ) : (
+              showChecklist && <div className="md:hidden">{checklist(true)}</div>
             )}
-            {visibleMessages.map((m) => (
-              <Bubble key={m.id} role={m.role} content={m.content} settle={m.role === "user" && m.id >= firstNewIdRef.current} />
-            ))}
-            {streaming !== null &&
-              (streaming.length > 0 ? (
-                <Bubble role="assistant" content={hideMarkersWhileStreaming(streaming)} streaming settle />
-              ) : (
-                <ThinkingIndicator />
-              ))}
-            {stalled !== null && streaming === null && <Bubble role="assistant" content={stalled} interrupted />}
-            <div ref={bottomRef} />
-          </div>
-          {wrapped ? (
-            <p className="border-t border-rule px-5 py-3 text-[13px] leading-relaxed text-ink-faint">
-              {isToday
-                ? "This conversation is wrapped up and the entry is under Journal."
-                : "This conversation is wrapped up and the entry is saved."}{" "}
-              Keep talking to add more, and Ember can rewrite the entry.
-            </p>
-          ) : (
-            <div className="border-t border-rule/60 bg-paper px-3 pb-3 pt-2">
-              <div className="flex items-end gap-2 rounded-2xl border border-rule bg-sheet py-1.5 pl-4 pr-1.5 transition-colors duration-200 focus-within:border-rule-strong">
-                <textarea
-                  ref={inputRef}
-                  rows={1}
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  onKeyDown={(e) => {
-                    // Desktop convention: Enter sends, Shift+Enter makes a new line.
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend();
-                    }
-                  }}
-                  placeholder="Write back…"
-                  disabled={busy}
-                  className="flex-1 resize-none overflow-y-auto bg-transparent py-2 font-serif text-[17px] leading-[1.45] text-ink outline-none placeholder:text-ink-faint/80 focus-visible:outline-none disabled:opacity-60"
-                  style={{ maxHeight: MAX_INPUT_HEIGHT_PX }}
-                />
-                {busy ? (
-                  <button onClick={handleStop} className="btn-subtle rounded-full">
-                    Stop
-                  </button>
-                ) : (
-                  <button onClick={handleSend} disabled={!draft.trim()} className="btn-primary rounded-full px-4">
-                    Send
+
+            {/* Kept mounted once started so a half-filled check-in is never
+                lost, and so a reply still arriving is never cut off. */}
+            {!started && !wrapped && agendaState !== "making" && (
+              <CheckInForm date={date} busy={busy} onStart={handleStart} onSkip={handleStart} />
+            )}
+
+            {(started || wrapped) && (
+              <div className="flex flex-col gap-5">
+                {visibleMessages.length === 0 && wrapped && (
+                  <p className="text-[14.5px] text-fg-faint">
+                    No conversation this time. The entry was written from your notes.
+                  </p>
+                )}
+                {visibleMessages.map((m) => (
+                  <Bubble
+                    key={m.id}
+                    role={m.role}
+                    content={m.content}
+                    settle={m.role === "user" && m.id >= firstNewIdRef.current}
+                  />
+                ))}
+                {streaming !== null &&
+                  (streaming.length > 0 ? (
+                    <Bubble role="assistant" content={hideMarkersWhileStreaming(streaming)} streaming settle />
+                  ) : (
+                    <ThinkingIndicator />
+                  ))}
+                {stalled !== null && streaming === null && <Bubble role="assistant" content={stalled} interrupted />}
+                {/* A new reply scrolls to the end of the TALK, not the end of
+                    the page — otherwise answering a question jumps you past
+                    the answer and down to the entry. */}
+                <div ref={bottomRef} />
+              </div>
+            )}
+
+            {started && (
+              <div className="flex flex-wrap items-center justify-end gap-1">
+                {!wrapped && !confirmRestart && (
+                  <>
+                    <button onClick={() => setConfirmRestart(true)} disabled={busy} className="btn-ghost">
+                      Start over
+                    </button>
+                    <button onClick={requestWrite} disabled={busy} className="btn-subtle min-h-[36px] py-1.5">
+                      Wrap up &amp; write
+                    </button>
+                  </>
+                )}
+                {!wrapped && confirmRestart && (
+                  <span className="flex flex-wrap items-center justify-end gap-1 text-[13.5px] text-fg-faint">
+                    Clear this conversation and start again from
+                    <button onClick={() => handleRestart(true)} className="btn-ghost text-moss">
+                      The check-in
+                    </button>
+                    <button onClick={() => handleRestart(false)} className="btn-ghost text-moss">
+                      Just the talk
+                    </button>
+                    <button onClick={() => setConfirmRestart(false)} className="btn-ghost">
+                      Keep it
+                    </button>
+                  </span>
+                )}
+                {wrapped && (
+                  <button onClick={handleReopen} className="btn-ghost">
+                    Keep talking
                   </button>
                 )}
               </div>
-            </div>
-          )}
-        </div>
-        {showChecklist && <div className="hidden md:flex">{checklist(false)}</div>}
-        </div>
-      )}
+            )}
+          </section>
 
-      {error && view === "conversation" && (
+          {/* 3 — what the day became. */}
+          <section ref={entryRef} className="flex flex-col gap-4">
+            <DaySeam label="The entry" />
+            <EntryReview
+              sessionId={session.id}
+              date={date}
+              transcript={visibleMessages.map((m) => ({ role: m.role, content: m.content }))}
+              writeNow={writeNow}
+              onWriteHandled={() => setWriteNow(false)}
+              onRequestWrite={requestWrite}
+            />
+          </section>
+        </div>
+      </div>
+
+      {/* On a wide window the checklist stands beside the day rather than in
+          it, so it stays in view for the whole conversation — that is the
+          point of a checklist. Narrow windows get the compact one inline. */}
+      {showChecklist && (
+        <aside className="hidden w-[18.5rem] shrink-0 overflow-y-auto overflow-x-hidden border-l border-line md:block">
+          {checklist(false)}
+        </aside>
+      )}
+      </div>
+
+      {error && (
         <div className="fade-up mx-3 mb-2 flex items-start justify-between gap-3 rounded-lg bg-danger-wash px-3 py-2.5 text-[13.5px] text-danger">
           <div>
             {error.message}
@@ -573,10 +605,60 @@ export default function CounselorChat({
           <button
             onClick={handleRetry}
             disabled={busy}
-            className="min-h-[36px] shrink-0 rounded-md border border-danger/40 px-3 py-1 transition-colors active:bg-paper/60 disabled:opacity-40"
+            className="min-h-[36px] shrink-0 rounded-md border border-danger/40 px-3 py-1 transition-colors active:bg-ground/60 disabled:opacity-40"
           >
             Retry
           </button>
+        </div>
+      )}
+
+      {/* The composer is the one thing that does not scroll: once the talk is
+          going, the day is answerable from wherever you are in it. Before it
+          starts there is nothing to write back TO — the check-in's own button
+          is the way in — and a greyed-out composer just reads as broken. */}
+      {!started && !wrapped ? null : wrapped ? (
+        <p className="border-t border-line px-5 py-3 text-[13px] leading-relaxed text-fg-faint">
+          {isToday ? "This day is wrapped up and its entry is saved." : "This day is wrapped up and its entry is saved."}{" "}
+          Keep talking to add more, and Elytra can rewrite the entry.
+        </p>
+      ) : (
+        <div className="border-t border-line/60 bg-ground px-3 pb-3 pt-2">
+          <div className="flex items-end gap-2 rounded-2xl border border-line bg-surface py-1.5 pl-2.5 pr-1.5 transition-colors duration-200 focus-within:border-line-strong">
+            {/* In the composer, where your eyes already are. It is not driven
+                from here: it follows whatever the app has claimed through
+                mascot/pulse.ts — listening while you type, idle when you stop,
+                the save snap, and thinking while a reply is on its way. */}
+            <Beetle size={44} className="mb-0.5 shrink-0 self-end" />
+            <textarea
+              ref={inputRef}
+              rows={1}
+              value={draft}
+              onChange={(e) => {
+                setDraft(e.target.value);
+                typing();
+              }}
+              onKeyDown={(e) => {
+                // Desktop convention: Enter sends, Shift+Enter makes a new line.
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="Write back…"
+              disabled={busy}
+              className="flex-1 resize-none overflow-y-auto bg-transparent py-2 font-serif text-[17px] leading-[1.45] text-fg outline-none placeholder:text-fg-faint/80 focus-visible:outline-none disabled:opacity-60"
+              style={{ maxHeight: MAX_INPUT_HEIGHT_PX }}
+            />
+            {busy ? (
+              <button onClick={handleStop} className="btn-subtle rounded-full">
+                Stop
+              </button>
+            ) : (
+              <button onClick={handleSend} disabled={!draft.trim()} className="btn-primary rounded-full px-4">
+                Send
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -585,18 +667,23 @@ export default function CounselorChat({
 
 /** Shown between sending and the first visible token — thinking models can
  * take a while before any text arrives, and an empty page reads as a dead
- * chat. The ember breathes until words arrive. */
+ * chat. The wings beat until words arrive. */
 function ThinkingIndicator() {
   return (
-    <div className="fade-up flex items-center py-1.5" role="status">
-      <span className="ember-dot live" aria-hidden="true" />
-      <span className="sr-only">Ember is writing a reply</span>
+    <div className="fade-up flex w-fit items-center gap-2.5 rounded-[14px] bg-speak px-4 py-3" role="status">
+      <Wingbeat tone="cream" />
+      <span className="font-mono text-[9.5px] uppercase leading-none tracking-[0.16em] text-speak-fg/80">Reading the day</span>
+      <span className="sr-only">Elytra is writing a reply</span>
     </div>
   );
 }
 
-/** Ember writes on the page in the serif; your replies sit to the right like
- * notes in a margin. No bubbles. */
+/**
+ * Who is speaking is never a guess. Elytra's questions sit in a filled green
+ * card under a small label; what you wrote is plain text on the page, the way
+ * the rest of the journal is. The page belongs to you; the green is the app
+ * asking.
+ */
 function Bubble({
   role,
   content,
@@ -612,23 +699,24 @@ function Bubble({
 }) {
   if (role === "user") {
     return (
-      <div className={`flex justify-end ${settle ? "ink-in" : ""}`}>
-        <div className="selectable max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-br-md bg-paper-deep px-4 py-2.5 text-[15.5px] leading-relaxed text-ink-soft">
-          {content}
-        </div>
+      <div className={`selectable whitespace-pre-wrap pl-1 text-[16.5px] leading-[1.6] text-fg ${settle ? "ink-in" : ""}`}>
+        {content}
       </div>
     );
   }
   return (
     <div
-      className={`selectable whitespace-pre-wrap font-serif text-[17.5px] leading-[1.6] text-ink ${settle ? "ink-in" : ""} ${
+      className={`max-w-[38rem] rounded-[14px] bg-speak px-4 pb-3 pt-2.5 ${settle ? "ink-in" : ""} ${
         interrupted ? "opacity-75" : ""
       }`}
     >
-      {content}
-      {streaming && <span className="stream-caret" aria-hidden="true" />}
+      <span className="block font-mono text-[9.5px] uppercase leading-none tracking-[0.16em] text-speak-fg/80">Elytra asks</span>
+      <p className="selectable mt-1.5 whitespace-pre-wrap text-[16.5px] leading-[1.5] text-speak-fg">
+        {content}
+        {streaming && <span className="stream-caret" aria-hidden="true" />}
+      </p>
       {interrupted && (
-        <span className="mt-1.5 block font-sans text-[11.5px] italic text-ink-faint">Cut off here. Press Retry for the rest.</span>
+        <span className="mt-1.5 block text-[11.5px] italic text-speak-fg/70">Cut off here. Press Retry for the rest.</span>
       )}
     </div>
   );

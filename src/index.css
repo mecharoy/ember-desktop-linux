@@ -2,21 +2,133 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* ---------------------------------------------------------------------------
+   Elytra — the specimen cabinet.
+
+   The elytra are the hard wing cases a beetle folds shut over its real wings.
+   The app does the same thing with a day: it closes over it, keeps it, and
+   opens again when you want to look.
+
+   The app is a dark case. Your days are the pale cards inside it. That is the
+   whole idea, and it is why the journal entry keeps its light paper while
+   everything around it went dark — the entry is the specimen, not the drawer.
+
+   Two devices carry it through the interface, and nothing else has to:
+
+   · the SEAM — a hairline down the middle that things part from and close
+     back onto. Pages open at the seam. Saving snaps back to it.
+   · the PUNCTATION — the rows of tiny pits on a real beetle's wing case.
+     Here it is the dotted rule, the empty-state ground, the specimen label.
+
+   Colour roles live in tailwind.config.js, with their measured contrast.
+--------------------------------------------------------------------------- */
+
+/* ---------- the two lights ----------
+   Every colour in the app comes from these, as space-separated RGB so that
+   Tailwind's opacity modifiers keep working. src/theme.ts sets data-theme on
+   <html>; nothing else may read the theme.
+
+   DARK (default) — measured on ground #171b17:
+     fg 13.9  fg-dim 9.3  fg-faint 5.8  moss 7.1  clay 5.6  danger 6.6
+     speak-fg on speak 6.2   ground on moss (the primary button) 7.1
+
+   LIGHT — measured on ground #f3f2ea:
+     fg 14.4  fg-dim 7.7  fg-faint 5.3  moss 7.9  clay 6.1  danger 7.2
+     speak-fg on speak 7.0   ground on moss 7.9
+
+   Every one clears AA for body text in both. The accent is the one token that
+   had to be re-chosen rather than lightened or darkened: the dark theme's
+   #7fb27c reads 2.8:1 on cream, which is why the light theme uses #33512f.
+   Recompute with a contrast script if any value here moves.                 */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --c-ground: 23 27 23;
+  --c-ground-deep: 18 21 15;
+  --c-surface: 30 36 30;
+  --c-surface-high: 37 44 36;
+  --c-line: 46 53 45;
+  --c-line-strong: 58 66 56;
+  --c-fg: 228 231 220;
+  --c-fg-dim: 185 192 178;
+  --c-fg-faint: 142 151 138;
+  --c-moss: 127 178 124;
+  --c-moss-bright: 158 203 151;
+  --c-moss-deep: 61 90 58;
+  --c-moss-wash: 35 44 34;
+  --c-speak: 61 90 58;
+  --c-speak-fg: 228 231 220;
+  --c-clay: 204 127 88;
+  --c-clay-wash: 42 32 25;
+  --c-danger: 217 139 122;
+  --c-danger-wash: 46 31 28;
+  --c-paper: 243 242 234;
+  --c-paper-dim: 225 224 212;
+
+  /* The seam, and the pits of the punctation. */
+  --seam: 58 66 56;
+  /* How hard a raised thing sits on the ground. A dark cabinet takes a real
+     shadow; cream takes almost none, or everything looks grubby. */
+  /* A modal scrim is dark in BOTH themes — it is the room going dim, not the
+     palette inverting. */
+  --scrim: rgb(0 0 0 / 0.72);
+  --mycelium-alpha: 0.26;
+  --lift-1: 0 1px 2px rgb(0 0 0 / 0.45);
+  --lift-2: 0 1px 2px rgb(0 0 0 / 0.5), 0 10px 26px -14px rgb(0 0 0 / 0.8);
+  --lift-3: 0 2px 4px rgb(0 0 0 / 0.5), 0 18px 40px -18px rgb(0 0 0 / 0.75);
+  --lift-4: 0 2px 4px rgb(0 0 0 / 0.55), 0 26px 50px -20px rgb(0 0 0 / 0.85);
+}
+
+:root[data-theme="light"] {
   color-scheme: light;
-  /* Height of the bottom tab bar, so sheets and sticky bars can sit above it. */
-  --nav-h: 64px;
+  --c-ground: 243 242 234;
+  --c-ground-deep: 228 227 215;
+  --c-surface: 255 255 255;
+  --c-surface-high: 236 234 221;
+  --c-line: 222 220 206;
+  --c-line-strong: 191 189 170;
+  --c-fg: 29 34 29;
+  --c-fg-dim: 70 78 68;
+  --c-fg-faint: 95 102 92;
+  --c-moss: 51 81 47;
+  --c-moss-bright: 36 64 31;
+  --c-moss-deep: 61 90 58;
+  --c-moss-wash: 229 236 226;
+  --c-speak: 61 90 58;
+  --c-speak-fg: 242 244 236;
+  --c-clay: 138 74 35;
+  --c-clay-wash: 245 232 220;
+  --c-danger: 140 51 32;
+  --c-danger-wash: 247 228 223;
+  --c-paper: 251 250 243;
+  --c-paper-dim: 237 236 226;
+
+  --seam: 191 189 170;
+  --scrim: rgb(41 45 38 / 0.42);
+  --mycelium-alpha: 0.16;
+  --lift-1: 0 1px 2px rgb(41 45 38 / 0.1);
+  --lift-2: 0 1px 2px rgb(41 45 38 / 0.1), 0 10px 26px -16px rgb(41 45 38 / 0.35);
+  --lift-3: 0 0 0 1px rgb(41 45 38 / 0.09), 0 1px 3px rgb(41 45 38 / 0.14), 0 14px 32px -18px rgb(41 45 38 / 0.4);
+  --lift-4: 0 0 0 1px rgb(41 45 38 / 0.09), 0 2px 5px rgb(41 45 38 / 0.16), 0 22px 44px -22px rgb(41 45 38 / 0.45);
+}
+
+:root {
+  /* The band the dock floats in, so sheets and sticky bars sit above it.
+     The bar itself is 56px; the rest is the gap it floats on, which also
+     keeps it clear of a phone's gesture bar at the very bottom edge. */
+  --nav-h: 74px;
 }
 
 html, body, #root {
   height: 100%;
-  background: #f6f1e7;
+  background: rgb(var(--c-ground));
   overscroll-behavior: none;
 }
 
 body {
-  @apply font-sans text-ink antialiased;
+  @apply font-sans text-fg antialiased;
   font-size: 15px;
+  font-optical-sizing: auto;
   text-rendering: optimizeLegibility;
   -webkit-tap-highlight-color: transparent;
   -webkit-text-size-adjust: 100%;
@@ -30,7 +142,7 @@ input, textarea, .selectable {
 }
 
 ::selection {
-  background: rgba(179, 68, 26, 0.18);
+  background: rgb(var(--c-moss) / 0.3);
 }
 
 * {
@@ -47,161 +159,406 @@ html.capture-window #root {
   background: transparent;
 }
 
-/* With a mouse: thin scrollbars, and buttons answer to hovering. */
+/* With a mouse: thin scrollbars, and buttons answer to hovering. Hover always
+   goes to `surface-high`, which is LIGHTER than the ground in the dark theme
+   and a warm tint in the light one — the token knows which way is "raised",
+   so no rule here ever hard-codes lighter or darker. */
 @media (hover: hover) and (pointer: fine) {
   * {
     scrollbar-width: thin;
-    scrollbar-color: #d3c8b4 transparent;
+    scrollbar-color: rgb(var(--c-line-strong)) transparent;
   }
   .btn-subtle:not(:disabled):hover,
   .btn-ghost:not(:disabled):hover {
-    background-color: #eee7da;
-    color: #28231e;
+    background-color: rgb(var(--c-surface-high));
+    color: rgb(var(--c-fg));
   }
   .btn-primary:not(:disabled):hover {
-    background-color: #943712;
+    background-color: rgb(var(--c-moss-bright));
   }
   .btn-danger:not(:disabled):hover {
-    background-color: #f5e1dc;
+    background-color: rgb(var(--c-danger-wash));
+  }
+  /* A dock plate you are not on lifts toward the light when pointed at; the
+     one you are on is already lit, so it only brightens. */
+  .dock-tab:not(.on):hover {
+    background-color: rgb(var(--c-surface-high));
+    color: rgb(var(--c-fg));
+  }
+  .dock-tab.on:hover {
+    color: rgb(var(--c-moss-bright));
+  }
+  .dock-note:hover {
+    background-color: rgb(var(--c-surface-high));
+    color: rgb(var(--c-fg));
   }
 }
 
 :focus-visible {
-  outline: 2px solid rgba(179, 68, 26, 0.55);
+  outline: 2px solid rgb(var(--c-moss) / 0.75);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
-/* ---------- motion ---------- */
+/* ---------- motion ----------
+   One idea: things arrive by landing, and they leave by folding shut.     */
 
-@keyframes page-in {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+/* A page alights: drops the last few pixels and settles, no bounce. */
+@keyframes alight {
+  from { opacity: 0; transform: translateY(8px) scale(0.994); }
+  to { opacity: 1; transform: none; }
+}
+
+/* The wing cases part: a panel opens from its own centre line. */
+@keyframes part-open {
+  from { opacity: 0; clip-path: inset(0 50% 0 50%); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); }
+}
+
+/* A rule drawn outward from the seam. */
+@keyframes seam-draw {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
 
 /* New writing settles onto the page like ink: a slight rise and blur. */
 @keyframes ink-in {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-    filter: blur(2px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-    filter: none;
-  }
+  from { opacity: 0; transform: translateY(4px); filter: blur(2px); }
+  to { opacity: 1; transform: none; filter: none; }
 }
 
 @keyframes sheet-up {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: none;
-  }
+  from { transform: translateY(100%); }
+  to { transform: none; }
 }
 
 @keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-@keyframes ember-breathe {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(0.7);
-    opacity: 0.55;
-  }
+/* Waiting on the model: two wing cases beating open and shut. They rest
+   slightly parted, the way a beetle at rest holds them. */
+@keyframes wing-beat-l {
+  0%, 100% { transform: rotate(-9deg); }
+  50% { transform: rotate(-38deg); }
+}
+@keyframes wing-beat-r {
+  0%, 100% { transform: rotate(9deg); }
+  50% { transform: rotate(38deg); }
 }
 
-@keyframes ember-halo {
-  0% {
-    box-shadow: 0 0 0 0 rgba(179, 68, 26, 0.35);
-  }
-  70%, 100% {
-    box-shadow: 0 0 0 7px rgba(179, 68, 26, 0);
-  }
+/* Something was kept: the seam flashes shut. */
+@keyframes seam-snap {
+  0% { opacity: 0; transform: scaleY(0.2); }
+  35% { opacity: 1; transform: scaleY(1); }
+  100% { opacity: 0; transform: scaleY(1); }
 }
 
+@keyframes recap-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes hypha-spread {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
 @keyframes caret {
-  0%, 49% {
-    opacity: 1;
-  }
-  50%, 100% {
-    opacity: 0;
-  }
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
 }
 
 @layer components {
-  .page {
-    animation: page-in 320ms cubic-bezier(0.22, 0.8, 0.24, 1) both;
-  }
-  .ink-in {
-    animation: ink-in 420ms cubic-bezier(0.22, 0.8, 0.24, 1) both;
-  }
-  .fade-up {
-    animation: page-in 260ms cubic-bezier(0.22, 0.8, 0.24, 1) both;
-  }
-  .sheet-up {
-    animation: sheet-up 280ms cubic-bezier(0.22, 0.8, 0.24, 1) both;
-  }
-  .fade-in {
-    animation: fade-in 200ms ease-out both;
-  }
+  .page { animation: alight 340ms cubic-bezier(0.16, 0.9, 0.2, 1) both; }
+  .ink-in { animation: ink-in 420ms cubic-bezier(0.22, 0.8, 0.24, 1) both; }
+  .fade-up { animation: alight 260ms cubic-bezier(0.16, 0.9, 0.2, 1) both; }
+  .part-open { animation: part-open 460ms cubic-bezier(0.16, 0.9, 0.2, 1) both; }
+  .sheet-up { animation: sheet-up 280ms cubic-bezier(0.22, 0.8, 0.24, 1) both; }
+  .fade-in { animation: fade-in 200ms ease-out both; }
 
+  /* ---------- type ----------
+     Instrument Serif ships one weight, so headings are told apart by size
+     and letter-spacing, never by getting bolder. On a dark ground a light
+     serif blooms, so the display sizes carry slightly tighter tracking than
+     they did on cream. */
   .page-title {
-    @apply font-serif text-[28px] font-normal leading-tight tracking-[-0.015em] text-ink;
+    @apply font-serif text-[34px] font-normal leading-[1.08] tracking-[-0.018em] text-fg;
   }
   .page-subtitle {
-    @apply mt-0.5 text-[13.5px] text-ink-faint;
+    @apply mt-1 text-[13.5px] leading-snug text-fg-faint;
   }
   .section-title {
-    @apply font-serif text-[20px] leading-snug text-ink;
+    @apply font-serif text-[23px] leading-snug tracking-[-0.01em] text-fg;
   }
   .label {
-    @apply text-[13.5px] text-ink-soft;
+    @apply text-[13.5px] text-fg-dim;
   }
   .hint {
-    @apply text-[13px] leading-relaxed text-ink-faint;
+    @apply text-[13px] leading-relaxed text-fg-faint;
   }
+
+  /* The specimen label: what a drawer card says in small capitals. Used for
+     dates, counts, keyboard hints and section eyebrows — never for prose. */
+  .spec {
+    @apply font-mono text-[10.5px] font-medium uppercase leading-none tracking-[0.14em] text-fg-faint;
+  }
+  .spec-strong {
+    @apply font-mono text-[10.5px] font-medium uppercase leading-none tracking-[0.14em] text-moss;
+  }
+
+  /* ---------- the seam ---------- */
+
+  /* A hairline that draws itself outward from the middle. Put it under a page
+     title or between a heading and its list. */
+  .seam-rule {
+    display: block;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgb(var(--seam)) 12%, rgb(var(--seam)) 88%, transparent);
+    transform-origin: center;
+    animation: seam-draw 520ms cubic-bezier(0.16, 0.9, 0.2, 1) both;
+  }
+
+  /* ---------- the recap (components/insights/Recap.tsx) ----------
+     A slideshow is its own object, like the speak card: its four tones are
+     the brand palette and stay the same in both themes. Measured:
+       forest  #f3f2ea on #2e4a2b 9.6   accent #a8d3a1 6.4
+       paper   #1d221d on #f3f2ea 14.4  accent #33512f 7.9
+       ink     #e4e7dc on #141813 14.9  accent #d98c62 6.9
+       clay    #fbf3ea on #7f4222 7.3   accent #ffd9bd 5.9            */
+  .recap {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    display: flex;
+    flex-direction: column;
+    background: var(--r-bg);
+    color: var(--r-fg);
+    transition: background-color 420ms ease, color 420ms ease;
+    touch-action: manipulation;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .recap.tone-forest { --r-bg: #2e4a2b; --r-fg: #f3f2ea; --r-dim: rgb(243 242 234 / 0.74); --r-accent: #a8d3a1; --r-dot: rgb(243 242 234 / 0.10); --r-track: rgb(243 242 234 / 0.22); --r-wash: rgb(243 242 234 / 0.10); --r-edge: rgb(243 242 234 / 0.40); }
+  .recap.tone-paper  { --r-bg: #f3f2ea; --r-fg: #1d221d; --r-dim: #4a5347; --r-accent: #33512f; --r-dot: rgb(29 34 29 / 0.10); --r-track: rgb(29 34 29 / 0.18); --r-wash: rgb(29 34 29 / 0.08); --r-edge: rgb(29 34 29 / 0.40); }
+  .recap.tone-ink    { --r-bg: #141813; --r-fg: #e4e7dc; --r-dim: #aeb6a8; --r-accent: #d98c62; --r-dot: rgb(228 231 220 / 0.08); --r-track: rgb(228 231 220 / 0.22); --r-wash: rgb(228 231 220 / 0.10); --r-edge: rgb(228 231 220 / 0.40); }
+  .recap.tone-clay   { --r-bg: #7f4222; --r-fg: #fbf3ea; --r-dim: rgb(251 243 234 / 0.8); --r-accent: #ffd9bd; --r-dot: rgb(251 243 234 / 0.11); --r-track: rgb(251 243 234 / 0.24); --r-wash: rgb(251 243 234 / 0.12); --r-edge: rgb(251 243 234 / 0.42); }
+  /* The punctation, across the lower corner of every slide. */
+  .recap-dots {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 62%;
+    height: 55%;
+    pointer-events: none;
+    background-image: radial-gradient(circle at center, var(--r-dot) 1.6px, transparent 2px);
+    background-size: 16px 16px;
+    -webkit-mask-image: radial-gradient(ellipse at 100% 100%, #000 10%, transparent 70%);
+    mask-image: radial-gradient(ellipse at 100% 100%, #000 10%, transparent 70%);
+  }
+  .recap-top {
+    position: relative;
+    padding: max(14px, env(safe-area-inset-top)) 18px 0;
+    cursor: default;
+  }
+  .recap-bars { display: flex; gap: 5px; }
+  .recap-bar {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    overflow: hidden;
+    background: var(--r-track);
+  }
+  .recap-fill {
+    display: block;
+    height: 100%;
+    background: var(--r-fg);
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+  .recap-fill.done { transform: scaleX(1); }
+  .recap-fill.now { animation: recap-fill linear both; }
+  .recap-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+  }
+  .recap-period {
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    border-radius: 999px;
+    background: var(--r-wash);
+  }
+  .recap-period button {
+    min-height: 32px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-family: theme("fontFamily.mono");
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--r-dim);
+  }
+  .recap-period button[aria-pressed="true"] { background: var(--r-fg); color: var(--r-bg); }
+  .recap-close {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    font-size: 26px;
+    line-height: 1;
+    color: var(--r-fg);
+  }
+  .recap-close:hover { background: var(--r-wash); }
+  .recap-stage {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 28px;
+    overflow-y: auto;
+  }
+  .recap-frame {
+    width: 100%;
+    max-width: 560px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .recap-label {
+    font-family: theme("fontFamily.mono");
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--r-accent);
+  }
+  .recap-hero {
+    margin-top: 14px;
+    font-family: theme("fontFamily.serif");
+    font-size: clamp(88px, 26vw, 184px);
+    line-height: 0.88;
+    letter-spacing: -0.03em;
+    color: var(--r-fg);
+    font-variant-numeric: tabular-nums;
+  }
+  .recap-hero-word {
+    font-size: clamp(48px, 13vw, 112px);
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    overflow-wrap: anywhere;
+  }
+  .recap-hero-unit { font-size: 0.36em; letter-spacing: 0; color: var(--r-dim); }
+  .recap-words { display: flex; flex-direction: column; }
+  .recap-line {
+    margin-top: 18px;
+    max-width: 30ch;
+    font-size: clamp(18px, 4.6vw, 22px);
+    line-height: 1.4;
+    color: var(--r-fg);
+  }
+  .recap-detail {
+    margin-top: 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .recap-note { max-width: 36ch; font-size: 15px; line-height: 1.5; color: var(--r-dim); }
+  .recap-spark { width: min(280px, 70vw); height: auto; stroke: var(--r-accent); fill: var(--r-accent); }
+  .recap-button {
+    min-height: 44px;
+    padding: 0 20px;
+    border-radius: 999px;
+    border: 1px solid var(--r-edge);
+    font-size: 15px;
+    color: var(--r-fg);
+    cursor: pointer;
+  }
+  .recap-button:hover { background: var(--r-wash); }
+  .recap-button.solid { background: var(--r-fg); color: var(--r-bg); border-color: transparent; }
+  .recap-foot {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 0 18px max(22px, env(safe-area-inset-bottom));
+  }
+  .recap-hint {
+    align-self: center;
+    font-family: theme("fontFamily.mono");
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--r-dim);
+  }
+  .alight-slow { animation: alight 520ms cubic-bezier(0.16, 0.9, 0.2, 1) both; }
+
+  /* The mycelium under every page (components/Mycelium.tsx). Moss at a low
+     opacity reads in both themes; it fades out before the middle, where the
+     reading is, and spreads in once when the app opens. */
+  .mycelium {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    stroke: rgb(var(--c-moss) / var(--mycelium-alpha));
+    -webkit-mask-image: radial-gradient(ellipse 62% 64% at 50% 45%, transparent 48%, #000 96%);
+    mask-image: radial-gradient(ellipse 62% 64% at 50% 45%, transparent 48%, #000 96%);
+  }
+  .mycelium path {
+    stroke-dasharray: 1;
+    animation: hypha-spread 2600ms cubic-bezier(0.3, 0.6, 0.2, 1) both;
+  }
+  .mycelium-knots {
+    fill: rgb(var(--c-moss) / calc(var(--mycelium-alpha) * 1.6));
+    stroke: none;
+    animation: fade-in 900ms ease-out 1600ms both;
+  }
+
+  /* The punctation: the pitted rule, for quieter divisions than a seam. */
+  .punct-rule {
+    height: 3px;
+    background-image: radial-gradient(circle at center, rgb(var(--seam)) 1px, transparent 1.2px);
+    background-size: 7px 3px;
+    background-repeat: repeat-x;
+    opacity: 0.85;
+  }
+
+  /* Empty-state ground: a bare patch of wing case. */
+  .punct-field {
+    background-image: radial-gradient(circle at center, rgb(var(--seam) / 0.9) 1px, transparent 1.3px);
+    background-size: 10px 10px;
+  }
+
+  /* ---------- controls ---------- */
 
   /* 16px text: smaller makes some Android keyboards zoom the page. */
   .input {
-    @apply min-h-[44px] rounded-lg border border-rule bg-sheet px-3 py-2.5 text-[16px] text-ink outline-none transition-colors placeholder:text-ink-faint/80 focus:border-ink-faint;
+    @apply min-h-[44px] rounded-[10px] border border-line bg-surface px-3 py-2.5 text-[16px] text-fg outline-none transition-colors placeholder:text-fg-faint/70 focus:border-moss/70;
   }
+  /* The one bright thing on the screen. Dark text on moss reads 7.1:1. */
   .btn-primary {
-    @apply inline-flex min-h-[44px] items-center justify-center rounded-lg bg-ember px-5 py-2.5 text-[15px] font-medium text-paper transition-[background-color,transform] duration-150 active:scale-[0.97] active:bg-ember-deep disabled:opacity-50 disabled:active:scale-100;
+    @apply inline-flex min-h-[44px] items-center justify-center rounded-[10px] bg-moss px-5 py-2.5 text-[15px] font-medium tracking-[0.01em] text-ground transition-[background-color,transform] duration-150 active:scale-[0.97] active:bg-moss-bright disabled:opacity-40 disabled:active:scale-100;
   }
   .btn-subtle {
-    @apply inline-flex min-h-[42px] items-center justify-center rounded-lg border border-rule-strong px-4 py-2 text-[14px] text-ink-soft transition-[background-color,transform] duration-150 active:scale-[0.97] active:bg-paper-deep disabled:opacity-40 disabled:active:scale-100;
+    @apply inline-flex min-h-[42px] items-center justify-center rounded-[10px] border border-line-strong px-4 py-2 text-[14px] text-fg-dim transition-[background-color,transform] duration-150 active:scale-[0.97] active:bg-surface-high disabled:opacity-40 disabled:active:scale-100;
   }
   .btn-ghost {
-    @apply inline-flex min-h-[40px] items-center justify-center rounded-lg px-3 py-2 text-[14px] text-ink-faint transition-colors duration-150 active:bg-paper-deep active:text-ink disabled:opacity-40;
+    @apply inline-flex min-h-[40px] items-center justify-center rounded-[10px] px-3 py-2 text-[14px] text-fg-faint transition-colors duration-150 active:bg-surface-high active:text-fg disabled:opacity-40;
   }
   .btn-danger {
-    @apply inline-flex min-h-[42px] items-center justify-center rounded-lg border border-danger/40 px-4 py-2 text-[14px] text-danger transition-colors active:bg-danger-wash disabled:opacity-40;
+    @apply inline-flex min-h-[42px] items-center justify-center rounded-[10px] border border-danger/40 px-4 py-2 text-[14px] text-danger transition-colors active:bg-danger-wash disabled:opacity-40;
   }
 
   /* A small outlined button for actions inside a card (unpin, restore…). */
   .btn-chip {
-    @apply inline-flex min-h-[30px] items-center justify-center rounded-full border border-rule-strong px-3 py-1 text-[12.5px] text-ink-soft transition-[background-color,color,transform] duration-150 active:scale-[0.97] active:bg-paper-deep disabled:opacity-40;
+    @apply inline-flex min-h-[30px] items-center justify-center rounded-full border border-line-strong px-3 py-1 text-[12.5px] text-fg-dim transition-[background-color,color,transform] duration-150 active:scale-[0.97] active:bg-surface-high disabled:opacity-40;
   }
   .btn-chip:not(:disabled):hover {
-    @apply bg-paper-deep text-ink;
+    @apply bg-surface-high text-fg;
   }
   .btn-chip.danger:not(:disabled):hover {
     @apply border-danger/50 bg-danger-wash text-danger;
@@ -222,43 +579,224 @@ html.capture-window #root {
     width: 28px;
     height: 28px;
     border-radius: 9999px;
-    background: #fcf9f3;
-    border: 4px solid var(--thumb, #b3441a);
-    box-shadow: 0 1px 4px rgba(40, 35, 30, 0.3);
+    background: rgb(var(--c-surface));
+    border: 4px solid var(--thumb, rgb(var(--c-moss)));
+    box-shadow: var(--lift-1);
     transition: transform 150ms;
   }
-  .face-slider:active::-webkit-slider-thumb {
-    transform: scale(1.12);
-  }
-  .face-slider.unset {
-    opacity: 0.55;
-  }
-  .face-slider.unset::-webkit-slider-thumb {
-    border-color: #c7baa3;
-  }
-  .face-slider:focus-visible {
-    box-shadow: 0 0 0 3px #f2e0d2;
-  }
+  .face-slider:active::-webkit-slider-thumb { transform: scale(1.12); }
+  .face-slider.unset { opacity: 0.55; }
+  .face-slider.unset::-webkit-slider-thumb { border-color: rgb(var(--c-line-strong)); }
+  .face-slider:focus-visible { box-shadow: 0 0 0 3px rgb(var(--c-moss) / 0.35); }
 
   /* Small segmented toggles (chart ranges, weekly/monthly). */
   .seg {
-    @apply rounded-md px-2.5 py-1.5 text-[13px] text-ink-faint transition-colors;
+    @apply rounded-md px-2.5 py-1.5 text-[13px] text-fg-faint transition-colors;
   }
   .seg[aria-pressed="true"] {
-    @apply bg-paper-deep text-ink;
+    @apply bg-surface-high text-fg;
   }
 
-  /* The small ember that breathes while Ember is working on a reply. */
-  .ember-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    flex-shrink: 0;
-    border-radius: 9999px;
-    background: radial-gradient(circle at 35% 35%, #d9703f, #b3441a 60%, #86310f);
+  /* ---------- the dock ----------
+     The app's one set of handles, along the front of the cabinet. A single
+     raised bar: the beetle at the left end, the four plates, the note button
+     at the right, each pair divided by a seam.
+
+     Only the plate you are on says its name, and the name parts open when you
+     arrive. Everything else is the drawing alone, so the bar stays the same
+     width whichever page you are on and nothing shuffles underfoot. */
+  .dock {
+    display: flex;
+    align-items: stretch;
+    width: auto;
+    max-width: 21.5rem;
+    height: 56px;
+    padding: 0 5px;
+    gap: 2px;
+    border: 1px solid theme(colors.line.DEFAULT);
+    border-radius: 15px;
+    background: theme(colors.surface.DEFAULT);
+    /* A bar that sits ON the ground. How hard it sits is the theme's
+       business, not this rule's. */
+    box-shadow: var(--lift-2);
   }
-  .ember-dot.live {
-    animation: ember-breathe 1.8s ease-in-out infinite, ember-halo 1.8s ease-out infinite;
+
+  /* The divisions inside the bar: hairlines, inset top and bottom. */
+  .dock-seam {
+    flex: none;
+    align-self: center;
+    width: 1px;
+    height: 22px;
+    background: theme(colors.line.strong);
+    opacity: 0.8;
+  }
+
+  /* The two ends: the beetle, and the note button. */
+  .dock-end {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    border-radius: 11px;
+    color: theme(colors.fg.faint);
+  }
+  .dock-note {
+    transition: background-color 150ms, color 150ms, transform 150ms;
+  }
+  .dock-note:active {
+    transform: scale(0.92);
+    background: theme(colors.surface.high);
+  }
+
+  /* The beetle lifts toward you when you point at it — on a dark ground
+     things come UP into the light, they never darken. */
+  /* The beetle's perch: its own round plate, beside the dock on a phone and
+     alone in the bottom-left corner of a wide window, big enough to see what
+     it is doing. The card opens above it either way. */
+  .perch {
+    position: relative;
+    flex: none;
+    display: flex;
+  }
+  .perch-beetle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border: 1px solid theme(colors.line.DEFAULT);
+    border-radius: 999px;
+    background: theme(colors.surface.DEFAULT);
+    box-shadow: var(--lift-2);
+    transition: transform 220ms theme(transitionTimingFunction.settle), background-color 150ms;
+  }
+  .perch-beetle:hover { transform: translateY(-2px); background: theme(colors.surface.high); }
+  .perch-beetle:active { transform: translateY(0) scale(0.95); }
+  .perch-art { width: 38px !important; margin-top: -2px; }
+  @media (min-width: 768px) {
+    .perch {
+      position: fixed;
+      left: 22px;
+      bottom: 18px;
+      z-index: 35;
+    }
+    .perch-beetle { width: 104px; height: 104px; }
+    .perch-art { width: 70px !important; margin-top: -4px; }
+    .perch .companion-card::after { left: 46px; }
+  }
+
+  /* What it says: a card that parts open just above it, anchored to its left
+     end so it never covers the plates you are trying to press. */
+  .companion-card {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: -4px;
+    z-index: 10;
+    width: max-content;
+    max-width: min(19rem, calc(100vw - 2rem));
+    padding: 10px 13px;
+    border: 1px solid theme(colors.line.strong);
+    border-radius: 12px;
+    background: theme(colors.surface.high);
+    color: theme(colors.fg.dim);
+    font-size: 13.5px;
+    line-height: 1.45;
+    box-shadow: var(--lift-3);
+    animation: part-open 320ms theme(transitionTimingFunction.alight) both;
+  }
+  /* The point of the card, aimed down at the beetle. */
+  .companion-card::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 18px;
+    width: 10px;
+    height: 10px;
+    margin-top: -5px;
+    border-right: 1px solid theme(colors.line.strong);
+    border-bottom: 1px solid theme(colors.line.strong);
+    background: theme(colors.surface.high);
+    transform: rotate(45deg);
+  }
+
+  /* Every plate is the same width whether or not it is the one you are on.
+     An earlier draft let the name push sideways out of the active plate, and
+     the other three slid up to 55px every time you changed page — a bar that
+     moves under your finger. The name opens DOWNWARD inside a fixed width
+     instead, so only the plate you just pressed changes at all. */
+  .dock-tab {
+    display: flex;
+    width: 52px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 11px;
+    color: theme(colors.fg.faint);
+    transition: background-color 220ms theme(transitionTimingFunction.settle), color 220ms;
+  }
+  .dock-tab.on {
+    background: theme(colors.surface.high);
+    color: theme(colors.moss.DEFAULT);
+  }
+
+  /* Clipped, not hidden, so it is still read out while it is closed. */
+  .dock-label {
+    max-height: 0;
+    margin-top: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    opacity: 0;
+    font-family: theme(fontFamily.mono);
+    font-size: 8px;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    transition:
+      max-height 300ms theme(transitionTimingFunction.settle),
+      margin-top 300ms theme(transitionTimingFunction.settle),
+      opacity 180ms linear;
+  }
+  .dock-tab.on .dock-label {
+    max-height: 10px;
+    margin-top: 4px;
+    opacity: 1;
+  }
+
+  /* ---------- waiting ----------
+     Two wing cases either side of the seam. They beat while a reply is on
+     its way and rest folded when it isn't. */
+  .wingbeat {
+    display: inline-flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 1.5px;
+    flex-shrink: 0;
+    width: 14px;
+    height: 13px;
+  }
+  .wingbeat i {
+    display: block;
+    width: 5px;
+    height: 12px;
+    background: var(--wing, rgb(var(--c-moss)));
+    /* A wing case: rounded at the shoulder, tapered to the tip. */
+    border-radius: 70% 70% 45% 45% / 32% 32% 68% 68%;
+  }
+  .wingbeat i:first-child { transform-origin: top right; transform: rotate(-9deg); }
+  .wingbeat i:last-child { transform-origin: top left; transform: rotate(9deg); }
+  .wingbeat.live i:first-child { animation: wing-beat-l 900ms ease-in-out infinite; }
+  .wingbeat.live i:last-child { animation: wing-beat-r 900ms ease-in-out infinite; }
+
+  /* Kept. A green seam that snaps shut and fades. */
+  .seam-snap {
+    display: block;
+    width: 100%;
+    height: 2px;
+    transform-origin: center;
+    background: linear-gradient(to right, transparent, rgb(var(--c-moss)), transparent);
+    animation: seam-snap 900ms cubic-bezier(0.16, 0.9, 0.2, 1) both;
   }
 
   /* The caret at the end of a reply that is still arriving. */
@@ -268,14 +806,19 @@ html.capture-window #root {
     height: 1.05em;
     margin-left: 2px;
     vertical-align: -0.15em;
-    background: #b3441a;
+    /* Follows the text it trails, so it reads on the ground and on a card. */
+    background: currentColor;
     animation: caret 1s steps(1) infinite;
   }
 
   /* ---------- the handwritten journal page ----------
-     Colours come from components/paper.ts as custom properties on the page.
-     Every line of text sits on the page's ruling: all text uses the same
-     line height (--rule), and every gap is a whole number of lines. */
+     The specimen itself: a pale card on the dark ground. Colours come from
+     components/paper.ts as custom properties. Every line of text sits on the
+     page's ruling: all text uses the same line height (--rule), and every gap
+     is a whole number of lines.
+
+     The shadow is heavier than it was on cream — on a dark ground a pale card
+     has to look like it is sitting ON something, not cut out of it. */
   .paper-sheet {
     --rule: 34px;
     position: relative;
@@ -289,9 +832,7 @@ html.capture-window #root {
     background-repeat: repeat-y, repeat;
     padding: var(--rule) 16px var(--rule) 54px;
     border-radius: 2px 4px 4px 2px;
-    box-shadow:
-      0 1px 1px rgba(40, 35, 30, 0.08),
-      0 10px 24px -14px rgba(40, 35, 30, 0.35);
+    box-shadow: var(--lift-3);
   }
   /* The margin line. */
   .paper-sheet::before {
@@ -336,17 +877,9 @@ html.capture-window #root {
     resize: none;
     overflow: hidden;
   }
-  .hand-field::placeholder {
-    color: var(--paper-ink);
-    opacity: 0.38;
-  }
-  .hand-field:focus,
-  .hand-field:focus-visible {
-    outline: none;
-  }
-  .hand-field:focus {
-    background: var(--paper-focus);
-  }
+  .hand-field::placeholder { color: var(--paper-ink); opacity: 0.38; }
+  .hand-field:focus, .hand-field:focus-visible { outline: none; }
+  .hand-field:focus { background: var(--paper-focus); }
   .hand-label {
     @apply font-hand;
     display: block;
@@ -362,7 +895,36 @@ html.capture-window #root {
     height: var(--rule);
   }
 
-  /* Washi tape across the top of an entry. */
+  /* ---------- the drawer ----------
+     One day in the Journal list: a card of its own page, lying at its own
+     slight angle the way loose cards do in a drawer. The ruling still governs
+     the type, so the card is a smaller piece of the same paper rather than a
+     different object. Two lines of the writing show — a date alone never tells
+     one day from another. */
+  .page-card {
+    --rule: 28px;
+    padding: var(--rule) 16px var(--rule) 46px;
+    transform: rotate(var(--tilt, 0deg));
+    transition:
+      transform 240ms theme(transitionTimingFunction.settle),
+      box-shadow 240ms theme(transitionTimingFunction.settle);
+  }
+  .page-card:hover {
+    /* Lifted out of the drawer, not pressed into it. */
+    transform: rotate(var(--tilt, 0deg)) translateY(-3px);
+    box-shadow: var(--lift-4);
+  }
+  .page-card:active {
+    transform: rotate(var(--tilt, 0deg)) translateY(-1px) scale(0.995);
+  }
+  .page-card-preview {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Tape across the top of an entry, the way a specimen card is fixed down. */
   .paper-tape {
     position: absolute;
     top: -9px;
@@ -372,18 +934,20 @@ html.capture-window #root {
     transform: translateX(-50%) rotate(-2.5deg);
     background: var(--paper-tape);
     opacity: 0.82;
-    box-shadow: 0 1px 1px rgba(40, 35, 30, 0.08);
+    /* On the entry's own paper, which is light in both themes. */
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.2);
     clip-path: polygon(3% 0, 97% 4%, 100% 50%, 97% 96%, 2% 100%, 0 50%);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
     scroll-behavior: auto !important;
   }
+  /* The parting animations end on the open state, so nothing stays clipped. */
+  .part-open { clip-path: none !important; opacity: 1 !important; }
+  .seam-rule { transform: none !important; }
 }

@@ -10,7 +10,7 @@ export default function KeyLink({ url }: { url: string }) {
         e.preventDefault();
         openUrl(url).catch(() => {});
       }}
-      className="break-all text-ember underline decoration-ember/40 underline-offset-2"
+      className="break-all text-moss underline decoration-moss/40 underline-offset-2"
     >
       {url.replace(/^https:\/\//, "")}
     </a>

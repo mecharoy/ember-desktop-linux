@@ -15,7 +15,7 @@ export interface MonthlyPromptInput {
   assessments?: Pick<Assessment, "instrument" | "date" | "score">[];
 }
 
-export const MONTHLY_SYSTEM_PROMPT = `You are Ember's monthly reviewer.
+export const MONTHLY_SYSTEM_PROMPT = `You are Elytra's monthly reviewer.
 Once a month is over you write a short month-in-review for the user.
 
 Rules:

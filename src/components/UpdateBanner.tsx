@@ -4,7 +4,7 @@ import { getSetting, setSetting } from "../db/settings";
 import { checkForUpdate, type Release } from "../update/update";
 
 /**
- * Looks for a newer release once when Ember opens and, only if there is one,
+ * Looks for a newer release once when Elytra opens and, only if there is one,
  * shows a card at the top. Download opens the installer in the browser; Later
  * hides that version until the next one.
  */
@@ -26,12 +26,12 @@ export default function UpdateBanner() {
   if (!release) return null;
 
   return (
-    <div className="fade-up sticky top-0 z-20 border-b border-rule bg-sheet/95 px-4 py-3">
+    <div className="fade-up sticky top-0 z-20 border-b border-line bg-surface/95 px-4 py-3">
       <div className="flex items-center gap-3">
-        <span className="h-2 w-2 shrink-0 rounded-full bg-ember" aria-hidden="true" />
+        <span className="h-2 w-2 shrink-0 rounded-full bg-moss" aria-hidden="true" />
         <div className="min-w-0 flex-1">
-          <p className="text-[14px] font-medium leading-snug text-ink">Ember {release.version} is ready</p>
-          {release.notes && <p className="mt-0.5 line-clamp-2 text-[13px] leading-snug text-ink-faint">{release.notes}</p>}
+          <p className="text-[14px] font-medium leading-snug text-fg">Elytra {release.version} is ready</p>
+          {release.notes && <p className="mt-0.5 line-clamp-2 text-[13px] leading-snug text-fg-faint">{release.notes}</p>}
         </div>
         <div className="flex shrink-0 items-center gap-1">
           <button

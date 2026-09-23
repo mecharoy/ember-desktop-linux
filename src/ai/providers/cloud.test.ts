@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // The hosted free-tier providers are plain OpenAI-compatible HTTP, so the
-// only things worth testing are the parts Ember adds: the bearer header, the
+// only things worth testing are the parts Elytra adds: the bearer header, the
 // SSE parse, and turning each failure status into a message a user can act on.
 
 const fetchMock = vi.fn();

@@ -1,4 +1,4 @@
-// How much Ember sends the model. Big hosted models (Claude, GPT) get
+// How much Elytra sends the model. Big hosted models (Claude, GPT) get
 // everything: the full prompt, every memory layer, the whole conversation.
 // Small or rate-limited ones (a local model, a free hosted tier, the phone
 // going through the computer) get "compact" mode: a short prompt, a briefing

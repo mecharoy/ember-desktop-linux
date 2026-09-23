@@ -7,7 +7,7 @@ import {
   type EmotionSource,
 } from "../../insights/stats";
 import { ModuleCard } from "./ModuleCard";
-import { EMBER_RAMP } from "./palette";
+import { WING_RAMP } from "./palette";
 
 function Toggle<T extends string>({
   value,
@@ -51,7 +51,7 @@ export default function EmotionVocab({ rows, todayKey }: { rows: DayRow[]; today
             value={source}
             options={[
               { id: "named", label: "your words" },
-              { id: "inferred", label: "Ember's words" },
+              { id: "inferred", label: "Elytra's words" },
             ]}
             onChange={setSource}
           />
@@ -78,18 +78,18 @@ export default function EmotionVocab({ rows, todayKey }: { rows: DayRow[]; today
               className="flex items-center gap-3 text-[13px]"
               title={`${c.emotion}: ${c.count} day${c.count === 1 ? "" : "s"}`}
             >
-              <span className="w-28 shrink-0 truncate font-serif text-[15px] text-ink">{c.emotion}</span>
+              <span className="w-28 shrink-0 truncate font-serif text-[15px] text-fg">{c.emotion}</span>
               <span className="flex flex-1 items-center gap-2">
                 <span
                   className="fade-up h-2 rounded-r-[4px]"
                   style={{
                     width: `${(c.count / max) * 100}%`,
                     minWidth: 3,
-                    background: EMBER_RAMP[2],
+                    background: WING_RAMP[2],
                     animationDelay: `${i * 30}ms`,
                   }}
                 />
-                <span className="tabular-nums text-ink-faint">{c.count}</span>
+                <span className="tabular-nums text-fg-faint">{c.count}</span>
               </span>
             </li>
           ))}
@@ -98,7 +98,7 @@ export default function EmotionVocab({ rows, todayKey }: { rows: DayRow[]; today
       <p className="hint mt-3">
         {source === "named"
           ? "In your own words."
-          : "As Ember read your days."}
+          : "As Elytra read your days."}
       </p>
     </ModuleCard>
   );

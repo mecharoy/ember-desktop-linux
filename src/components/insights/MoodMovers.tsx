@@ -23,7 +23,7 @@ export default function MoodMovers({
             <li key={f.sentence}>
               <button
                 onClick={() => onOpen(f)}
-                className="w-full rounded-md px-2 py-2 text-left font-serif text-[16px] leading-snug text-ink transition-colors hover:bg-paper-deep"
+                className="w-full rounded-md px-2 py-2 text-left font-serif text-[16px] leading-snug text-fg transition-colors hover:bg-surface-high"
                 title="Open the entries behind this"
               >
                 {f.sentence}

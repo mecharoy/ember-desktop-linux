@@ -3,7 +3,7 @@
 // Each install keeps a random id twice: in the journal (settings.install_id),
 // which travels with backups, and in the private store beside the API keys,
 // which never does. When they differ, the journal came from another install
-// by a restored backup file, and its API key didn't come along, so Ember asks
+// by a restored backup file, and its API key didn't come along, so Elytra asks
 // for it on a "Welcome back" screen.
 
 import { getSetting, setSetting } from "./db/settings";
@@ -36,7 +36,7 @@ export async function claimJournal(): Promise<void> {
   if (localId !== id) await setLocalInstallId(id);
 }
 
-/** Which first-run screen to show when Ember opens. */
+/** Which first-run screen to show when Elytra opens. */
 export async function firstRunScreen(): Promise<FirstRunScreen> {
   const [onboarded, journalId, provider] = await Promise.all([
     getSetting("onboarded"),

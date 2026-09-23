@@ -78,7 +78,7 @@ fn claude_install_candidates() -> Vec<PathBuf> {
 /// (if the user has pointed us at a specific file), then a PATHEXT-aware PATH
 /// search, then the known per-platform install locations above. Re-resolves
 /// on every call rather than caching, so installing/updating Claude Code
-/// while Ember is running is picked up without a restart.
+/// while Elytra is running is picked up without a restart.
 fn resolve_claude_binary(cli_path: Option<&str>) -> Result<PathBuf, String> {
     if let Some(p) = cli_path.map(str::trim).filter(|p| !p.is_empty()) {
         let path = PathBuf::from(p);
@@ -144,7 +144,7 @@ pub async fn claude_cli_version(cli_path: Option<String>) -> Result<ClaudeCliInf
 /// first-run login flow (opens the Anthropic login page in the user's
 /// browser, per code.claude.com/docs/en/authentication) takes over. We never
 /// parse, capture, or forward anything from this process; the CLI writes its
-/// own credentials file and Ember never touches it. This is the mechanism
+/// own credentials file and Elytra never touches it. This is the mechanism
 /// behind the "Open Claude Code sign-in" button in onboarding and Settings.
 ///
 /// This one is *meant* to be visible — Claude Code's login only works
@@ -194,7 +194,7 @@ pub async fn claude_open_login(cli_path: Option<String>) -> Result<String, Strin
 
 /// Runs the official Claude Code installer (code.claude.com/docs/en/setup) in
 /// a visible terminal — the exact same command a user would type themselves.
-/// Ember never touches PATH, the registry, or any system state directly; it
+/// Elytra never touches PATH, the registry, or any system state directly; it
 /// only opens the terminal. Used by the "Install Claude Code" button that
 /// appears wherever `resolve_claude_binary` comes back empty. Deliberately
 /// visible for the same reason as claude_open_login above.

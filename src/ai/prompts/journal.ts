@@ -33,10 +33,10 @@ function formatCapturesForPrompt(
 
 function formatTranscriptForPrompt(transcript: JournalPromptInput["transcript"]): string {
   if (transcript.length === 0) return "(no conversation today)";
-  return transcript.map((m) => `${m.role === "user" ? "User" : "Ember"}: ${m.content}`).join("\n\n");
+  return transcript.map((m) => `${m.role === "user" ? "User" : "Elytra"}: ${m.content}`).join("\n\n");
 }
 
-export const JOURNAL_SYSTEM_PROMPT = `You are Ember's journal-writing module.
+export const JOURNAL_SYSTEM_PROMPT = `You are Elytra's journal-writing module.
 You turn the day's raw captures, their check-in and today's
 counselor conversation into a saved journal entry — the record they will
 reread months from now, so it should let them relive the day, not just

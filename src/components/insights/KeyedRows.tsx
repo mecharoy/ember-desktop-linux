@@ -24,7 +24,7 @@ export default function KeyedRows({
     <>
     <ul className="-mx-2 flex flex-col">
       {items.map((t) => (
-        <li key={t.key} className="flex items-center gap-1 rounded-md pr-1 transition-colors hover:bg-paper-deep">
+        <li key={t.key} className="flex items-center gap-1 rounded-md pr-1 transition-colors hover:bg-surface-high">
           <button
             onClick={() => onOpen(t)}
             className="flex min-w-0 flex-1 items-center gap-3 rounded-md px-2 py-1.5 text-left"
@@ -35,21 +35,21 @@ export default function KeyedRows({
               style={{ background: sentimentColor(t.sentiment) }}
               aria-hidden="true"
             />
-            <span className="min-w-0 flex-1 truncate text-[14px] text-ink">{t.key}</span>
+            <span className="min-w-0 flex-1 truncate text-[14px] text-fg">{t.key}</span>
             {showTrend && t.trend && (
               <span
                 className={`rounded-full px-2 py-0.5 text-[10.5px] ${
-                  t.trend === "rising" ? "bg-ember-wash text-ember-deep" : "bg-paper-deep text-ink-faint"
+                  t.trend === "rising" ? "bg-moss-wash text-moss" : "bg-surface-high text-fg-faint"
                 }`}
               >
                 {t.trend === "rising" ? "rising" : "fading"}
               </span>
             )}
-            <span className="w-8 text-right text-[12px] tabular-nums text-ink-faint">{t.count}×</span>
+            <span className="w-8 text-right text-[12px] tabular-nums text-fg-faint">{t.count}×</span>
           </button>
           <button
             onClick={() => onExpand(t)}
-            className="shrink-0 rounded-md border border-transparent px-1.5 py-1 transition-colors hover:border-rule-strong active:bg-paper"
+            className="shrink-0 rounded-md border border-transparent px-1.5 py-1 transition-colors hover:border-line-strong active:bg-ground"
             title="See it day by day"
             aria-label={`${t.key}, day by day`}
           >
@@ -58,7 +58,7 @@ export default function KeyedRows({
         </li>
       ))}
     </ul>
-    <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-ink-faint">
+    <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-fg-faint">
       Dot, how it felt:
       {(
         [

@@ -96,7 +96,7 @@ export function applyCheckIn(x: Extraction, c: CheckInSummary | null): StoredExt
 /**
  * What the model returned, held to what the user actually said: a thinking
  * trap survives only if its quote is in their own messages or check-in words
- * (never Ember's lines or the written entry), and activities are capped. Pure.
+ * (never Elytra's lines or the written entry), and activities are capped. Pure.
  */
 export function groundExtraction(
   x: Extraction,

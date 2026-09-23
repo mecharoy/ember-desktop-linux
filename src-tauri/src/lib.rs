@@ -1,4 +1,4 @@
-// Ember for the desktop: tray, capture hotkey, database migrations, the OS
+// Elytra for the desktop: tray, capture hotkey, database migrations, the OS
 // keychain, notifications, backups, the local model and the phone link.
 
 mod claude_cli;
@@ -27,7 +27,7 @@ use tauri_plugin_sql::{Migration, MigrationKind};
 pub(crate) const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 // Must match `identifier` in tauri.conf.json, so this build never shares
-// keychain entries with another Ember.
+// keychain entries with another Elytra.
 pub(crate) const KEYRING_SERVICE: &str = "dev.abhij.ember.desktop";
 
 fn migrations() -> Vec<Migration> {
@@ -122,7 +122,7 @@ pub(crate) fn keyring_message(e: &keyring::Error) -> String {
     let text = e.to_string();
     if cfg!(target_os = "linux") && !matches!(e, keyring::Error::NoEntry) {
         return format!(
-            "{text}. Ember keeps keys in the Secret Service: install and start GNOME Keyring, KWallet or KeePassXC (Secret Service enabled)."
+            "{text}. Elytra keeps keys in the Secret Service: install and start GNOME Keyring, KWallet or KeePassXC (Secret Service enabled)."
         );
     }
     text
@@ -180,7 +180,7 @@ fn show_reminder_notification(app: tauri::AppHandle, title: String, body: String
             .text1(&body)
             .scenario(Scenario::Reminder)
             .sound(Some(Sound::Reminder))
-            .add_button("Open Ember", "open")
+            .add_button("Open Elytra", "open")
             .add_button("Dismiss", "dismiss")
             .on_activated(move |action| {
                 if action.as_deref() != Some("dismiss") {
@@ -207,12 +207,17 @@ fn show_reminder_notification(app: tauri::AppHandle, title: String, body: String
 
 // ---------- backups ----------
 //
-// The daily copy goes to Documents/Ember/Ember backup.db. A picked backup is
+// The daily copy goes to Documents/Elytra/Elytra backup.db. A picked backup is
 // first copied next to ember.db as STAGED_BACKUP, so the webview can show
 // what's in it before anything is replaced.
 
+// These two live next to the journal database and keep their original names:
+// renaming them would orphan a restore that was already staged.
 const STAGED_BACKUP: &str = "ember-restore-candidate.db";
 const SNAPSHOT: &str = "ember-backup-snapshot.db";
+/// The folder in Documents the daily copy goes to, and the one it used to.
+const BACKUP_DIR: &str = "Elytra";
+const LEGACY_BACKUP_DIR: &str = "Ember";
 
 /// tauri-plugin-sql opens sqlite:ember.db in the app config dir.
 fn db_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
@@ -238,7 +243,7 @@ fn documents_dir(app: &tauri::AppHandle) -> Result<PathBuf, String> {
 
 fn check_backup(bytes: &[u8]) -> Result<(), String> {
     if !bytes.starts_with(b"SQLite format 3\x00") {
-        return Err("That file isn't an Ember backup.".into());
+        return Err("That file isn't a journal database.".into());
     }
     if !bytes.windows(20).any(|w| w == b"CREATE TABLE entries") {
         return Err("That database has no journal in it.".into());
@@ -256,32 +261,69 @@ fn backup_snapshot_path(app: tauri::AppHandle) -> Result<String, String> {
     Ok(path.to_string_lossy().into_owned())
 }
 
-/// Moves the snapshot to Documents/Ember, replacing the previous copy.
+/// Moves the snapshot to Documents/Elytra, replacing the previous copy.
 #[tauri::command]
 fn backup_save_copy(app: tauri::AppHandle) -> Result<String, String> {
     let snapshot = db_dir(&app)?.join(SNAPSHOT);
-    let dir = documents_dir(&app)?.join("Ember");
-    std::fs::create_dir_all(&dir).map_err(|e| format!("Could not create Documents/Ember: {e}"))?;
-    let target = dir.join("Ember backup.db");
+    let dir = documents_dir(&app)?.join(BACKUP_DIR);
+    std::fs::create_dir_all(&dir).map_err(|e| format!("Could not create Documents/{BACKUP_DIR}: {e}"))?;
+    let target = dir.join("Elytra backup.db");
     std::fs::copy(&snapshot, &target).map_err(|e| format!("Could not write the backup: {e}"))?;
     let _ = std::fs::remove_file(&snapshot);
     Ok(target.to_string_lossy().into_owned())
 }
 
+/// Where "Pick your backup" opens. Normally Documents/Elytra, but if that
+/// folder isn't there yet and the old Documents/Ember is, it opens there
+/// instead: the app was renamed, the backups people already have were not.
+/// Restoring reads any journal database, whichever name it was saved under.
 #[tauri::command]
 fn backup_folder(app: tauri::AppHandle) -> Result<String, String> {
-    let dir = documents_dir(&app)?.join("Ember");
+    let documents = documents_dir(&app)?;
+    let dir = documents.join(BACKUP_DIR);
+    if !dir.exists() {
+        let legacy = documents.join(LEGACY_BACKUP_DIR);
+        if legacy.is_dir() {
+            return Ok(legacy.to_string_lossy().into_owned());
+        }
+    }
     Ok(dir.to_string_lossy().into_owned())
 }
 
 /// Copies a picked backup's bytes aside, without touching ember.db.
+/// The bytes of a picked backup, however the webview managed to send them.
+///
+/// Tauri only puts a `Uint8Array` in a RAW request body when it can use its
+/// custom-protocol IPC. On Android it never can — the platform cannot read a
+/// request body, so Tauri always falls back to `postMessage` — and on desktop
+/// it drops to the same fallback permanently after any failure of that
+/// protocol. Over `postMessage` the array arrives JSON-encoded, as a list of
+/// numbers. Restoring a journal has to work on both paths, so this accepts
+/// either rather than insisting on one. (Before this, restoring a backup could
+/// not work on Android at all, and failed on desktop with "Expected the backup
+/// file's bytes." whenever the custom protocol had fallen back.)
+fn picked_bytes(request: &tauri::ipc::Request<'_>) -> Result<Vec<u8>, String> {
+    match request.body() {
+        tauri::ipc::InvokeBody::Raw(bytes) => Ok(bytes.clone()),
+        tauri::ipc::InvokeBody::Json(value) => {
+            let list = value.as_array().ok_or("Expected the backup file's bytes.")?;
+            let mut out = Vec::with_capacity(list.len());
+            for n in list {
+                let byte = n
+                    .as_u64()
+                    .and_then(|v| u8::try_from(v).ok())
+                    .ok_or("The backup file's bytes were not readable.")?;
+                out.push(byte);
+            }
+            Ok(out)
+        }
+    }
+}
 #[tauri::command]
 fn backup_stage(app: tauri::AppHandle, request: tauri::ipc::Request<'_>) -> Result<(), String> {
-    let tauri::ipc::InvokeBody::Raw(bytes) = request.body() else {
-        return Err("Expected the backup file's bytes.".into());
-    };
-    check_backup(bytes)?;
-    std::fs::write(db_dir(&app)?.join(STAGED_BACKUP), bytes).map_err(|e| format!("Could not copy the backup: {e}"))
+    let bytes = picked_bytes(&request)?;
+    check_backup(&bytes)?;
+    std::fs::write(db_dir(&app)?.join(STAGED_BACKUP), &bytes).map_err(|e| format!("Could not copy the backup: {e}"))
 }
 
 /// Puts the staged backup in place of ember.db. The webview closes its
@@ -307,14 +349,14 @@ fn backup_restore(app: tauri::AppHandle) -> Result<(), String> {
 
 /// The tray icon and its menu (Open / Quick note / Quit).
 fn build_tray(app: &tauri::AppHandle) -> tauri::Result<()> {
-    let open_item = MenuItem::with_id(app, "open", "Open Ember", true, None::<&str>)?;
+    let open_item = MenuItem::with_id(app, "open", "Open Elytra", true, None::<&str>)?;
     let capture_item = MenuItem::with_id(app, "capture", "Quick note", true, None::<&str>)?;
     let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
     let menu = Menu::with_items(app, &[&open_item, &capture_item, &quit_item])?;
 
     TrayIconBuilder::new()
         .icon(app.default_window_icon().unwrap().clone())
-        .tooltip("Ember")
+        .tooltip("Elytra")
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id.as_ref() {
@@ -354,7 +396,7 @@ pub fn run() {
         .manage(codex_cli::CodexJobs(Mutex::new(HashMap::new())))
         .manage(local_model::LocalModel::default())
         .manage(lan_server::Lan::default())
-        // Must be the first plugin: launching Ember again shows the running one.
+        // Must be the first plugin: launching Elytra again shows the running one.
         .plugin(tauri_plugin_single_instance::init(|app, args, _cwd| {
             if args.iter().any(|a| a == CAPTURE_FLAG) {
                 toggle_capture_bar(app);
@@ -383,7 +425,7 @@ pub fn run() {
                 .build(),
         )
         .setup(|app| {
-            // Another app holding the hotkey shouldn't stop Ember; the tray still captures.
+            // Another app holding the hotkey shouldn't stop Elytra; the tray still captures.
             if let Err(e) = app.global_shortcut().register(Shortcut::new(Some(capture_modifiers()), Code::KeyJ)) {
                 eprintln!("Could not register the capture hotkey: {e}");
             }
@@ -393,7 +435,7 @@ pub fn run() {
             let built = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| build_tray(&handle)));
             let tray_ok = matches!(built, Ok(Ok(())));
             if !tray_ok {
-                eprintln!("Could not create the tray icon; closing the window will quit Ember.");
+                eprintln!("Could not create the tray icon; closing the window will quit Elytra.");
             }
             app.manage(TrayReady(AtomicBool::new(tray_ok)));
 
@@ -407,7 +449,7 @@ pub fn run() {
         })
         .on_window_event(|window, event| match window.label() {
             "main" => {
-                // Closing the window keeps Ember in the tray.
+                // Closing the window keeps Elytra in the tray.
                 if let WindowEvent::CloseRequested { api, .. } = event {
                     api.prevent_close();
                     let has_tray = window.app_handle().try_state::<TrayReady>().map_or(true, |t| t.0.load(Ordering::Relaxed));

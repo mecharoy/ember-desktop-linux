@@ -99,6 +99,29 @@ export function parseDayRows(metrics: Pick<DayMetrics, "date" | "mood" | "energy
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+/**
+ * How long something can go unmentioned before Patterns stops listing it as
+ * part of your life now. A person, a theme, a habit or an activity that has
+ * not come up for a month has dropped out of the lists (a quiet line can still
+ * show them); the journal itself keeps everything.
+ */
+export const STALE_AFTER_DAYS = 30;
+
+/** Comparisons (what moves your mood, weekday rhythm, activities) count the
+ *  last three months: long enough to have days on both sides, short enough
+ *  that last winter doesn't decide what is true this autumn. */
+export const ANALYSIS_DAYS = 90;
+
+export function recentRows(rows: DayRow[], todayKey: string, days = ANALYSIS_DAYS): DayRow[] {
+  const since = addDays(todayKey, -days);
+  return rows.filter((r) => r.date >= since);
+}
+
+/** Still current: mentioned within STALE_AFTER_DAYS. */
+export function isCurrent(lastSeen: string, todayKey: string): boolean {
+  return lastSeen >= addDays(todayKey, -STALE_AFTER_DAYS);
+}
+
 export function addDays(dateKey: string, days: number): string {
   const d = new Date(`${dateKey}T12:00:00`); // noon avoids DST edge day-shifts
   d.setDate(d.getDate() + days);
@@ -574,9 +597,12 @@ export function habitMonthCells(
 export function discoveredHabits(
   rows: DayRow[],
   dismissed: Set<string> = new Set(),
+  /** Only habits done on or after this day; the counts cover the same span. */
+  sinceKey: string | null = null,
 ): { key: string; count: number }[] {
   const map = new Map<string, { key: string; count: number }>();
   for (const r of rows) {
+    if (sinceKey && r.date < sinceKey) continue;
     const seen = new Set<string>();
     for (const h of r.x.habits) {
       if (!h.done) continue;

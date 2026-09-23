@@ -4,10 +4,10 @@ import { getAllSettings } from "./db/settings";
 import { numCtxSetting } from "./ai/factory";
 import { DEFAULT_OLLAMA_HOST } from "./ai/providers/ollama";
 
-// While Ember is open with the local model chosen, Ollama is running and the
+// While Elytra is open with the local model chosen, Ollama is running and the
 // model is loaded: checked at launch, after Settings are saved, and every few
 // minutes (which also keeps Ollama from unloading it). The Rust side
-// (local_model.rs) does the work and lets the model go when Ember quits.
+// (local_model.rs) does the work and lets the model go when Elytra quits.
 
 export interface ModelStatus {
   state: "off" | "starting" | "loading" | "ready" | "not-installed" | "not-running" | "no-model" | "error";

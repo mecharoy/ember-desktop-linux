@@ -10,7 +10,7 @@ const KIND_LABEL: Record<Suggestion["kind"], string> = {
 };
 
 /**
- * The last section of Insights: what Ember noticed goes together, and
+ * The last section of Insights: what Elytra noticed goes together, and
  * practical ideas built on it. Any suggestion can become a tracked habit.
  */
 export default function SuggestionsModule({
@@ -48,28 +48,30 @@ export default function SuggestionsModule({
           {state.busy ? "Reading your days…" : patterns ? "Look again" : "Find suggestions"}
         </button>
         {state.message ? (
-          <span className="text-[12.5px] text-ink-faint">{state.message}</span>
+          <span className="text-[12.5px] text-fg-faint">{state.message}</span>
         ) : (
           written && (
-            <span className="text-[12.5px] text-ink-faint">
+            <span className="text-[12.5px] text-fg-faint">
               From {patterns!.days} days, {written}.
+              {Date.now() - new Date(patterns!.createdAt).getTime() > 30 * 86_400_000 &&
+                " Over a month old: look again for ones that fit now."}
             </span>
           )
         )}
       </div>
 
       {!patterns && !state.busy && (
-        <p className="hint max-w-xl">Ember reads your recent days for what goes together, and suggests habits and small changes to try.</p>
+        <p className="hint max-w-xl">Elytra reads your recent days for what goes together, and suggests habits and small changes to try.</p>
       )}
 
       {patterns && patterns.habitLinks.length > 0 && (
         <div className="mb-5 flex flex-col gap-1.5">
-          <h3 className="font-serif text-[15px] italic text-ink-faint">What goes together</h3>
+          <h3 className="spec">What goes together</h3>
           <ul className="flex flex-col gap-2">
             {patterns.habitLinks.map((l) => (
-              <li key={`${l.habit}-${l.linked_to}`} className="text-[14px] leading-snug text-ink">
+              <li key={`${l.habit}-${l.linked_to}`} className="text-[14px] leading-snug text-fg">
                 <span className="font-medium">{l.habit}</span> goes with <span className="font-medium">{l.linked_to}</span>
-                <span className="block text-[12.5px] text-ink-faint">{l.how}</span>
+                <span className="block text-[12.5px] text-fg-faint">{l.how}</span>
               </li>
             ))}
           </ul>
@@ -84,16 +86,16 @@ export default function SuggestionsModule({
             // it and the button comes back.
             const already = trackedHabits.has((added.get(s.title) ?? defaultName).trim().toLowerCase());
             return (
-              <li key={s.title} className="flex flex-col gap-2 rounded-lg border border-rule bg-sheet/60 p-4">
-                <span className="text-[11.5px] uppercase tracking-wide text-ink-faint">{KIND_LABEL[s.kind]}</span>
-                <span className="font-serif text-[16px] leading-snug text-ink">{s.title}</span>
-                <span className="text-[13px] leading-snug text-ink-soft">{s.why}</span>
+              <li key={s.title} className="flex flex-col gap-2 rounded-lg border border-line bg-surface/60 p-4">
+                <span className="text-[11.5px] uppercase tracking-wide text-fg-faint">{KIND_LABEL[s.kind]}</span>
+                <span className="font-serif text-[16px] leading-snug text-fg">{s.title}</span>
+                <span className="text-[13px] leading-snug text-fg-dim">{s.why}</span>
                 {already ? (
                   <span className="text-[12.5px] text-moss">In your habits</span>
                 ) : naming?.title === s.title ? (
                   <div className="flex flex-col gap-2">
                     <label className="flex flex-col gap-1">
-                      <span className="text-[11.5px] uppercase tracking-wide text-ink-faint">Habit name</span>
+                      <span className="text-[11.5px] uppercase tracking-wide text-fg-faint">Habit name</span>
                     <input
                       autoFocus
                         className="input min-h-[34px] py-1 text-[14px]"
@@ -104,7 +106,7 @@ export default function SuggestionsModule({
                       />
                     </label>
                     <label className="flex flex-col gap-1">
-                      <span className="text-[11.5px] uppercase tracking-wide text-ink-faint">Description</span>
+                      <span className="text-[11.5px] uppercase tracking-wide text-fg-faint">Description</span>
                       <textarea
                         className="input min-h-[52px] py-1 text-[14px] leading-snug"
                         value={naming.description}

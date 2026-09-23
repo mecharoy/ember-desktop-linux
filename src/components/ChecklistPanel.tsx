@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { AgendaItem } from "../db/types";
+import Wingbeat from "./Wingbeat";
 
 const SECTIONS: { id: AgendaItem["section"]; label: string }[] = [
   { id: "past", label: "Past" },
@@ -8,9 +9,9 @@ const SECTIONS: { id: AgendaItem["section"]; label: string }[] = [
 ];
 
 /**
- * Today's checklist beside the conversation: what Ember means to cover, in
- * past / today / future. Crossing an item out tells Ember not to bring it
- * up; Ember ticks items off as they're talked about, and so can you.
+ * Today's checklist beside the conversation: what Elytra means to cover, in
+ * past / today / future. Crossing an item out tells Elytra not to bring it
+ * up; Elytra ticks items off as they're talked about, and so can you.
  */
 export default function ChecklistPanel({
   items,
@@ -64,8 +65,8 @@ export default function ChecklistPanel({
   const body = (
     <div className="flex flex-col gap-4">
       {making && (
-        <p className="flex items-center gap-2 text-[13px] text-ink-faint" role="status">
-          <span className="ember-dot live" aria-hidden="true" />
+        <p className="flex items-center gap-2 text-[13px] text-fg-faint" role="status">
+          <Wingbeat />
           Reading your notes and past entries&hellip;
         </p>
       )}
@@ -74,21 +75,21 @@ export default function ChecklistPanel({
           const inSection = list.filter((i) => i.section === s.id);
           return (
             <section key={s.id} className="flex flex-col gap-1">
-              <h3 className="flex items-center justify-between font-serif text-[14px] italic text-ink-faint">
+              <h3 className="spec flex items-center justify-between">
                 {s.label}
                 <button
                   onClick={() => {
                     setAdding(s.id);
                     setDraft("");
                   }}
-                  className="rounded px-1.5 font-sans text-[16px] not-italic leading-none text-ink-faint hover:text-ink"
+                  className="rounded px-1.5 font-sans text-[16px] not-italic leading-none text-fg-faint hover:text-fg"
                   aria-label={`Add to ${s.label}`}
                   title="Add something to talk about"
                 >
                   +
                 </button>
               </h3>
-              {inSection.length === 0 && adding !== s.id && <p className="text-[12.5px] text-ink-faint/80">Nothing here.</p>}
+              {inSection.length === 0 && adding !== s.id && <p className="text-[12.5px] text-fg-faint/80">Nothing here.</p>}
               <ul className="flex flex-col">
                 {inSection.map((i) => (
                   <li key={i.id} className="group flex items-start gap-2 py-1">
@@ -98,7 +99,7 @@ export default function ChecklistPanel({
                       aria-pressed={i.state === "done"}
                       aria-label={i.state === "done" ? "Mark as not covered" : "Mark as covered"}
                       className={`mt-[3px] flex h-4 w-4 shrink-0 items-center justify-center rounded border text-[11px] leading-none transition-colors ${
-                        i.state === "done" ? "border-moss bg-moss text-paper" : "border-rule-strong text-transparent"
+                        i.state === "done" ? "border-moss bg-moss text-ground" : "border-line-strong text-transparent"
                       } disabled:opacity-40`}
                     >
                       &#10003;
@@ -106,10 +107,10 @@ export default function ChecklistPanel({
                     <span
                       className={`min-w-0 flex-1 text-[13.5px] leading-snug ${
                         i.state === "skip"
-                          ? "text-ink-faint line-through"
+                          ? "text-fg-faint line-through"
                           : i.state === "done"
-                            ? "text-ink-soft"
-                            : "text-ink"
+                            ? "text-fg-dim"
+                            : "text-fg"
                       }`}
                     >
                       {i.text}
@@ -154,11 +155,11 @@ export default function ChecklistPanel({
 
   if (compact) {
     return (
-      <div className="border-b border-rule/70 px-5">
+      <div className="border-b border-line/70 px-5">
         <button
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className="flex w-full items-center justify-between py-2 text-left text-[13px] text-ink-soft"
+          className="flex w-full items-center justify-between py-2 text-left text-[13px] text-fg-dim"
         >
           <span>{summary}</span>
           <span className={`transition-transform ${open ? "rotate-90" : ""}`} aria-hidden="true">
@@ -171,10 +172,10 @@ export default function ChecklistPanel({
   }
 
   return (
-    <aside className="flex w-72 shrink-0 flex-col gap-3 overflow-y-auto border-l border-rule px-5 py-5" aria-label="Today's checklist">
+    <aside className="flex w-72 shrink-0 flex-col gap-3 overflow-y-auto border-l border-line px-5 py-5" aria-label="Today's checklist">
       <div>
-        <h2 className="font-serif text-[17px] text-ink">Checklist</h2>
-        <p className="text-[12.5px] text-ink-faint">{summary}</p>
+        <h2 className="font-serif text-[17px] text-fg">Checklist</h2>
+        <p className="text-[12.5px] text-fg-faint">{summary}</p>
       </div>
       {body}
     </aside>

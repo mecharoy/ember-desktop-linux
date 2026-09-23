@@ -68,7 +68,7 @@ export const SCIENCE: Record<string, ModuleScience> = {
   activities: {
     read: "What you did, with how much enjoyment and achievement your words suggest, and how mood compares on days with and without it.",
     basis: "Behavioural activation: doing things that bring enjoyment or a sense of achievement lifts mood, and dropping them lets it sink.",
-    caution: "Enjoyment and achievement are Ember's reading of your words, and the mood columns compare days with and without an activity. They show patterns, not causes. A fall in enjoyable activities and lower mood tend to feed each other, so a drop is worth a look.",
+    caution: "Enjoyment and achievement are Elytra's reading of your words, and the mood columns compare days with and without an activity. They show patterns, not causes. A fall in enjoyable activities and lower mood tend to feed each other, so a drop is worth a look.",
     source: "Jacobson et al. (1996); Dimidjian et al. (2006), Journal of Consulting and Clinical Psychology",
   },
   thinking: {
@@ -78,7 +78,7 @@ export const SCIENCE: Record<string, ModuleScience> = {
     source: "Beck, Rush, Shaw & Emery (1979), Cognitive Therapy of Depression",
   },
   reviews: {
-    read: "A weekly letter with what you're good at and what needs attention, a monthly report, and the running summary Ember remembers you by.",
+    read: "A weekly letter with what you're good at and what needs attention, a monthly report, and the running summary Elytra remembers you by.",
     basis: "Noticing what went well builds wellbeing; the monthly 'five Ps' view (presenting, predisposing, precipitating, perpetuating, protective) is how clinicians make sense of a hard stretch.",
     source: "Seligman, Steen, Park & Peterson (2005), American Psychologist",
   },
@@ -91,7 +91,7 @@ export const UNLOCK: Record<string, string> = {
   rhythm: "Opens after 14 entries spread over at least 3 different weeks.",
   themes: "Opens after 10 entries.",
   people: "Opens after 10 entries.",
-  habits: "Opens as soon as Ember spots a habit in one of your entries.",
+  habits: "Opens as soon as Elytra spots a habit in one of your entries.",
   movers: "Opens after 30 entries.",
   emotions: "Opens after 20 entries.",
   wellbeing: "Always open.",

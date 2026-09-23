@@ -77,7 +77,7 @@ describe("rolling window", () => {
     expect(history.length - start).toBeGreaterThanOrEqual(2);
   });
 
-  it("shortens Ember's lines first for background jobs, then falls back to the summary", () => {
+  it("shortens Elytra's lines first for background jobs, then falls back to the summary", () => {
     const t = [
       { role: "assistant" as const, content: "First sentence here. " + "More detail. ".repeat(60) },
       { role: "user" as const, content: "What I said" },

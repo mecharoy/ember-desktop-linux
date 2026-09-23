@@ -117,7 +117,7 @@ fn open_terminal(title: &str, command: &str) -> Result<(), String> {
 }
 
 /// `codex login` in a terminal: it opens the ChatGPT sign-in page in the
-/// browser. Ember never sees the credentials; codex keeps its own.
+/// browser. Elytra never sees the credentials; codex keeps its own.
 #[tauri::command]
 pub async fn codex_open_login(cli_path: Option<String>) -> Result<String, String> {
     let binary = resolve_codex_binary(cli_path.as_deref())?;

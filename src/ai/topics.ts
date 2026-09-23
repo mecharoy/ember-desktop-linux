@@ -1,4 +1,4 @@
-// Topics Ember keeps across conversations in coach and therapist styles: the
+// Topics Elytra keeps across conversations in coach and therapist styles: the
 // things they are working through, what is known about each and what to
 // pick up next. Updated after a conversation's entry is saved, from the
 // transcript and the checklist; read by the next checklist and the counselor.
@@ -40,8 +40,8 @@ export function formatTopicsForPrompt(topics: Topic[]): string {
     .join("\n");
 }
 
-export const TOPICS_SYSTEM_PROMPT = `You are Ember's memory keeper. After a conversation with
-someone about their day, you update the list of topics Ember is working
+export const TOPICS_SYSTEM_PROMPT = `You are Elytra's memory keeper. After a conversation with
+someone about their day, you update the list of topics Elytra is working
 through with them across conversations — like a counselor's notes between
 sessions.
 
@@ -98,7 +98,7 @@ export async function updateTopicsAfterConversation(
   if (said.length < 2) return;
 
   const [existing, agenda, budget, prep] = await Promise.all([listTopics(), getAgenda(date), contextBudget(), getConversationPrep(date)]);
-  // Small models: their words whole, Ember's shortened, the rest summarised.
+  // Small models: their words whole, Elytra's shortened, the rest summarised.
   const chat =
     budget.mode === "compact" ? fitTranscript(transcript, Math.floor(budget.totalTokens * 0.5), prep?.chatSummary ?? null) : transcript;
   const material = `THE DAY: ${date}
@@ -110,7 +110,7 @@ TODAY'S CHECKLIST:
 ${formatChecklist(agenda)}
 
 THE CONVERSATION:
-${chat.map((m) => `${m.role === "user" ? "Them" : "Ember"}: ${m.content}`).join("\n\n")}
+${chat.map((m) => `${m.role === "user" ? "Them" : "Elytra"}: ${m.content}`).join("\n\n")}
 
 Return the JSON now.`;
 

@@ -50,7 +50,7 @@ export default function WellbeingModule({
       {shown.length === 0 ? (
         <p className="hint max-w-xl">Two-weekly wellbeing questionnaires. Switch them on in Settings.</p>
       ) : (
-        <div className="flex flex-col divide-y divide-rule border-y border-rule">
+        <div className="flex flex-col divide-y divide-line border-y border-line">
           {shown.map((instrument) => {
             const history = assessments.filter((a) => a.instrument === instrument);
             const last = history[history.length - 1];
@@ -58,16 +58,16 @@ export default function WellbeingModule({
             return (
               <div key={instrument} className="flex flex-wrap items-center gap-x-6 gap-y-2 py-3">
                 <div className="w-56">
-                  <p className="text-[13.5px] text-ink">{INSTRUMENTS[instrument].name}</p>
-                  <p className="text-[12px] text-ink-faint">
+                  <p className="text-[13.5px] text-fg">{INSTRUMENTS[instrument].name}</p>
+                  <p className="text-[12px] text-fg-faint">
                     {last ? `last taken ${shortDate(last.date)}` : "not taken yet"}
                   </p>
                 </div>
                 {last && band && (
                   <p className="flex items-baseline gap-2">
-                    <span className="font-serif text-[24px] leading-none text-ink">{displayScore(instrument, last.score)}</span>
-                    <span className="text-[12px] text-ink-faint">{scaleLabel(instrument)}</span>
-                    <span className={`text-[12.5px] ${band.worthALook ? "text-ember-deep" : "text-ink-soft"}`}>{band.label}</span>
+                    <span className="font-serif text-[24px] leading-none text-fg">{displayScore(instrument, last.score)}</span>
+                    <span className="text-[12px] text-fg-faint">{scaleLabel(instrument)}</span>
+                    <span className={`text-[12.5px] ${band.worthALook ? "text-moss" : "text-fg-dim"}`}>{band.label}</span>
                   </p>
                 )}
                 {history.length >= 2 && (

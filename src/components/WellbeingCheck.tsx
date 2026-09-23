@@ -74,7 +74,7 @@ export default function WellbeingCheck({
     return (
       <div className="fade-up flex max-w-xl flex-col gap-4">
         {saved.care && (
-          <div className="rounded-md border border-danger/40 bg-danger-wash px-4 py-3 text-[14px] leading-relaxed text-ink">
+          <div className="rounded-md border border-danger/40 bg-danger-wash px-4 py-3 text-[14px] leading-relaxed text-fg">
             <p className="font-serif text-[16px]">Thank you for answering that honestly.</p>
             <p className="mt-1.5">
               You said you&rsquo;ve had thoughts of being better off dead or of hurting yourself. That matters more than
@@ -85,9 +85,9 @@ export default function WellbeingCheck({
         )}
         <div>
           <p className="label">{def.name}</p>
-          <p className="mt-1 font-serif text-[30px] leading-none text-ink">
+          <p className="mt-1 font-serif text-[30px] leading-none text-fg">
             {displayScore(instrument, saved.raw)}
-            <span className="ml-1 font-sans text-[13px] text-ink-faint">{scaleLabel(instrument)}</span>
+            <span className="ml-1 font-sans text-[13px] text-fg-faint">{scaleLabel(instrument)}</span>
           </p>
           <p className="hint mt-2">{meaning(instrument, saved.raw)}</p>
           <p className="hint mt-1">A questionnaire like this screens; it doesn&rsquo;t diagnose.</p>
@@ -105,13 +105,13 @@ export default function WellbeingCheck({
     <div className="fade-up flex max-w-2xl flex-col gap-5">
       <div>
         <h3 className="section-title">{def.name}</h3>
-        <p className="mt-1 max-w-xl text-[14px] leading-relaxed text-ink-soft">{def.stem}</p>
+        <p className="mt-1 max-w-xl text-[14px] leading-relaxed text-fg-dim">{def.stem}</p>
       </div>
 
       <ol className="flex flex-col gap-4">
         {def.items.map((item, i) => (
           <li key={item} className="flex flex-col gap-2">
-            <span className="font-serif text-[15.5px] leading-snug text-ink">
+            <span className="font-serif text-[15.5px] leading-snug text-fg">
               {i + 1}. {item}
             </span>
             <div className="flex flex-wrap gap-1.5" role="group" aria-label={item}>
@@ -123,8 +123,8 @@ export default function WellbeingCheck({
                   aria-pressed={answers[i] === o.value}
                   className={`rounded-full border px-3 py-1 text-[12px] transition-colors duration-200 ${
                     answers[i] === o.value
-                      ? "border-ember bg-ember text-paper"
-                      : "border-rule text-ink-soft hover:border-ink-faint hover:text-ink"
+                      ? "border-moss bg-moss text-ground"
+                      : "border-line text-fg-dim hover:border-fg-faint hover:text-fg"
                   }`}
                 >
                   {o.label}
@@ -137,7 +137,7 @@ export default function WellbeingCheck({
 
       {instrument === "phq9" && anyAboveZero && (
         <div className="flex flex-col gap-2">
-          <span className="font-serif text-[15.5px] leading-snug text-ink">{PHQ9_DIFFICULTY.question}</span>
+          <span className="font-serif text-[15.5px] leading-snug text-fg">{PHQ9_DIFFICULTY.question}</span>
           <div className="flex flex-wrap gap-1.5">
             {PHQ9_DIFFICULTY.options.map((o) => (
               <button
@@ -147,8 +147,8 @@ export default function WellbeingCheck({
                 aria-pressed={difficulty === o.value}
                 className={`rounded-full border px-3 py-1 text-[12px] transition-colors duration-200 ${
                   difficulty === o.value
-                    ? "border-ember bg-ember text-paper"
-                    : "border-rule text-ink-soft hover:border-ink-faint hover:text-ink"
+                    ? "border-moss bg-moss text-ground"
+                    : "border-line text-fg-dim hover:border-fg-faint hover:text-fg"
                 }`}
               >
                 {o.label}
@@ -167,11 +167,11 @@ export default function WellbeingCheck({
             Not now
           </button>
         )}
-        {!complete && <span className="text-[12px] text-ink-faint">Answer every question to save.</span>}
+        {!complete && <span className="text-[12px] text-fg-faint">Answer every question to save.</span>}
       </div>
 
-      <p className="text-[11px] leading-snug text-ink-faint">
-        Your answers stay on this computer; only the total goes into Ember&rsquo;s reviews. {def.attribution}
+      <p className="text-[11px] leading-snug text-fg-faint">
+        Your answers stay on this computer; only the total goes into Elytra&rsquo;s reviews. {def.attribution}
       </p>
     </div>
   );

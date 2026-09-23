@@ -33,14 +33,14 @@ function ChartTooltip({ active, payload }: TooltipPayload) {
   const p = payload?.[0]?.payload;
   if (!active || !p) return null;
   return (
-    <div className="max-w-60 rounded-md border border-rule bg-sheet px-3 py-2 text-[12px] shadow-[0_4px_14px_rgba(40,35,30,0.12)]">
-      <div className="text-ink">{shortDate(p.date)}</div>
-      <div className="mt-0.5 text-ink-soft">
+    <div className="max-w-60 rounded-md border border-line bg-surface px-3 py-2 text-[12px] shadow-[0_4px_14px_rgba(40,35,30,0.12)]">
+      <div className="text-fg">{shortDate(p.date)}</div>
+      <div className="mt-0.5 text-fg-dim">
         {!p.journaled ? "No entry" : p.mentioned ? `Came up${p.sentiment !== null ? ` · ${feeling(p.sentiment)}` : ""}` : "Didn't come up"}
-        {p.mood !== null && <span className="text-ink-faint"> · mood {p.mood}</span>}
+        {p.mood !== null && <span className="text-fg-faint"> · mood {p.mood}</span>}
       </div>
-      {p.summary && <div className="mt-1 font-serif text-[14px] leading-snug text-ink">{p.summary}</div>}
-      {p.journaled && <div className="mt-1 text-[11px] text-ink-faint">Tap to open the entry</div>}
+      {p.summary && <div className="mt-1 font-serif text-[14px] leading-snug text-fg">{p.summary}</div>}
+      {p.journaled && <div className="mt-1 text-[11px] text-fg-faint">Tap to open the entry</div>}
     </div>
   );
 }
@@ -105,16 +105,16 @@ export default function TopicMonthDialog({
   // from that section and the dialog would open off screen.
   return createPortal(
     <div className="fixed inset-0 z-40 flex items-center justify-center p-4">
-      <button aria-label="Close" onClick={onClose} className="fade-in absolute inset-0 bg-ink/30" />
+      <button aria-label="Close" onClick={onClose} className="fade-in absolute inset-0 bg-fg/30" />
       <div
         role="dialog"
         aria-label={`${name}, day by day`}
-        className="fade-up relative flex max-h-full w-full max-w-xl flex-col gap-4 overflow-y-auto rounded-2xl border border-rule bg-sheet p-5 shadow-[0_12px_32px_-12px_rgba(40,35,30,0.35)]"
+        className="fade-up relative flex max-h-full w-full max-w-xl flex-col gap-4 overflow-y-auto rounded-2xl border border-line bg-surface p-5 shadow-[0_12px_32px_-12px_rgba(40,35,30,0.35)]"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[11.5px] uppercase tracking-wide text-ink-faint">{group === "themes" ? "Theme" : "Person"}</p>
-            <h2 className="font-serif text-[22px] leading-tight text-ink">{name}</h2>
+            <p className="text-[11.5px] uppercase tracking-wide text-fg-faint">{group === "themes" ? "Theme" : "Person"}</p>
+            <h2 className="font-serif text-[22px] leading-tight text-fg">{name}</h2>
           </div>
           <button onClick={onClose} className="btn-ghost -mr-2 -mt-1" aria-label="Close">
             &times;
@@ -122,7 +122,7 @@ export default function TopicMonthDialog({
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-1 text-[12.5px] text-ink-soft">
+          <div className="flex items-center gap-1 text-[12.5px] text-fg-dim">
             <button
               onClick={() => setMonth(shiftMonth(month, -1))}
               disabled={month <= firstMonth}
@@ -131,7 +131,7 @@ export default function TopicMonthDialog({
             >
               &lsaquo;
             </button>
-            <span className="w-32 text-center font-serif text-[16px] text-ink">{monthLabel(month)}</span>
+            <span className="w-32 text-center font-serif text-[16px] text-fg">{monthLabel(month)}</span>
             <button
               onClick={() => setMonth(shiftMonth(month, 1))}
               disabled={month >= currentMonth}
@@ -141,8 +141,8 @@ export default function TopicMonthDialog({
               &rsaquo;
             </button>
           </div>
-          <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-ink-soft">
-            <span className="text-ink-faint">Came up, felt:</span>
+          <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-fg-dim">
+            <span className="text-fg-faint">Came up, felt:</span>
             {(
               [
                 ["good", 0.7],
@@ -200,7 +200,7 @@ export default function TopicMonthDialog({
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-[13px] text-ink-soft">
+          <p className="text-[13px] text-fg-dim">
             {journaled === 0
               ? "No entries this month."
               : `Came up on ${cameUp} of ${journaled} journaled ${journaled === 1 ? "day" : "days"}.`}

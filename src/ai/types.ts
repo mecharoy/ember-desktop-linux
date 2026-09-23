@@ -10,7 +10,7 @@ export interface ChatMessage {
  */
 export interface ChatOptions {
   /**
-   * Stable id for the conversation these messages belong to (Ember passes the
+   * Stable id for the conversation these messages belong to (Elytra passes the
    * chat session's row id). Lets a provider continue a server- or CLI-side
    * session across turns instead of replaying the whole transcript, which
    * turns the prefix into a prompt-cache read. Omit it for one-shot calls.

@@ -3,6 +3,7 @@ import { listen } from "@tauri-apps/api/event";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { localModelStatus, prepareLocalModel, type ModelStatus } from "../../localModel";
 import type { SettingKey } from "../../db/types";
+import Wingbeat from "../Wingbeat";
 
 const STATE_TEXT: Record<ModelStatus["state"], string> = {
   off: "Not loaded",
@@ -15,7 +16,7 @@ const STATE_TEXT: Record<ModelStatus["state"], string> = {
   error: "Couldn't load",
 };
 
-/** A model on this computer: Ollama (kept loaded by Ember) or an
+/** A model on this computer: Ollama (kept loaded by Elytra) or an
  *  OpenAI-compatible local server such as LM Studio. */
 export default function LocalModelSetup({
   form,
@@ -89,10 +90,10 @@ export default function LocalModelSetup({
           </label>
 
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <span className={`ember-dot ${busy ? "live" : ""} ${ready || busy ? "" : "opacity-40 grayscale"}`} aria-hidden="true" />
-            <span className="min-w-0 flex-1 text-[14px] text-ink">
+            <Wingbeat live={busy} className={ready || busy ? "" : "opacity-40 grayscale"} />
+            <span className="min-w-0 flex-1 text-[14px] text-fg">
               {status ? STATE_TEXT[status.state] : "Checking…"}
-              {status?.message && !ready && !busy && <span className="block text-[13px] text-ink-faint">{status.message}</span>}
+              {status?.message && !ready && !busy && <span className="block text-[13px] text-fg-faint">{status.message}</span>}
             </span>
             <button onClick={loadNow} disabled={busy || !form.model.trim()} className="btn-subtle min-h-[36px] py-1.5">
               {busy ? "Loading…" : ready ? "Reload" : "Load"}
@@ -101,15 +102,15 @@ export default function LocalModelSetup({
           {status?.state === "not-installed" && (
             <p className="hint">
               Install from{" "}
-              <button className="text-ember underline" onClick={() => openUrl("https://ollama.com/download")}>
+              <button className="text-moss underline" onClick={() => openUrl("https://ollama.com/download")}>
                 ollama.com/download
               </button>
-              , then run <code className="rounded bg-paper-deep px-1">ollama pull qwen3.5:4b</code>.
+              , then run <code className="rounded bg-surface-high px-1">ollama pull qwen3.5:4b</code>.
             </p>
           )}
 
           <details className="group">
-            <summary className="cursor-pointer list-none text-[14px] text-ink-soft">
+            <summary className="cursor-pointer list-none text-[14px] text-fg-dim">
               <span className="mr-1.5 inline-block transition-transform group-open:rotate-90">&rsaquo;</span>
               Advanced
             </summary>

@@ -1,8 +1,8 @@
 [package]
 name = "ember-desktop"
-version = "0.5.3"
-description = "Ember - a journal that writes itself"
-authors = ["Ember"]
+version = "0.6.0"
+description = "Elytra - tell it your day, it writes the page"
+authors = ["Elytra"]
 edition = "2021"
 
 [lib]

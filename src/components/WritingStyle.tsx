@@ -26,7 +26,7 @@ export default function WritingStyle({ value, onChange }: { value: string; onCha
   return (
     <div className="flex flex-col gap-2">
       <p className="hint">
-        Ember writes your journal in this style. Load something you wrote, or describe a day or an event here in detail,
+        Elytra writes your journal in this style. Load something you wrote, or describe a day or an event here in detail,
         the way you would tell it.
       </p>
       <textarea
@@ -45,10 +45,10 @@ export default function WritingStyle({ value, onChange }: { value: string; onCha
             Clear
           </button>
         )}
-        <span className="text-[12.5px] tabular-nums text-ink-faint">
+        <span className="text-[12.5px] tabular-nums text-fg-faint">
           {value.length} / {WRITING_SAMPLE_MAX}
         </span>
-        {note && <span className="text-[12.5px] text-ink-faint">{note}</span>}
+        {note && <span className="text-[12.5px] text-fg-faint">{note}</span>}
       </div>
       <input
         ref={fileRef}

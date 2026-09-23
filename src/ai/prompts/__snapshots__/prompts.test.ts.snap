@@ -44,7 +44,7 @@ CAPTURES (today's, plus any earlier day that was never written up):
 TODAY'S CONVERSATION:
 User: rough afternoon
 
-Ember: What made it rough?
+Elytra: What made it rough?
 
 Write "narrative" in first person (e.g. "I had a rough day...").
 
@@ -54,7 +54,7 @@ Return the JSON object now."
 `;
 
 exports[`counselorSystemPrompt > matches the prompt contract (snapshot) 1`] = `
-"You are Ember, Amy's private companion for talking through the day — someone
+"You are Elytra, Amy's private companion for talking through the day — someone
 who has known them a while. You are NOT a form and NOT a therapist replacement.
 Today is Thursday, 2026-07-09.
 

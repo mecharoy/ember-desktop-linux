@@ -95,7 +95,7 @@ export default function DocumentsManager() {
 
       {docs && docs.length > 0 && (
         <>
-          <ul className="flex flex-col divide-y divide-rule border-y border-rule">
+          <ul className="flex flex-col divide-y divide-line border-y border-line">
             {docs.map((d) => (
               <li key={d.id} className="flex items-center gap-3 py-2 text-[13.5px]">
                 <label className="flex min-w-0 flex-1 items-center gap-2.5" title="Read in each conversation">
@@ -103,18 +103,18 @@ export default function DocumentsManager() {
                     type="checkbox"
                     checked={d.enabled === 1}
                     onChange={() => handleToggle(d)}
-                    className="h-3.5 w-3.5 shrink-0 accent-ember"
+                    className="h-3.5 w-3.5 shrink-0 accent-moss"
                   />
-                  <span className={`truncate ${d.enabled === 1 ? "text-ink" : "text-ink-faint line-through"}`}>{d.name}</span>
+                  <span className={`truncate ${d.enabled === 1 ? "text-fg" : "text-fg-faint line-through"}`}>{d.name}</span>
                 </label>
-                <span className="shrink-0 text-[12px] tabular-nums text-ink-faint">{formatChars(d.content.length)}</span>
-                <button onClick={() => handleRemove(d)} className="shrink-0 text-[12px] text-ink-faint hover:text-danger">
+                <span className="shrink-0 text-[12px] tabular-nums text-fg-faint">{formatChars(d.content.length)}</span>
+                <button onClick={() => handleRemove(d)} className="shrink-0 text-[12px] text-fg-faint hover:text-danger">
                   Remove
                 </button>
               </li>
             ))}
           </ul>
-          <span className={`text-[12px] ${over ? "text-ember" : "text-ink-faint"}`}>
+          <span className={`text-[12px] ${over ? "text-moss" : "text-fg-faint"}`}>
             {formatChars(loaded)} of {formatChars(DOCUMENT_CHAR_BUDGET)} go into each conversation.
             {over && " Anything past the limit is cut off, so untick a file or shorten it."}
           </span>

@@ -100,7 +100,7 @@ async function callAnthropic(
     if (TRANSIENT_STATUSES.has(res.status)) {
       throw new ProviderError(
         `Anthropic is overloaded right now (${res.status}).`,
-        "Ember tried a few times. Press Retry in a minute.",
+        "Elytra tried a few times. Press Retry in a minute.",
       );
     }
     if (res.status === 404) {

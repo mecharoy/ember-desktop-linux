@@ -12,7 +12,7 @@ import { getConversationPrep, saveChatSummary } from "../db/agendas";
 import type { ChatMessage } from "./types";
 
 export const CHAT_SUMMARY_SYSTEM_PROMPT = `You keep a running summary of a conversation between
-Ember (a companion who helps someone talk through their day) and them, for a
+Elytra (a companion who helps someone talk through their day) and them, for a
 small AI model that can't reread all of it. Update the summary with the new
 part of the conversation. At most 120 words, short lines starting with "- ":
 what they told you (facts, feelings, in their words where it matters), what
@@ -65,7 +65,7 @@ export async function fitTurn(opts: {
     const from = summary ? covered : 0;
     const part = opts.history
       .slice(from, start)
-      .map((m) => `${m.role === "user" ? "Them" : "Ember"}: ${m.content}`)
+      .map((m) => `${m.role === "user" ? "Them" : "Elytra"}: ${m.content}`)
       .join("\n\n");
     const input = `${summary ? `THE SUMMARY SO FAR:\n${summary}\n\n` : ""}THE NEW PART OF THE CONVERSATION:\n${clip(part, Math.max(600, budget.totalTokens - 900))}\n\nWrite the updated summary.`;
     try {
@@ -82,7 +82,7 @@ export async function fitTurn(opts: {
 
 /**
  * A conversation for a background job (journal entry, topics, extraction)
- * that has to fit `tokens`: their messages stay whole, Ember's are shortened
+ * that has to fit `tokens`: their messages stay whole, Elytra's are shortened
  * to their first sentence, and if it still doesn't fit, the oldest part is
  * replaced by the chat summary. Pure.
  */

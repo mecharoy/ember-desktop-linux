@@ -24,7 +24,7 @@ interface EntryFieldsProps {
   banner?: React.ReactNode;
 }
 
-/** Must match --rule in index.css: every line of the page is this tall. */
+/** Must match --line in index.css: every line of the page is this tall. */
 const RULE = 34;
 
 /** A textarea that grows a whole ruled line at a time, so the writing always
@@ -91,7 +91,7 @@ function handDate(dateKey: string): string {
 export function PaperPicker({ value, onChange }: { value: string; onChange: (id: string) => void }) {
   return (
     <div className="flex items-center gap-3">
-      <span className="shrink-0 text-[13px] text-ink-faint">Paper</span>
+      <span className="shrink-0 text-[13px] text-fg-faint">Paper</span>
       <div className="-my-1 flex flex-1 gap-2.5 overflow-x-auto py-1" role="radiogroup" aria-label="Paper colour">
         {PAPERS.map((p) => (
           <button
@@ -102,7 +102,7 @@ export function PaperPicker({ value, onChange }: { value: string; onChange: (id:
             aria-label={p.label}
             onClick={() => onChange(p.id)}
             className={`h-8 w-8 shrink-0 rounded-full border transition-transform duration-150 active:scale-90 ${
-              value === p.id ? "border-transparent ring-2 ring-ember ring-offset-2 ring-offset-paper" : "border-rule-strong"
+              value === p.id ? "border-transparent ring-2 ring-moss ring-offset-2 ring-offset-ground" : "border-line-strong"
             }`}
             style={{ background: `linear-gradient(to bottom, ${p.bg} 58%, ${p.line} 58%, ${p.line} 62%, ${p.bg} 62%)` }}
           />
@@ -202,7 +202,7 @@ export default function EntryFields({
         </button>
         <Skip />
 
-        <span className="hand-label">A note from Ember</span>
+        <span className="hand-label">A note from Elytra</span>
         <GrowingText
           minLines={2}
           value={draft.counselorNote}
@@ -216,7 +216,7 @@ export default function EntryFields({
           {saveLabel}
         </button>
         {extraActions}
-        {savedAt && <span className="fade-up text-[13px] text-ink-faint">Saved</span>}
+        {savedAt && <span className="fade-up text-[13px] text-fg-faint">Saved</span>}
       </div>
     </div>
   );

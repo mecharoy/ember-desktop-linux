@@ -1,4 +1,4 @@
-// Local wall-clock timestamps. Ember stores times as the user's own clock
+// Local wall-clock timestamps. Elytra stores times as the user's own clock
 // reading rather than UTC: a day's entry belongs to the day it felt like,
 // and the journal is never read in another timezone.
 

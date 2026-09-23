@@ -9,6 +9,7 @@ import {
   prepareSyncRequest,
   recordLocalReset,
   savePeer,
+  savePeerProgress,
 } from "./sync";
 
 // Two real in-memory databases built from the app's migrations: "pc" and
@@ -83,7 +84,7 @@ async function syncRound() {
   throw new Error("sync did not settle");
 }
 
-/** Erases a device's journal the way Settings > Reset Ember does. */
+/** Erases a device's journal the way Settings > Reset Elytra does. */
 async function reset(device: "pc" | "phone") {
   for (const t of ["messages", "captures", "entries", "day_metrics", "observations", "weekly_reviews", "monthly_reports",
     "assessments", "memory_summaries", "profile", "documents", "checkins", "habit_prefs", "sessions", "reminders"]) {
@@ -181,6 +182,7 @@ describe("sync", () => {
     expect(all("phone", "SELECT title FROM topics")).toEqual([{ title: "Dispute with Dad" }]);
     expect(all("phone", "SELECT key FROM settings ORDER BY key")).toEqual([{ key: "writing_style_sample" }]);
   });
+
 
   it("doesn't send changes back to the device they came from", async () => {
     run("pc", "INSERT INTO captures (created_at, text) VALUES ('2026-09-05T10:00:00', 'once')");
@@ -346,5 +348,35 @@ describe("sync", () => {
     for (const device of ["pc", "phone"] as const) {
       expect(all(device, "SELECT text FROM captures")).toEqual([{ text: "pc backup note" }]);
     }
+  });
+  // Last on purpose: these tests share one pair of databases and run in order,
+  // so a test that syncs extra rows shifts what the ones after it see.
+  it("gives a device back what it wrote, once it has lost it", async () => {
+    // The phone writes a day, it reaches the PC, and then the phone is
+    // reinstalled: its journal is empty and it has acknowledged nothing. The
+    // change is still tagged as having come from the phone, so without the
+    // fresh-peer rule the PC would never offer it back and the day would be
+    // gone for good. Found on a real pairing where three entries were stuck
+    // exactly this way (error.txt, 2026-09-22).
+    run("phone", "INSERT INTO sessions (date, status) VALUES ('2026-09-29', 'wrapped')");
+    const sid = all("phone", "SELECT id FROM sessions WHERE date = '2026-09-29'")[0].id;
+    run(
+      "phone",
+      `INSERT INTO entries (session_id, date, title, narrative, highlights, counselor_note, created_at)
+       VALUES (${sid}, '2026-09-29', 'Tuesday', 'a day', '[]', '', '2026-09-29T21:00:00')`,
+    );
+    await syncRound();
+    expect(all("pc", "SELECT date FROM entries WHERE date = '2026-09-29'")).toEqual([{ date: "2026-09-29" }]);
+
+    // Now the phone is reinstalled: empty journal, empty change log, still
+    // paired but holding nothing of the PC's. (Clearing the log too, because
+    // a reinstall is not a delete — no tombstones should travel.)
+    run("phone", "DELETE FROM entries");
+    run("phone", "DELETE FROM sessions WHERE date = '2026-09-29'");
+    run("phone", "DELETE FROM sync_changes");
+    await on("phone", () => savePeerProgress("pc-id", { sentRev: 0, receivedRev: 0 }));
+
+    await syncRound();
+    expect(all("phone", "SELECT date FROM entries WHERE date = '2026-09-29'")).toEqual([{ date: "2026-09-29" }]);
   });
 });

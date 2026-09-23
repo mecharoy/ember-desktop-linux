@@ -1,4 +1,4 @@
-// Writes every prompt Ember sends, filled in with sample data, to
+// Writes every prompt Elytra sends, filled in with sample data, to
 // ../prompt-review/PROMPTS.md for reading. Skipped in normal test runs; to
 // regenerate after changing a prompt:
 //
@@ -243,7 +243,7 @@ run("writes prompt-review/PROMPTS.md", async () => {
     ],
   ]);
 
-  const doc = `# Ember's prompts, for review
+  const doc = `# Elytra's prompts, for review
 
 Generated ${new Date().toISOString().slice(0, 10)} from the code of ember-desktop. The phone app uses the same prompt files.
 Sample data is made up. Token counts are estimates.
@@ -251,7 +251,7 @@ Sample data is made up. Token counts are estimates.
 **Big models** (Claude, GPT) get the full prompts. **Small models** (a local model, a free hosted tier, the phone going
 through the computer) get compact mode: a shorter conversation prompt, a briefing written before the conversation,
 only the memory lines that match today, a rolling summary of long chats, and Insights in smaller steps. Settings >
-"How much Ember sends the model" can force either.
+"How much Elytra sends the model" can force either.
 
 ${sections.join("\n\n---\n\n")}
 `;

@@ -48,8 +48,8 @@ describe("parseManifest", () => {
     version: "0.3.0",
     notes: "Wellbeing checks",
     platforms: {
-      "windows-x86_64": { url: "https://github.com/owner/ember/releases/download/v0.3.0/Ember_0.3.0_x64-setup.exe" },
-      "darwin-aarch64": { url: "https://github.com/owner/ember/releases/download/v0.3.0/Ember_0.3.0_aarch64.dmg" },
+      "windows-x86_64": { url: "https://github.com/owner/ember/releases/download/v0.3.0/Elytra_0.3.0_x64-setup.exe" },
+      "darwin-aarch64": { url: "https://github.com/owner/ember/releases/download/v0.3.0/Elytra_0.3.0_aarch64.dmg" },
     },
   };
 
@@ -65,8 +65,8 @@ describe("parseManifest", () => {
       ...manifest,
       version: "1.1.0",
       platforms: {
-        "android-aarch64": { url: "https://github.com/owner/ember/releases/download/v1.1.0/Ember-1.1.0-arm64.apk", version: "1.1.0" },
-        "windows-x86_64": { url: "https://github.com/owner/ember/releases/download/v1.1.0/Ember_0.1.0_x64-setup.exe", version: "0.1.0" },
+        "android-aarch64": { url: "https://github.com/owner/ember/releases/download/v1.1.0/Elytra-1.1.0-arm64.apk", version: "1.1.0" },
+        "windows-x86_64": { url: "https://github.com/owner/ember/releases/download/v1.1.0/Elytra_0.1.0_x64-setup.exe", version: "0.1.0" },
       },
     };
     expect(parseManifest(shared, source, "windows-x86_64")?.version).toBe("0.1.0");
@@ -76,7 +76,7 @@ describe("parseManifest", () => {
   });
 
   it("never hands over a link outside GitHub", () => {
-    const evil = { ...manifest, platforms: { "windows-x86_64": { url: "https://evil.example/Ember.exe" } } };
+    const evil = { ...manifest, platforms: { "windows-x86_64": { url: "https://evil.example/Elytra.exe" } } };
     expect(parseManifest(evil, source, "windows-x86_64")?.downloadUrl).toBe(
       "https://github.com/owner/ember/releases/tag/v0.3.0",
     );

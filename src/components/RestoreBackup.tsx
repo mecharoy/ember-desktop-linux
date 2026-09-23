@@ -53,18 +53,18 @@ export default function RestoreBackup({
   if (state.status === "picked" || state.status === "restoring") {
     const s = state.status === "picked" ? state.summary : null;
     return (
-      <div className="fade-up flex flex-col gap-2 rounded-xl border border-rule bg-sheet/60 px-4 py-3 text-left">
+      <div className="fade-up flex flex-col gap-2 rounded-xl border border-line bg-surface/60 px-4 py-3 text-left">
         {s && (
           <>
-            <p className="font-serif text-[17px] text-ink">{s.name ? `${s.name}’s journal` : "Ember journal"}</p>
-            <p className="text-[13.5px] leading-relaxed text-ink-soft">
+            <p className="font-serif text-[17px] text-fg">{s.name ? `${s.name}’s journal` : "Elytra journal"}</p>
+            <p className="text-[13.5px] leading-relaxed text-fg-dim">
               {s.entries + s.notes === 0
                 ? "Nothing written in it yet."
                 : `${plural(s.entries, "entry", "entries")} and ${plural(s.notes, "note", "notes")}${
                     s.lastDay ? `, the latest from ${dayLabel(s.lastDay)}` : ""
                   }.`}
             </p>
-            {warning && <p className="text-[13.5px] leading-relaxed text-ink">{warning}</p>}
+            {warning && <p className="text-[13.5px] leading-relaxed text-fg">{warning}</p>}
           </>
         )}
         <div className="flex flex-wrap items-center gap-2">

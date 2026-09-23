@@ -22,7 +22,7 @@ export function numCtxSetting(value: string): number {
 
 /**
  * Reads Settings and returns the configured provider.
- * - "local": a model on this computer. Ollama by default (Ember starts it and
+ * - "local": a model on this computer. Ollama by default (Elytra starts it and
  *   keeps the model loaded, see localModel.ts); or any OpenAI-style server
  *   such as LM Studio. Nothing leaves the computer.
  * - "cloud": a hosted OpenAI-compatible endpoint with a free tier (Groq,

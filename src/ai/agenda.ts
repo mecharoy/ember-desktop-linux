@@ -1,4 +1,4 @@
-// The checklist Ember makes before a conversation, in coach and therapist
+// The checklist Elytra makes before a conversation, in coach and therapist
 // styles: what to talk about from the past, today and the future. Made once
 // from the same material the counselor reads (context.ts), shown beside the
 // chat, where they can cross items out, and handed to the counselor on every
@@ -47,8 +47,8 @@ export function parseChecklist(parsed: unknown): AgendaItem[] {
   return items.slice(0, 8);
 }
 
-export const AGENDA_SYSTEM_PROMPT = `You are Ember's planning step. Before a conversation
-with someone about their day, you read what Ember knows and write a short
+export const AGENDA_SYSTEM_PROMPT = `You are Elytra's planning step. Before a conversation
+with someone about their day, you read what Elytra knows and write a short
 checklist of what the conversation should cover. It is shown to them, and
 they can cross out anything they don't want to talk about.
 

@@ -1,4 +1,4 @@
-// The checklist Ember makes before a conversation (migration 0013): what to
+// The checklist Elytra makes before a conversation (migration 0013): what to
 // talk about from the past, today and the future. One per day.
 
 import { getDb } from "./client";

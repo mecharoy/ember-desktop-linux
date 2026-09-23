@@ -14,7 +14,7 @@ const launchedAt = Date.now();
 
 /** How long after the last message background jobs keep waiting. */
 const QUIET_MS = 15 * 60 * 1000;
-/** Jobs wait this long after Ember opens, when a conversation often starts. */
+/** Jobs wait this long after Elytra opens, when a conversation often starts. */
 const LAUNCH_GRACE_MS = 3 * 60 * 1000;
 
 /** The signal a request made now should stop on, if it belongs to a job. */

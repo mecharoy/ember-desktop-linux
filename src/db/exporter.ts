@@ -114,7 +114,7 @@ export async function exportEverything(): Promise<string[]> {
   };
 
   const markdown = [
-    "# Ember journal export",
+    "# Elytra journal export",
     "",
     ...entries.map(entryToMarkdown),
   ].join("\n\n");
@@ -122,8 +122,8 @@ export async function exportEverything(): Promise<string[]> {
   const stamp = localDateStamp();
   const saved: string[] = [];
   for (const file of [
-    { name: `ember-journal-${stamp}.md`, label: "Markdown", ext: "md", text: markdown },
-    { name: `ember-export-${stamp}.json`, label: "JSON", ext: "json", text: JSON.stringify(payload, null, 2) },
+    { name: `elytra-journal-${stamp}.md`, label: "Markdown", ext: "md", text: markdown },
+    { name: `elytra-export-${stamp}.json`, label: "JSON", ext: "json", text: JSON.stringify(payload, null, 2) },
   ]) {
     const target = await save({ defaultPath: file.name, filters: [{ name: file.label, extensions: [file.ext] }] });
     if (!target) continue;

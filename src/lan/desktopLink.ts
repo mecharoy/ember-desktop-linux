@@ -106,7 +106,7 @@ interface ChatRequest {
 const phoneChats = new Map<string, () => void>();
 
 /**
- * A phone chat when this computer isn't on a local model: Ember's own AI
+ * A phone chat when this computer isn't on a local model: Elytra's own AI
  * provider answers, and the reply goes back as Ollama-shaped lines, which is
  * what the phone reads (lan_server.rs).
  */

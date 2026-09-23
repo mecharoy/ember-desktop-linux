@@ -1,4 +1,4 @@
-// The "What's new" card shown once after Ember has been updated.
+// The "What's new" card shown once after Elytra has been updated.
 //
 // Each release with something worth pointing out gets an entry below. A
 // release without one is a small fix, and the card just says so.
@@ -9,6 +9,20 @@ export interface Highlight {
 }
 
 export const RELEASE_NOTES: Record<string, Highlight[]> = {
+  "0.6.0": [
+    {
+      title: "Ember is now Elytra",
+      text: "Same journal, same entries, same folder on your computer. The name, the colours, the type and the icon are new, and there is a beetle in the corner that shows what the app is doing.",
+    },
+    {
+      title: "Insights is now Patterns",
+      text: "The tab changed name. Nothing else about it did.",
+    },
+    {
+      title: "Where your backups go",
+      text: "The daily copy now goes to Documents/Elytra. Anything already in Documents/Ember still restores.",
+    },
+  ],
   "0.5.3": [
     {
       title: "Checklists on every model",
@@ -25,7 +39,7 @@ export const RELEASE_NOTES: Record<string, Highlight[]> = {
       text: "The mood column now fills in once an activity has come up on a few days.",
     },
     {
-      title: "Cleaner Insights",
+      title: "Cleaner Patterns page",
       text: "Notes on how to read each section moved behind its i button.",
     },
     {
@@ -36,7 +50,7 @@ export const RELEASE_NOTES: Record<string, Highlight[]> = {
   "0.5.0": [
     {
       title: "A checklist for the conversation",
-      text: "Before you talk, Ember drafts what to cover: past, today and later. Cross off anything you would rather skip.",
+      text: "Before you talk, Elytra drafts what to cover: past, today and later. Cross off anything you would rather skip.",
     },
     {
       title: "Chat from your phone with any model",
@@ -44,11 +58,11 @@ export const RELEASE_NOTES: Record<string, Highlight[]> = {
     },
     {
       title: "Memory by topic",
-      text: "What Ember remembers is kept in topic files you can read and edit under Insights.",
+      text: "What Elytra remembers is kept in topic files you can read and edit under Patterns.",
     },
     {
       title: "Suggestions",
-      text: "Ember points out patterns and offers small changes. Add any of them to your habits with a click.",
+      text: "Elytra points out patterns and offers small changes. Add any of them to your habits with a click.",
     },
     {
       title: "Your own writing style",

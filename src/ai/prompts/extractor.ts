@@ -16,7 +16,7 @@ export interface ExtractorPromptInput {
   checkIn?: string;
 }
 
-export const EXTRACTOR_SYSTEM_PROMPT = `You are Ember's extraction module.
+export const EXTRACTOR_SYSTEM_PROMPT = `You are Elytra's extraction module.
 Given a saved journal entry, the evening conversation it came from and — when
 they filled it in — the user's own check-in, you distill the day into
 structured data. You never invent: every value must be grounded in something
@@ -65,7 +65,7 @@ after it — matching exactly this shape:
                                   // when they didn't say how it felt.
   "thinking_traps": [{"type": "catastrophising", "quote": "this is going to ruin everything"}],
                                   // thinking traps from cognitive behavioural therapy, ONLY in the
-                                  // USER's own messages — never Ember's lines or the entry. "quote"
+                                  // USER's own messages — never Elytra's lines or the entry. "quote"
                                   // is their exact words copied character for character, at most 25
                                   // words. Most days have none: record one only when it is plainly
                                   // there. "type" is one of:
@@ -103,7 +103,7 @@ export function buildExtractorUserPrompt(input: ExtractorPromptInput): string {
   const transcript =
     input.transcript.length === 0
       ? "(no conversation — the entry was written from captures alone)"
-      : input.transcript.map((m) => `${m.role === "user" ? "User" : "Ember"}: ${m.content}`).join("\n\n");
+      : input.transcript.map((m) => `${m.role === "user" ? "User" : "Elytra"}: ${m.content}`).join("\n\n");
 
   return `DATE: ${input.date}
 

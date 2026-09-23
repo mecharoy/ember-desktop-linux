@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { emit } from "@tauri-apps/api/event";
 import { disable, enable, isEnabled } from "@tauri-apps/plugin-autostart";
 import { getAllSettings, setSetting } from "../db/settings";
+import { setThemeChoice, themeChoice, type ThemeChoice } from "../theme";
+import { IntroFilm } from "../components/Onboarding";
 import type { SettingKey } from "../db/types";
 import { exportEverything, deleteEverything } from "../db/exporter";
 import { getApiKey, setApiKey, getCloudApiKey, setCloudApiKey, getOpenAiKey, setOpenAiKey } from "../secrets";
@@ -67,7 +69,7 @@ export default function Settings({ active = true }: { active?: boolean }) {
   const [showDelete, setShowDelete] = useState(false);
   // Applies at once, without Save. null = the system wouldn't say.
   const [autostart, setAutostart] = useState<boolean | null>(null);
-  const [folder, setFolder] = useState("Documents/Ember");
+  const [folder, setFolder] = useState("Documents/Elytra");
   const [testState, setTestState] = useState<
     { status: "idle" } | { status: "testing" } | { status: "ok" } | { status: "error"; message: string }
   >({ status: "idle" });
@@ -264,7 +266,7 @@ export default function Settings({ active = true }: { active?: boolean }) {
   }
 
   if (!form) {
-    return <div className="px-5 pt-6 text-[14px] text-ink-faint">Loading settings&hellip;</div>;
+    return <div className="px-5 pt-6 text-[14px] text-fg-faint">Loading settings&hellip;</div>;
   }
 
   const hiddenSet = new Set(form.hidden_modules.split(",").map((s) => s.trim()).filter(Boolean));
@@ -380,7 +382,7 @@ export default function Settings({ active = true }: { active?: boolean }) {
             </Field>
 
             <details className="group">
-              <summary className="cursor-pointer list-none text-[14px] text-ink-soft">
+              <summary className="cursor-pointer list-none text-[14px] text-fg-dim">
                 <span className="mr-1.5 inline-block transition-transform group-open:rotate-90">&rsaquo;</span>
                 Advanced
               </summary>
@@ -494,7 +496,7 @@ export default function Settings({ active = true }: { active?: boolean }) {
         )}
       </Section>
 
-      <Section title="How much Ember sends the model">
+      <Section title="How much Elytra sends the model">
         <Field label="Context">
           <select className="input" value={form.context_mode || "auto"} onChange={(e) => update("context_mode", e.target.value)}>
             <option value="auto">Automatic: compact for local and free models</option>
@@ -503,7 +505,7 @@ export default function Settings({ active = true }: { active?: boolean }) {
           </select>
           <span className="hint">
             Compact fits small models: a briefing is written before each conversation, older parts of a long chat are
-            summarised, and Insights work in smaller steps.
+            summarised, and the Patterns page is built in smaller steps.
           </span>
         </Field>
       </Section>
@@ -530,7 +532,7 @@ export default function Settings({ active = true }: { active?: boolean }) {
                 ["usual_dinner", "Dinner"],
               ] as const
             ).map(([key, label]) => (
-              <label key={key} className="flex flex-col gap-1 text-[12px] text-ink-faint">
+              <label key={key} className="flex flex-col gap-1 text-[12px] text-fg-faint">
                 {label}
                 <input type="time" className="input w-full" value={form[key]} onChange={(e) => update(key, e.target.value)} />
               </label>
@@ -546,7 +548,7 @@ export default function Settings({ active = true }: { active?: boolean }) {
         </Field>
         <label className="flex items-center justify-between gap-4">
           <span className="label">
-            Open Ember at login
+            Open Elytra at login
             <span className="hint mt-0.5 block">Keeps {captureHotkeyLabel()} and reminders working.</span>
           </span>
           <input
@@ -554,13 +556,21 @@ export default function Settings({ active = true }: { active?: boolean }) {
             checked={autostart === true}
             disabled={autostart === null}
             onChange={handleAutostartToggle}
-            className="h-5 w-5 shrink-0 accent-ember"
+            className="h-5 w-5 shrink-0 accent-moss"
           />
         </label>
         <div className="flex flex-col gap-2">
           <span className="label">Default paper</span>
           <PaperPicker value={paperById(form.journal_paper).id} onChange={(id) => update("journal_paper", id)} />
         </div>
+        <div className="flex flex-col gap-2">
+          <span className="label">Light or dark</span>
+          <ThemePicker />
+          <span className="hint">
+            The entry always keeps its own paper, whichever you pick. Saved as you choose it — no need to press Save.
+          </span>
+        </div>
+        <IntroFilmRow />
       </Section>
 
       <Section title="Conversation">
@@ -592,28 +602,28 @@ export default function Settings({ active = true }: { active?: boolean }) {
         <p className="hint">Offered every two weeks at the check-in. A score is not a diagnosis.</p>
         <div className="flex flex-col gap-3">
           {INSTRUMENT_ORDER.map((id) => (
-            <label key={id} className="flex items-start gap-3 text-[15px] text-ink">
+            <label key={id} className="flex items-start gap-3 text-[15px] text-fg">
               <input
                 type="checkbox"
                 checked={parseEnabledInstruments(form.assessments_enabled).includes(id)}
                 onChange={() => toggleInstrument(id)}
-                className="mt-1 h-5 w-5 shrink-0 accent-ember"
+                className="mt-1 h-5 w-5 shrink-0 accent-moss"
               />
               <span>
                 {INSTRUMENTS[id].name}
-                <span className="block text-[13px] text-ink-faint">{INSTRUMENTS[id].what}</span>
+                <span className="block text-[13px] text-fg-faint">{INSTRUMENTS[id].what}</span>
               </span>
             </label>
           ))}
         </div>
       </Section>
 
-      <Section title="Insights">
-        <p className="hint">Sections shown on the Insights page.</p>
+      <Section title="Patterns">
+        <p className="hint">Which sections the Patterns page shows.</p>
         <div className="grid grid-cols-1 gap-y-3 min-[380px]:grid-cols-2 min-[380px]:gap-x-3">
           {INSIGHT_MODULES.map((m) => (
-            <label key={m.id} className="flex items-center gap-3 text-[14.5px] text-ink">
-              <input type="checkbox" checked={!hiddenSet.has(m.id)} onChange={() => toggleModule(m.id)} className="h-5 w-5 shrink-0 accent-ember" />
+            <label key={m.id} className="flex items-center gap-3 text-[14.5px] text-fg">
+              <input type="checkbox" checked={!hiddenSet.has(m.id)} onChange={() => toggleModule(m.id)} className="h-5 w-5 shrink-0 accent-moss" />
               {m.label}
             </label>
           ))}
@@ -635,10 +645,10 @@ export default function Settings({ active = true }: { active?: boolean }) {
 
       <Section title="Data">
         <div className="flex flex-col gap-2.5">
-          <label className="flex items-start gap-3 text-[14.5px] text-ink">
+          <label className="flex items-start gap-3 text-[14.5px] text-fg">
             <input
               type="checkbox"
-              className="mt-1 h-4 w-4 accent-ember"
+              className="mt-1 h-4 w-4 accent-moss"
               checked={form.backup_copy === "1"}
               onChange={(e) => update("backup_copy", e.target.checked ? "1" : "")}
             />
@@ -657,7 +667,7 @@ export default function Settings({ active = true }: { active?: boolean }) {
           <RestoreBackup
             label="Restore backup"
             buttonClass="btn-subtle self-start"
-            warning="This replaces all current data. Ember restarts."
+            warning="This replaces all current data. Elytra restarts."
           />
           {backupState.status === "done" && <p className="text-[13.5px] text-moss">Saved to {folder}.</p>}
           {backupState.status === "error" && <p className="text-[13.5px] text-danger">{backupState.message}</p>}
@@ -668,7 +678,7 @@ export default function Settings({ active = true }: { active?: boolean }) {
           </button>
           {!showDelete && (
             <button onClick={() => setShowDelete(true)} className="btn-danger">
-              Reset Ember
+              Reset Elytra
             </button>
           )}
         </div>
@@ -676,7 +686,7 @@ export default function Settings({ active = true }: { active?: boolean }) {
           <p className="text-[13.5px] text-moss">
             Saved:{" "}
             {exportState.names.map((n) => (
-              <span key={n} className="block break-all text-ink-faint">
+              <span key={n} className="block break-all text-fg-faint">
                 {n}
               </span>
             ))}
@@ -700,7 +710,7 @@ export default function Settings({ active = true }: { active?: boolean }) {
               <button
                 onClick={handleDeleteEverything}
                 disabled={deleteConfirm !== "delete"}
-                className="min-h-[42px] rounded-lg bg-danger px-4 py-2 text-[14px] font-medium text-paper transition-opacity disabled:opacity-40"
+                className="min-h-[42px] rounded-lg bg-danger px-4 py-2 text-[14px] font-medium text-ground transition-opacity disabled:opacity-40"
               >
                 Erase
               </button>
@@ -719,23 +729,70 @@ export default function Settings({ active = true }: { active?: boolean }) {
       </Section>
 
       {/* Stays in reach at the bottom of the screen however far down you are. */}
-      <div className="sticky bottom-0 mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-rule bg-paper/95 px-5 py-3">
+      <div className="sticky bottom-0 mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-line bg-ground/95 px-5 py-3">
         <button onClick={handleSave} className="btn-primary">
           Save
         </button>
-        {savedAt && !dirty && <span className="fade-up text-[13px] text-ink-faint">Saved</span>}
-        {dirty && <span className="flex-1 text-[12.5px] leading-snug text-ember">Unsaved changes</span>}
+        {savedAt && !dirty && <span className="fade-up text-[13px] text-fg-faint">Saved</span>}
+        {dirty && <span className="flex-1 text-[12.5px] leading-snug text-moss">Unsaved changes</span>}
       </div>
     </div>
   );
 }
 
+/** Light, dark, or whatever the computer is doing. Applied the moment it is
+ *  pressed and written straight to settings, because a theme you have to save
+ *  is a theme you cannot try on. */
+/** The opening film plays itself exactly once, on first run. Anyone who
+ *  already had a journal when they upgraded has never seen it — it ships in
+ *  the app either way, so there should be a way to ask for it. */
+function IntroFilmRow() {
+  const [playing, setPlaying] = useState(false);
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="label">The opening film</span>
+      <button type="button" onClick={() => setPlaying(true)} className="btn-subtle self-start">
+        Play it
+      </button>
+      <span className="hint">About half a minute. Press Escape or Skip to stop it.</span>
+      {playing && <IntroFilm onDone={() => setPlaying(false)} />}
+    </div>
+  );
+}
+function ThemePicker() {
+  const [choice, setChoice] = useState<ThemeChoice>(() => themeChoice());
+  const options: { id: ThemeChoice; label: string }[] = [
+    { id: "system", label: "System" },
+    { id: "light", label: "Light" },
+    { id: "dark", label: "Dark" },
+  ];
+  return (
+    <div className="flex flex-wrap gap-1.5" role="group" aria-label="Light or dark">
+      {options.map((o) => (
+        <button
+          key={o.id}
+          type="button"
+          aria-pressed={choice === o.id}
+          onClick={() => {
+            setChoice(o.id);
+            void setThemeChoice(o.id);
+          }}
+          className={`min-h-[38px] rounded-full border px-4 text-[13.5px] transition-colors duration-200 ${
+            choice === o.id ? "border-moss bg-moss text-ground" : "border-line text-fg-dim"
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
 function Section({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-4 border-t border-rule px-5 py-6 first-of-type:border-t-0">
+    <section className="flex flex-col gap-4 border-t border-line px-5 py-6 first-of-type:border-t-0">
       <div>
-        <h2 className="section-title">{title}</h2>
-        {note && <p className="hint mt-0.5">{note}</p>}
+        <h2 className="spec text-fg">{title}</h2>
+        {note && <p className="hint mt-1.5">{note}</p>}
       </div>
       <div className="flex min-w-0 flex-col gap-5">{children}</div>
     </section>

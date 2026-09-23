@@ -17,14 +17,15 @@ import RestoreBackup from "./RestoreBackup";
 import StylePicker from "./StylePicker";
 import { DEFAULT_STYLE, type ConversationStyle } from "../ai/prompts/style";
 import { captureHotkeyLabel } from "../platform";
+import Beetle from "../mascot/Beetle";
 
 const PROVIDERS = PROVIDER_OPTIONS;
 
 /** Getting-to-know-you questions (step 2). Each answer maps to a context
  * layer the counselor actually uses: routine, people, open threads, goals and
- * coping style. How Ember should talk is picked above them (StylePicker).
+ * coping style. How Elytra should talk is picked above them (StylePicker).
  * Labels are third-person because the profile is injected into the counselor
- * prompt as "About them: {profile_summary}". All optional. */
+   prompt as "About them: {profile_summary}". All optional. */
 const QUESTIONS = [
   {
     label: "A typical day",
@@ -34,7 +35,7 @@ const QUESTIONS = [
   {
     label: "People who matter",
     prompt: "Who are the important people in your life at the moment?",
-    placeholder: "Names help. Ember will recognise them when they come up",
+    placeholder: "Names help. Elytra will recognise them when they come up",
   },
   {
     label: "Currently weighing on them",
@@ -53,122 +54,92 @@ const QUESTIONS = [
   },
 ] as const;
 
-function Wordmark({ size }: { size: "large" | "medium" }) {
+function Wordmark({ size, mark = true }: { size: "large" | "medium"; mark?: boolean }) {
   const large = size === "large";
   return (
     <div className="flex items-center gap-3">
-      <img
-        src="/logo-mark.png"
-        alt=""
-        aria-hidden="true"
-        draggable={false}
-        className={`select-none ${large ? "h-12 w-12" : "h-9 w-9"}`}
-      />
-      <span className={`font-serif leading-none tracking-[-0.03em] text-ink ${large ? "text-[48px]" : "text-[32px]"}`}>
-        Ember
+      {mark && (
+        <img
+          src="/logo.svg"
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          className={`select-none rounded-[10px] ${large ? "h-11 w-11" : "h-9 w-9"}`}
+        />
+      )}
+      <span className={`font-serif leading-none tracking-[-0.015em] text-fg ${large ? "text-[52px]" : "text-[34px]"}`}>
+        Elytra
       </span>
     </div>
   );
 }
 
-type Box = { top: number; left: number; width: number; height: number };
-
-/** The intro clip (public/intro.mp4). It first plays over the whole screen;
- *  when it ends (or on Skip) it shrinks into its card at the top of the page
- *  and keeps looping there, and `onSettled` lets the page show its text.
- *  Without the file, the wordmark stands in and the page shows at once. */
-function IntroVideo({ scrollerRef, onSettled }: { scrollerRef: React.RefObject<HTMLDivElement | null>; onSettled: () => void }) {
-  const slotRef = useRef<HTMLDivElement>(null);
+/**
+ * The film (public/intro.mp4), over the whole screen, once. It ends on the
+ * mark and the name, which is where the app picks up — so when it finishes it
+ * dissolves rather than shrinking into a card. Skip appears after a second,
+ * and a person who has asked for less motion never sees it at all.
+ *
+ * Without the file, or if playback fails, the page shows at once.
+ *
+ * Exported because first run is the only time it plays by itself: anyone who
+ * already had a journal when they upgraded would otherwise never see the film
+ * that ships inside the app. Settings can ask for it.
+ */
+export function IntroFilm({ onDone }: { onDone: () => void }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [failed, setFailed] = useState(false);
-  const [phase, setPhase] = useState<"full" | "shrinking" | "card">(() =>
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "card" : "full",
-  );
-  const [box, setBox] = useState<Box | null>(null);
+  const [showSkip, setShowSkip] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+  const doneRef = useRef(false);
 
-  // Where the card sits inside the scrolling page.
-  const slotBox = (): Box | null => {
-    const slot = slotRef.current;
-    const page = scrollerRef.current;
-    if (!slot || !page) return null;
-    const s = slot.getBoundingClientRect();
-    const p = page.getBoundingClientRect();
-    return { top: s.top - p.top + page.scrollTop, left: s.left - p.left, width: s.width, height: s.height };
-  };
-
-  function shrink() {
-    if (phase !== "full") return;
-    setBox(slotBox());
-    setPhase("shrinking");
+  function finish() {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    setLeaving(true);
+    // Matches the fade below. A timer, not transitionend: the event never
+    // arrives while the window is in the background, and the film must not
+    // be able to trap the app behind it.
+    setTimeout(onDone, 520);
   }
 
   useEffect(() => {
-    if (failed && phase === "full") setPhase("card");
-    // transitionend never comes if the page isn't drawn meanwhile (app in
-    // the background), so the text can't be left hidden.
-    if (phase !== "shrinking") return;
-    const timer = setTimeout(() => setPhase("card"), 900);
-    return () => clearTimeout(timer);
-  }, [failed, phase]);
+    const t = setTimeout(() => setShowSkip(true), 1200);
+    return () => clearTimeout(t);
+  }, []);
 
+  // A long film can't be the only way in: Escape ends it too.
   useEffect(() => {
-    if (phase !== "card") return;
-    setBox(slotBox());
-    onSettled();
-    const video = videoRef.current;
-    if (video) {
-      video.loop = true;
-      if (video.ended || video.paused) video.play().catch(() => {});
-    }
-    const onResize = () => setBox(slotBox());
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [phase]);
-
-  const full = phase === "full";
-  const style: React.CSSProperties = full || !box
-    ? { top: 0, left: 0, width: "100%", height: "100%" }
-    : { top: box.top, left: box.left, width: box.width, height: box.height };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" || e.key === "Enter") finish();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
-    <>
-      {/* Holds the card's place in the page; the clip lands on top of it. */}
-      <div ref={slotRef} className="aspect-[4/5] w-full" aria-hidden="true" />
-      <div
-        style={{
-          ...style,
-          transition: phase === "shrinking" ? "top 700ms cubic-bezier(.4,0,.2,1), left 700ms cubic-bezier(.4,0,.2,1), width 700ms cubic-bezier(.4,0,.2,1), height 700ms cubic-bezier(.4,0,.2,1), border-radius 700ms" : undefined,
-        }}
-        onTransitionEnd={(e) => {
-          if (e.propertyName === "height" && phase === "shrinking") setPhase("card");
-        }}
-        className={`absolute z-10 overflow-hidden bg-paper-deep ${full ? "rounded-none" : "rounded-2xl border border-rule"}`}
-      >
-        {!failed && (
-          <video
-            ref={videoRef}
-            className="h-full w-full object-contain"
-            src="/intro.mp4"
-            autoPlay
-            muted
-            playsInline
-            onEnded={shrink}
-            onError={() => setFailed(true)}
-          />
-        )}
-        {failed && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-            <Wordmark size="large" />
-            <p className="font-serif text-[18px] italic text-ink-soft">A journal that writes itself.</p>
-          </div>
-        )}
-        {full && !failed && (
-          <button onClick={shrink} className="btn-ghost absolute right-3 top-3">
-            Skip
-          </button>
-        )}
-      </div>
-    </>
+    <div
+      className={`fixed inset-0 z-[60] bg-ground-deep transition-opacity duration-500 ${leaving ? "opacity-0" : "opacity-100"}`}
+      style={{ pointerEvents: leaving ? "none" : undefined }}
+    >
+      <video
+        ref={videoRef}
+        className="h-full w-full object-contain"
+        src="/intro.mp4"
+        autoPlay
+        muted
+        playsInline
+        onEnded={finish}
+        onError={finish}
+      />
+      {showSkip && (
+        <button
+          onClick={finish}
+          className="fade-in absolute bottom-6 right-6 rounded-full border border-fg/25 px-4 py-2 font-mono text-[10.5px] uppercase tracking-[0.16em] text-fg/70 transition-colors hover:border-fg/50 hover:text-fg"
+        >
+          Skip
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -176,7 +147,7 @@ function IntroVideo({ scrollerRef, onSettled }: { scrollerRef: React.RefObject<H
  * reminder time, a provider — then an optional second step of
  * get-to-know-you questions that seed the AI's profile so the first evening
  * conversation is already personal. "Skip" stays a first-class exit at both
- * steps. */
+   steps. */
 export default function Onboarding({ onDone, welcomeBack = false }: { onDone: () => void; welcomeBack?: boolean }) {
   const [name, setName] = useState("");
   const [time, setTime] = useState("21:30");
@@ -189,9 +160,10 @@ export default function Onboarding({ onDone, welcomeBack = false }: { onDone: ()
   const [step, setStep] = useState<"intro" | "setup" | "questions">(welcomeBack ? "setup" : "intro");
   const [answers, setAnswers] = useState<string[]>(() => QUESTIONS.map(() => ""));
   const [style, setStyle] = useState<ConversationStyle>(DEFAULT_STYLE);
-  const introScrollerRef = useRef<HTMLDivElement>(null);
-  // The intro text waits until the clip has shrunk into its card.
-  const [introSettled, setIntroSettled] = useState(false);
+  // The film plays over the first screen, once, and is gone after that.
+  const [filmPlaying, setFilmPlaying] = useState(
+    () => !welcomeBack && !window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
   // Welcome back: what the restored journal already had, so the form starts
   // filled in and an unchanged service keeps its own model settings.
   const [restored, setRestored] = useState<{ provider: string; presetId: string } | null>(null);
@@ -240,7 +212,7 @@ export default function Onboarding({ onDone, welcomeBack = false }: { onDone: ()
   }
 
   /** Welcome back exit: the journal is already set up, so only what changed
-   *  is written, and there are no questions to ask. */
+      is written, and there are no questions to ask. */
   async function finishWelcomeBack(save: boolean) {
     setSaving(true);
     if (save) {
@@ -262,7 +234,7 @@ export default function Onboarding({ onDone, welcomeBack = false }: { onDone: ()
   }
 
   /** Step 1 exit. "Set up later" skips everything; saving moves on to the
-   * get-to-know-you questions instead of closing. */
+     get-to-know-you questions instead of closing. */
   async function finish(save: boolean) {
     if (welcomeBack) return finishWelcomeBack(save);
     setSaving(true);
@@ -288,8 +260,8 @@ export default function Onboarding({ onDone, welcomeBack = false }: { onDone: ()
   }
 
   /** Step 2 exit. Answered questions seed the profile table so the very
-   * first counselor session already knows the person; skipping leaves the
-   * profile empty, exactly as before this step existed. */
+ *   first counselor session already knows the person; skipping leaves the
+     profile empty, exactly as before this step existed. */
   async function finishQuestions(save: boolean) {
     setSaving(true);
     // The style picks count either way: they're preselected, not questions.
@@ -306,47 +278,51 @@ export default function Onboarding({ onDone, welcomeBack = false }: { onDone: ()
       if (summary) await setProfileSummary(summary, localStamp());
     }
     await setSetting("onboarded", "1");
-    // Some systems ask once whether Ember may show the evening reminder.
+    // Some systems ask once whether Elytra may show the evening reminder.
     await ensureNotificationPermission();
     onDone();
   }
 
   if (step === "intro") {
     return (
-      <div ref={introScrollerRef} className={`fixed inset-0 z-50 bg-paper ${introSettled ? "overflow-y-auto" : "overflow-hidden"}`}>
-        {/* No .page animation here: its transform would make this box, not the
-            scroller, the frame the full-screen clip is positioned in. */}
-        <div key="intro" className="mx-auto flex min-h-full max-w-[580px] flex-col px-6 pb-8 pt-6">
-          <IntroVideo scrollerRef={introScrollerRef} onSettled={() => setIntroSettled(true)} />
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-ground">
+        {filmPlaying && <IntroFilm onDone={() => setFilmPlaying(false)} />}
+        <div key="intro" className="page mx-auto flex min-h-full max-w-[600px] flex-col px-6 pb-10 pt-12">
+          <div className="flex items-center gap-4">
+            <Beetle size={68} state="idle" />
+            <div>
+              <Wordmark size="large" mark={false} />
+              <p className="spec mt-3">Write it down. Let it open.</p>
+            </div>
+          </div>
+          <span className="seam-rule mt-7" aria-hidden="true" />
 
-          <div
-            className={`flex flex-col transition-opacity duration-500 ${introSettled ? "opacity-100" : "pointer-events-none opacity-0"}`}
-            aria-hidden={!introSettled}
-          >
-          <h1 className="mt-7 font-serif text-[28px] leading-tight tracking-[-0.015em] text-ink">
+          <h1 className="mt-7 font-serif text-[30px] leading-[1.1] tracking-[-0.012em] text-fg">
             Your days, read closely.
           </h1>
-          <p className="mt-2 text-[15px] leading-relaxed text-ink-soft">
-            Every Insight Ember draws is modelled on methods from psychology research and therapy.
+          <p className="mt-2.5 text-[15px] leading-relaxed text-fg-dim">
+            You write a line when something happens. In the evening Elytra asks about it, then writes the day up
+            and keeps what it learns. Everything below is where the reading comes from.
           </p>
 
-          <ul className="mt-5 flex flex-col divide-y divide-rule border-y border-rule">
+          <ul className="mt-6 flex flex-col divide-y divide-line border-y border-line">
             {SCIENCE_HIGHLIGHTS.map((h) => (
-              <li key={h.title} className="flex flex-col gap-0.5 py-3">
-                <span className="font-serif text-[17px] text-ink">{h.title}</span>
-                <span className="text-[13.5px] leading-snug text-ink-faint">{h.line}</span>
+              <li key={h.title} className="flex flex-col gap-1 py-3.5">
+                <span className="spec-strong">{h.title}</span>
+                <span className="text-[13.5px] leading-snug text-fg-dim">{h.line}</span>
               </li>
             ))}
           </ul>
 
           <button onClick={() => setStep("setup")} className="btn-primary mt-8">
-            Get started
+            Set it up
           </button>
           <div className="mt-2 flex flex-col text-center">
-            <RestoreBackup label="Used Ember before? Restore your backup" buttonClass="btn-ghost" />
+            <RestoreBackup label="Been here before? Restore a backup" buttonClass="btn-ghost" />
           </div>
-          <p className="hint text-center">Using Ember on your phone? Pair it later in Settings &rsaquo; Sync with phone.</p>
-          </div>
+          <p className="hint text-center">
+            Elytra on a phone too? Pair them later in Settings &rsaquo; Sync with phone.
+          </p>
         </div>
       </div>
     );
@@ -355,14 +331,14 @@ export default function Onboarding({ onDone, welcomeBack = false }: { onDone: ()
   if (step === "questions") {
     const answered = answers.filter((a) => a.trim()).length;
     return (
-      <div className="fixed inset-0 z-50 overflow-y-auto bg-paper">
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-ground">
         <div key="questions" className="page mx-auto flex min-h-full max-w-[580px] flex-col justify-center px-6 py-10">
           <Wordmark size="medium" />
-          <h1 className="mt-6 font-serif text-[26px] leading-tight text-ink">
-            Help Ember get to know you{name.trim() ? `, ${name.trim()}` : ""}
+          <h1 className="mt-6 font-serif text-[26px] leading-tight text-fg">
+            Help Elytra get to know you{name.trim() ? `, ${name.trim()}` : ""}
           </h1>
-          <p className="mt-2 text-[13.5px] leading-relaxed text-ink-soft">
-            How should Ember talk with you? You can change this later in Settings.
+          <p className="mt-2 text-[13.5px] leading-relaxed text-fg-dim">
+            How should Elytra talk with you? You can change this later in Settings.
           </p>
 
           <div className="mt-6">
@@ -374,15 +350,15 @@ export default function Onboarding({ onDone, welcomeBack = false }: { onDone: ()
             />
           </div>
 
-          <p className="mt-8 border-t border-rule pt-6 text-[13.5px] leading-relaxed text-ink-soft">
-            A few personal questions, all optional. Your answers shape how Ember talks with you from the first
-            conversation, and they&rsquo;re stored on this computer.
+          <p className="mt-8 border-t border-line pt-6 text-[13.5px] leading-relaxed text-fg-dim">
+            Then five questions, all optional. What you answer shapes the very first conversation instead of it
+            starting cold. The answers stay on this computer.
           </p>
 
           <div className="mt-5 flex flex-col gap-5">
             {QUESTIONS.map((q, i) => (
               <label key={q.label} className="flex flex-col gap-1.5">
-                <span className="font-serif text-[16px] text-ink">{q.prompt}</span>
+                <span className="font-serif text-[19px] leading-snug text-fg">{q.prompt}</span>
                 <textarea
                   className="input resize-none"
                   rows={2}
@@ -397,10 +373,10 @@ export default function Onboarding({ onDone, welcomeBack = false }: { onDone: ()
 
           <div className="mt-8 flex flex-col items-stretch gap-2">
             <button onClick={() => finishQuestions(true)} disabled={saving} className="btn-primary">
-              {saving ? "Saving…" : answered > 0 ? "Start journaling" : "Start without answering"}
+              {saving ? "Saving…" : answered > 0 ? "Open the journal" : "Open it without answering"}
             </button>
             <button onClick={() => finishQuestions(false)} disabled={saving} className="btn-ghost">
-              Skip. Ember will learn as you go
+              Skip &mdash; it will pick this up as you go
             </button>
           </div>
         </div>
@@ -409,35 +385,35 @@ export default function Onboarding({ onDone, welcomeBack = false }: { onDone: ()
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-paper">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-ground">
       <div className="page mx-auto flex min-h-full max-w-[580px] flex-col justify-center px-6 py-10">
         {welcomeBack ? (
           <>
             <Wordmark size="medium" />
-            <h1 className="mt-6 font-serif text-[28px] leading-tight tracking-[-0.015em] text-ink">
+            <h1 className="mt-6 font-serif text-[28px] leading-tight tracking-[-0.015em] text-fg">
               Welcome back{name.trim() ? `, ${name.trim()}` : ""}
             </h1>
-            <p className="mt-2 border-b border-rule pb-5 text-[15px] leading-relaxed text-ink-soft">
-              Your journal is back. Backups don&rsquo;t keep API keys, so check the AI provider to pick up where you left off.
+            <p className="mt-2 border-b border-line pb-5 text-[15px] leading-relaxed text-fg-dim">
+              Your journal is back. A backup never holds API keys, so check the provider below before you carry on.
             </p>
           </>
         ) : (
           <>
             <Wordmark size="large" />
-            <p className="mt-3 font-serif text-[20px] italic text-ink-soft">A journal that writes itself.</p>
+            <p className="spec mt-4">Write it down. Let it open.</p>
 
-            <ol className="mt-7 flex flex-col gap-3 border-y border-rule py-5 text-[15px] leading-relaxed text-ink-soft">
+            <ol className="mt-7 flex flex-col gap-4 border-y border-line py-5 text-[15px] leading-relaxed text-fg-dim">
               <li className="flex gap-4">
-                <span className="w-3 font-serif text-[18px] italic text-ember">1</span>
-                <span>During the day, press {captureHotkeyLabel()} anywhere and jot down what happened. Five seconds.</span>
+                <span className="mt-[3px] w-5 shrink-0 font-mono text-[11px] tracking-[0.1em] text-moss">01</span>
+                <span>Press {captureHotkeyLabel()} anywhere during the day and write the line. It takes five seconds.</span>
               </li>
               <li className="flex gap-4">
-                <span className="w-3 font-serif text-[18px] italic text-ember">2</span>
-                <span>Later in the day, Ember starts a short conversation about it. You just answer.</span>
+                <span className="mt-[3px] w-5 shrink-0 font-mono text-[11px] tracking-[0.1em] text-moss">02</span>
+                <span>In the evening Elytra asks about those lines. You answer; it does the writing.</span>
               </li>
               <li className="flex gap-4">
-                <span className="w-3 font-serif text-[18px] italic text-ember">3</span>
-                <span>Ember writes the journal entry by hand on the paper you pick, and learns your patterns over time.</span>
+                <span className="mt-[3px] w-5 shrink-0 font-mono text-[11px] tracking-[0.1em] text-moss">03</span>
+                <span>The day goes down by hand on the paper you choose, and what keeps coming back shows up under Patterns.</span>
               </li>
             </ol>
           </>
@@ -446,7 +422,7 @@ export default function Onboarding({ onDone, welcomeBack = false }: { onDone: ()
         <div className="mt-7 flex flex-col gap-5">
           <div className="grid grid-cols-[1fr_auto] gap-3">
             <label className="flex min-w-0 flex-col gap-1.5">
-              <span className="label">What should Ember call you?</span>
+              <span className="label">What should it call you?</span>
               <input className="input" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
             </label>
             <label className="flex w-32 flex-col gap-1.5">
@@ -465,7 +441,7 @@ export default function Onboarding({ onDone, welcomeBack = false }: { onDone: ()
                   ["dinner", "Dinner"],
                 ] as const
               ).map(([k, label]) => (
-                <label key={k} className="flex flex-col gap-1 text-[12px] text-ink-faint">
+                <label key={k} className="flex flex-col gap-1 text-[12px] text-fg-faint">
                   {label}
                   <input
                     type="time"
@@ -557,7 +533,7 @@ export default function Onboarding({ onDone, welcomeBack = false }: { onDone: ()
 
         <div className="mt-8 flex flex-col items-stretch gap-2">
           <button onClick={() => finish(true)} disabled={saving} className="btn-primary">
-            {saving ? "Saving…" : welcomeBack ? "Continue" : "Start journaling"}
+            {saving ? "Saving…" : welcomeBack ? "Continue" : "Next"}
           </button>
           <button onClick={() => finish(false)} disabled={saving} className="btn-ghost">
             {welcomeBack ? "Do it later" : "Set up later"}

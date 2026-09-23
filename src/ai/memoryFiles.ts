@@ -1,4 +1,4 @@
-// Ember's memory as a few short files: About me (the profile), People,
+// Elytra's memory as a few short files: About me (the profile), People,
 // Behaviours, Patterns and Goals, plus the Topics kept by ai/topics.ts. They
 // are rewritten after the weekly review from what the other layers learned,
 // shown in Insights > Memory where they can be edited, and read by the
@@ -38,7 +38,7 @@ const FilesSchema = z.object({
   goals: FileText,
 });
 
-export const MEMORY_FILES_SYSTEM_PROMPT = `You keep Ember's memory files about one person:
+export const MEMORY_FILES_SYSTEM_PROMPT = `You keep Elytra's memory files about one person:
 short notes a counselor would keep, so that later conversations — some with
 small AI models that can only read a few lines — know who they are talking
 to. Rewrite the four files from everything you are given.
@@ -182,7 +182,7 @@ function topicLine(t: Topic): string {
 }
 
 /**
- * Every line Ember remembers, as candidates for relevance.ts: the profile,
+ * Every line Elytra remembers, as candidates for relevance.ts: the profile,
  * the files, open topics, the latest summary's loose ends, the last week's
  * day summaries and the user's documents. `base` keeps the profile and
  * open topics in play even without a word in common with today.

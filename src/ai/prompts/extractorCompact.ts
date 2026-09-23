@@ -50,7 +50,7 @@ function names(list: string[] | undefined): string {
 }
 
 /** Shared material for both parts. Only their own messages are included:
- *  Ember's side is in the entry already, and it isn't theirs to quote. */
+ *  Elytra's side is in the entry already, and it isn't theirs to quote. */
 export function buildExtractCompactPrompt(input: ExtractorPromptInput, theirWords: string): string {
   return `DATE: ${input.date}
 

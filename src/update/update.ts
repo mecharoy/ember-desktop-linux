@@ -1,14 +1,14 @@
-// Keeping Ember current without anyone sending a file.
+// Keeping Elytra current without anyone sending a file.
 //
 // Each GitHub release carries the installers plus a small latest.json saying
 // which version it is (written by .github/workflows/release.yml, in the same
-// shape Tauri's own updater uses, minus signatures). Ember reads that file,
+// shape Tauri's own updater uses, minus signatures). Elytra reads that file,
 // compares versions, and only when the release is genuinely newer does it say
 // anything. Nothing is downloaded or installed behind the user's back: the
 // download opens in their browser and the installer's last click is theirs.
 //
 // Everything here fails silently. No network, a 404, a half-written JSON file
-// — each one ends with Ember simply not mentioning an update, because an
+// — each one ends with Elytra simply not mentioning an update, because an
 // evening conversation must never be interrupted by release plumbing.
 //
 // The only hosts this can reach are GitHub's, listed in the http allowlist in

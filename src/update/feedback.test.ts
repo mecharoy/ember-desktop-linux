@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { feedbackBody, feedbackIssueUrl, feedbackTitle, MAX_FEEDBACK_CHARS, systemName } from "./feedback";
 
 describe("feedback", () => {
-  const input = { kind: "idea" as const, text: "Let me export a single month\nas a PDF, please.", about: "Ember 0.3.0 · Windows" };
+  const input = { kind: "idea" as const, text: "Let me export a single month\nas a PDF, please.", about: "Elytra 0.3.0 · Windows" };
 
   it("titles the issue from the first line", () => {
     expect(feedbackTitle(input)).toBe("Idea: Let me export a single month");
@@ -10,7 +10,7 @@ describe("feedback", () => {
   });
 
   it("adds version and system only when they chose to include them", () => {
-    expect(feedbackBody(input)).toBe("Let me export a single month\nas a PDF, please.\n---\nEmber 0.3.0 · Windows");
+    expect(feedbackBody(input)).toBe("Let me export a single month\nas a PDF, please.\n---\nElytra 0.3.0 · Windows");
     expect(feedbackBody({ ...input, about: null })).toBe("Let me export a single month\nas a PDF, please.");
   });
 

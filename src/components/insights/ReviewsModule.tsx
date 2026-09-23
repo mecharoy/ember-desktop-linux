@@ -26,18 +26,18 @@ function FormulationView({ json, onOpen }: { json: string | null; onOpen: (label
   const f = parseFormulation(json);
   if (!f) return null;
   return (
-    <div className="mt-1 grid max-w-3xl grid-cols-1 gap-x-8 gap-y-3 border-t border-rule pt-3 md:grid-cols-2">
+    <div className="mt-1 grid max-w-3xl grid-cols-1 gap-x-8 gap-y-3 border-t border-line pt-3 md:grid-cols-2">
       {FORMULATION_KEYS.filter((k) => f[k].length > 0).map((k) => (
         <div key={k}>
-          <p className="text-[12.5px] text-ink">
-            {P_LABELS[k].title} <span className="text-ink-faint">— {P_LABELS[k].plain}</span>
+          <p className="text-[12.5px] text-fg">
+            {P_LABELS[k].title} <span className="text-fg-faint">— {P_LABELS[k].plain}</span>
           </p>
           <ul className="mt-1 flex flex-col gap-0.5">
             {f[k].map((p) => (
               <li key={p.point}>
                 <button
                   onClick={() => onOpen(P_LABELS[k].title.toLowerCase(), p.dates)}
-                  className="text-left font-serif text-[15px] leading-snug text-ink-soft hover:text-ink"
+                  className="text-left text-[14.5px] leading-snug text-fg-dim hover:text-fg"
                   title="Open the entries behind this"
                 >
                   {p.point}
@@ -69,16 +69,16 @@ const SUMMARY_SECTIONS: [keyof FortnightSummary, string][] = [
   ["wellbeing_checks", "Wellbeing questionnaires"],
 ];
 
-/** What Ember carries into conversations, shown in full — no hidden memory. */
+/** What Elytra carries into conversations, shown in full — no hidden memory. */
 function MemoryTab({ summaries, onOpen }: { summaries: MemorySummary[]; onOpen: (label: string, dates: string[]) => void }) {
   const [open, setOpen] = useState<number | null>(summaries[summaries.length - 1]?.number ?? null);
   if (summaries.length === 0) {
     return (
-      <p className="hint max-w-xl">Ember&rsquo;s memory of you starts after two weeks of entries.</p>
+      <p className="hint max-w-xl">Elytra&rsquo;s memory of you starts after two weeks of entries.</p>
     );
   }
   return (
-    <div className="flex flex-col divide-y divide-rule border-y border-rule">
+    <div className="flex flex-col divide-y divide-line border-y border-line">
       {summaries
         .slice()
         .reverse()
@@ -90,36 +90,36 @@ function MemoryTab({ summaries, onOpen }: { summaries: MemorySummary[]; onOpen: 
               <button
                 onClick={() => setOpen(isOpen ? null : row.number)}
                 aria-expanded={isOpen}
-                className="flex w-full items-center justify-between py-2.5 text-left text-[13px] text-ink-soft transition-colors hover:text-ink"
+                className="flex w-full items-center justify-between py-2.5 text-left text-[13px] text-fg-dim transition-colors hover:text-fg"
               >
                 <span>
                   Summary {row.number} · {shortDate(row.period_start)} – {shortDate(row.period_end)} ·{" "}
                   {row.source_days.split(",").filter(Boolean).length} entries
                 </span>
-                <span className={`text-ink-faint transition-transform duration-300 ease-settle ${isOpen ? "rotate-90" : ""}`} aria-hidden="true">
+                <span className={`text-fg-faint transition-transform duration-300 ease-settle ${isOpen ? "rotate-90" : ""}`} aria-hidden="true">
                   &rsaquo;
                 </span>
               </button>
               {isOpen && s && (
                 <div className="fade-up flex max-w-[68ch] flex-col gap-2.5 pb-4">
-                  <p className="font-serif text-[16px] leading-[1.6] text-ink">{s.overview}</p>
+                  <p className="font-serif text-[16px] leading-[1.6] text-fg">{s.overview}</p>
                   {SUMMARY_SECTIONS.filter(([k]) => (s[k] as string).trim()).map(([k, label]) => (
-                    <p key={k} className="text-[13.5px] leading-relaxed text-ink-soft">
-                      <span className="text-ink">{label}.</span> {s[k] as string}
+                    <p key={k} className="text-[13.5px] leading-relaxed text-fg-dim">
+                      <span className="text-fg">{label}.</span> {s[k] as string}
                     </p>
                   ))}
                   {s.threads.length > 0 && (
                     <div>
-                      <p className="text-[13.5px] text-ink">Ongoing threads</p>
+                      <p className="text-[13.5px] text-fg">Ongoing threads</p>
                       <ul className="mt-1 flex flex-col gap-0.5">
                         {s.threads.map((t) => (
                           <li key={t.thread}>
                             <button
                               onClick={() => onOpen(`thread: ${t.thread}`, t.dates)}
                               disabled={t.dates.length === 0}
-                              className="text-left text-[13.5px] leading-snug text-ink-soft enabled:hover:text-ink"
+                              className="text-left text-[13.5px] leading-snug text-fg-dim enabled:hover:text-fg"
                             >
-                              <span className="text-ink-faint">[{t.status}]</span> {t.thread}
+                              <span className="text-fg-faint">[{t.status}]</span> {t.thread}
                               {t.note ? ` — ${t.note}` : ""}
                             </button>
                           </li>
@@ -128,13 +128,13 @@ function MemoryTab({ summaries, onOpen }: { summaries: MemorySummary[]; onOpen: 
                     </div>
                   )}
                   {s.open_loops.length > 0 && (
-                    <p className="text-[13.5px] leading-relaxed text-ink-soft">
-                      <span className="text-ink">Open loops.</span> {s.open_loops.join(" · ")}
+                    <p className="text-[13.5px] leading-relaxed text-fg-dim">
+                      <span className="text-fg">Open loops.</span> {s.open_loops.join(" · ")}
                     </p>
                   )}
                   {s.follow_up.length > 0 && (
-                    <p className="text-[13.5px] leading-relaxed text-ink-soft">
-                      <span className="text-ink">To follow up.</span> {s.follow_up.join(" · ")}
+                    <p className="text-[13.5px] leading-relaxed text-fg-dim">
+                      <span className="text-fg">To follow up.</span> {s.follow_up.join(" · ")}
                     </p>
                   )}
                 </div>
@@ -195,8 +195,10 @@ function ClaimCard({
   onOpen: (label: string, dates: string[]) => void;
 }) {
   return (
-    <div className={`flex-1 rounded-md p-4 ${tone === "warm" ? "bg-moss-wash" : "bg-ember-wash/45"}`}>
-      <h3 className={`font-serif text-[15px] italic ${tone === "warm" ? "text-moss" : "text-ember-deep"}`}>{title}</h3>
+    <div className={`flex-1 rounded-[14px] p-4 ${tone === "warm" ? "bg-moss-wash" : "bg-surface-high/70"}`}>
+      {/* Told apart by the ground, not by the ink: forest is the only green
+          that clears AA for text on these washes. */}
+      <h3 className={`spec ${tone === "warm" ? "text-moss" : "text-fg-dim"}`}>{title}</h3>
       {claims.length === 0 ? (
         <p className="hint mt-1.5">Nothing with clear evidence this week, and that&rsquo;s fine.</p>
       ) : (
@@ -210,11 +212,11 @@ function ClaimCard({
                 <button
                   onClick={() => onOpen(c.claim, dates)}
                   disabled={dates.length === 0}
-                  className="w-full rounded-md px-2 py-1.5 text-left transition-colors hover:bg-paper/70 disabled:hover:bg-transparent"
+                  className="w-full rounded-md px-2 py-1.5 text-left transition-colors hover:bg-ground/70 disabled:hover:bg-transparent"
                   title={dates.length > 0 ? `Open the ${dates.length} entr${dates.length === 1 ? "y" : "ies"} behind this` : undefined}
                 >
-                  <span className="block font-serif text-[15px] leading-snug text-ink">{c.claim}</span>
-                  <span className="mt-0.5 block text-[12px] leading-snug text-ink-faint">{c.evidence}</span>
+                  <span className="block text-[14.5px] leading-snug text-fg">{c.claim}</span>
+                  <span className="mt-0.5 block text-[12px] leading-snug text-fg-faint">{c.evidence}</span>
                 </button>
               </li>
             );
@@ -235,11 +237,11 @@ function MonthNumbers({ s }: { s: MonthStats }) {
     { label: "best week", value: s.bestWeek ? shortDate(s.bestWeek.weekStart) : "–" },
   ];
   return (
-    <div className="grid grid-cols-5 divide-x divide-rule border-y border-rule py-3">
+    <div className="grid grid-cols-5 divide-x divide-line border-y border-line py-3">
       {items.map((i) => (
         <div key={i.label} className="min-w-0 px-3 first:pl-0">
-          <div className="text-[11px] text-ink-faint">{i.label}</div>
-          <div className="truncate font-serif text-[18px] text-ink" title={i.value}>
+          <div className="text-[11px] text-fg-faint">{i.label}</div>
+          <div className="truncate font-serif text-[18px] text-fg" title={i.value}>
             {i.value}
           </div>
         </div>
@@ -312,13 +314,13 @@ export default function ReviewsModule({
             <button onClick={handleUpdateWeek} disabled={update.busy} className="btn-subtle">
               {update.busy ? "Writing…" : "Update this week's review"}
             </button>
-            {update.message && <span className="text-[12.5px] text-ink-faint">{update.message}</span>}
+            {update.message && <span className="text-[12.5px] text-fg-faint">{update.message}</span>}
           </div>
           {!latest ? (
             <p className="hint max-w-xl">Your first weekly letter lands when a week ends.</p>
           ) : (
             <>
-              <p className="mb-2 text-[12px] text-ink-faint">{weekMeta(latest)}</p>
+              <p className="mb-2 text-[12px] text-fg-faint">{weekMeta(latest)}</p>
               <div className="flex flex-col gap-3 md:flex-row">
                 <ClaimCard
                   title="You're good at"
@@ -335,7 +337,7 @@ export default function ReviewsModule({
                   onOpen={onOpen}
                 />
               </div>
-              <div className="mt-5 flex flex-col divide-y divide-rule border-y border-rule">
+              <div className="mt-5 flex flex-col divide-y divide-line border-y border-line">
                 {reviews.map((r) => {
                   const open = openWeek === r.week_start;
                   return (
@@ -343,18 +345,18 @@ export default function ReviewsModule({
                       <button
                         onClick={() => setOpenWeek(open ? null : r.week_start)}
                         aria-expanded={open}
-                        className="flex w-full items-center justify-between py-2.5 text-left text-[13px] text-ink-soft transition-colors hover:text-ink"
+                        className="flex w-full items-center justify-between py-2.5 text-left text-[13px] text-fg-dim transition-colors hover:text-fg"
                       >
                         <span>{weekMeta(r)}</span>
                         <span
-                          className={`text-ink-faint transition-transform duration-300 ease-settle ${open ? "rotate-90" : ""}`}
+                          className={`text-fg-faint transition-transform duration-300 ease-settle ${open ? "rotate-90" : ""}`}
                           aria-hidden="true"
                         >
                           &rsaquo;
                         </span>
                       </button>
                       {open && (
-                        <p className="fade-up max-w-[64ch] whitespace-pre-wrap pb-4 font-serif text-[16px] leading-[1.65] text-ink">
+                        <p className="fade-up max-w-[64ch] whitespace-pre-wrap pb-4 font-serif text-[16px] leading-[1.65] text-fg">
                           {r.letter}
                         </p>
                       )}
@@ -379,12 +381,12 @@ export default function ReviewsModule({
             const s = parseStats(m.stats);
             return (
               <article key={m.month} className="flex flex-col gap-3">
-                <h3 className="font-serif text-[17px] text-ink">
+                <h3 className="font-serif text-[17px] text-fg">
                   {new Date(`${m.month}-01T12:00:00`).toLocaleDateString(undefined, { month: "long", year: "numeric" })}
                 </h3>
                 {s && <MonthNumbers s={s} />}
-                <p className="max-w-[64ch] whitespace-pre-wrap font-serif text-[16px] leading-[1.65] text-ink">{m.letter}</p>
-                <p className="text-[13px] text-ember-deep">
+                <p className="max-w-[64ch] whitespace-pre-wrap font-serif text-[16px] leading-[1.65] text-fg">{m.letter}</p>
+                <p className="text-[13px] text-moss">
                   <span className="font-serif italic">What changed:</span> {m.changed}
                 </p>
                 <FormulationView json={m.formulation} onOpen={(label, dates) => onOpen(`${m.month} · ${label}`, dates)} />

@@ -7,7 +7,7 @@ import { localStamp } from "../../time";
 type Key = "about" | MemoryFileName;
 
 /**
- * What Ember knows about them, file by file, editable. Their edits are kept:
+ * What Elytra knows about them, file by file, editable. Their edits are kept:
  * the weekly update adds to an edited file but doesn't reword it.
  */
 export default function MemoryFilesEditor() {
@@ -35,7 +35,7 @@ export default function MemoryFilesEditor() {
   }
 
   async function update() {
-    setState({ busy: true, message: "Reading what Ember has learned…" });
+    setState({ busy: true, message: "Reading what Elytra has learned…" });
     const r = await refreshMemoryFiles().catch((e) => ({ ok: false as const, error: String(e) }));
     setState({ busy: false, message: r.ok ? "Updated." : `Couldn't update: ${r.error}` });
     await load();
@@ -49,9 +49,9 @@ export default function MemoryFilesEditor() {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h3 className="font-serif text-[16px] text-ink">What Ember knows about you</h3>
+        <h3 className="font-serif text-[16px] text-fg">What Elytra knows about you</h3>
         <div className="flex items-center gap-3">
-          {state.message && <span className="text-[12.5px] text-ink-faint">{state.message}</span>}
+          {state.message && <span className="text-[12.5px] text-fg-faint">{state.message}</span>}
           <button onClick={update} disabled={state.busy} className="btn-chip">
             {state.busy ? "Updating…" : "Update now"}
           </button>
@@ -63,11 +63,11 @@ export default function MemoryFilesEditor() {
       </p>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {sections.map((s) => (
-          <section key={s.key} className="flex flex-col gap-1.5 rounded-lg border border-rule bg-sheet/60 p-4">
+          <section key={s.key} className="flex flex-col gap-1.5 rounded-lg border border-line bg-surface/60 p-4">
             <div className="flex items-baseline justify-between gap-2">
-              <span className="font-serif text-[15.5px] text-ink">
+              <span className="font-serif text-[15.5px] text-fg">
                 {s.title}
-                {s.edited && <span className="ml-2 font-sans text-[11.5px] text-ink-faint">edited by you</span>}
+                {s.edited && <span className="ml-2 font-sans text-[11.5px] text-fg-faint">edited by you</span>}
               </span>
               {editing?.key !== s.key && (
                 <button onClick={() => setEditing({ key: s.key, text: s.text })} className="btn-chip min-h-[26px] px-2.5 py-0.5 text-[12px]">
@@ -75,7 +75,7 @@ export default function MemoryFilesEditor() {
                 </button>
               )}
             </div>
-            <span className="text-[12px] text-ink-faint">{s.what}</span>
+            <span className="text-[12px] text-fg-faint">{s.what}</span>
             {editing?.key === s.key ? (
               <>
                 <textarea
@@ -95,7 +95,7 @@ export default function MemoryFilesEditor() {
                 </div>
               </>
             ) : (
-              <p className="whitespace-pre-wrap text-[13.5px] leading-relaxed text-ink-soft">{s.text || "Nothing yet."}</p>
+              <p className="whitespace-pre-wrap text-[13.5px] leading-relaxed text-fg-dim">{s.text || "Nothing yet."}</p>
             )}
           </section>
         ))}

@@ -11,6 +11,8 @@ import { updateTopicsAfterConversation } from "../ai/topics";
 import { formatCheckInForPrompt, toCheckInSummary } from "../ai/checkin";
 import type { Message } from "../db/types";
 import EntryFields, { type EntryDraft } from "./EntryFields";
+import Wingbeat from "./Wingbeat";
+import { flash, useMascotClaim } from "../mascot/pulse";
 
 interface Props {
   sessionId: number;
@@ -28,7 +30,7 @@ interface Props {
 type Phase = "loading" | "empty" | "generating" | "ready" | "fallback";
 
 /**
- * The day's journal. Ember writes the entry and saves it on the user's behalf
+ * The day's journal. Elytra writes the entry and saves it on the user's behalf
  * (it stays fully editable). The one thing it never does unasked is replace
  * an entry the user has edited by hand — that needs a click.
  */
@@ -37,7 +39,7 @@ export default function EntryReview({ sessionId, date, transcript, writeNow, onW
   const [draft, setDraft] = useState<EntryDraft | null>(null);
   const [userEdited, setUserEdited] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
-  const [writtenByEmber, setWrittenByEmber] = useState(false);
+  const [writtenByElytra, setWrittenByElytra] = useState(false);
   const [confirmOverwrite, setConfirmOverwrite] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [feedback, setFeedback] = useState("");
@@ -80,7 +82,7 @@ export default function EntryReview({ sessionId, date, transcript, writeNow, onW
     if (!writeNow || phase === "loading" || phase === "generating") return;
     onWriteHandled();
     // The fallback template counts as edited only so it isn't mislabelled as
-    // Ember's writing — it isn't the user's work, so no confirmation for it.
+    // Elytra's writing — it isn't the user's work, so no confirmation for it.
     if (phase === "ready" && userEdited) {
       setConfirmOverwrite(true);
       return;
@@ -100,6 +102,7 @@ export default function EntryReview({ sessionId, date, transcript, writeNow, onW
     });
     if (paper) await setEntryPaper(date, paper);
     setSavedAt(Date.now());
+    flash("saving");
     // Extraction runs in the background after the save is already durable —
     // a model failure stores null metrics and never surfaces here.
     void runDayExtraction({
@@ -107,7 +110,7 @@ export default function EntryReview({ sessionId, date, transcript, writeNow, onW
       entry: { title: d.title, narrative: d.narrative, highlights: d.highlights, counselorNote: d.counselorNote },
       transcript,
     })
-      // Then the topics Ember keeps across conversations (coach and therapist).
+      // Then the topics Elytra keeps across conversations (coach and therapist).
       .then(() => updateTopicsAfterConversation(date, transcript))
       .catch(() => {});
   }
@@ -158,7 +161,7 @@ export default function EntryReview({ sessionId, date, transcript, writeNow, onW
       setUserEdited(false);
       setPhase("ready");
       await persist(written, false);
-      setWrittenByEmber(true);
+      setWrittenByElytra(true);
     } else {
       // Never auto-save the fallback: a template of raw notes would mark the
       // day as journaled when it hasn't really been written.
@@ -192,7 +195,7 @@ export default function EntryReview({ sessionId, date, transcript, writeNow, onW
   async function handleSave() {
     if (!draft) return;
     await persist(draft, userEdited);
-    setWrittenByEmber(false);
+    setWrittenByElytra(false);
   }
 
   async function handleRegenerate() {
@@ -203,11 +206,16 @@ export default function EntryReview({ sessionId, date, transcript, writeNow, onW
     await runGeneration(note || undefined, draft ?? undefined);
   }
 
+  // Writing the entry is the longest wait in the app; the beetle says so.
+  useMascotClaim("entry", "thinking", phase === "generating");
+
+  // All three states below sit inline in the day's column — no scroller of
+  // their own, no flex-1. The column scrolls; the entry is just its last band.
   if (phase === "loading" || phase === "generating") {
     return (
-      <div className="flex flex-1 items-center justify-center gap-3 p-8 pt-24">
-        {phase === "generating" && <span className="ember-dot live" aria-hidden="true" />}
-        <span className={phase === "generating" ? "font-serif text-[16px] italic text-ink-soft" : "text-[13px] text-ink-faint"}>
+      <div className="flex items-center gap-3 px-1 py-6">
+        {phase === "generating" && <Wingbeat />}
+        <span className={phase === "generating" ? "spec text-fg-dim" : "text-[13px] text-fg-faint"}>
           {phase === "generating" ? "Writing the entry…" : "Loading…"}
         </span>
       </div>
@@ -218,13 +226,16 @@ export default function EntryReview({ sessionId, date, transcript, writeNow, onW
     const talked = transcript.length > 0;
     const isToday = date === localDateKey();
     return (
-      <div className="fade-up flex flex-1 flex-col items-center justify-center gap-5 px-8 pb-8 pt-20 text-center">
-        <p className="max-w-sm font-serif text-[17px] leading-relaxed text-ink-soft">
+      <div className="fade-up punct-field flex flex-col items-start gap-4 rounded-xl px-5 py-6">
+        <p className="max-w-md font-serif text-[17px] leading-relaxed text-fg-dim">
           {talked
-            ? `No entry yet. Ember can write it from ${isToday ? "today's" : "this"} conversation, and you can change anything after.`
-            : "No entry yet. Talk it through first for a fuller entry, or let Ember write one from your notes and check-in."}
+            ? `Not written yet. Elytra can write it from ${isToday ? "today's" : "this"} conversation, and you can change anything after.`
+            : "Not written yet. Talk the day through first for a fuller entry, or let Elytra write one from your notes and check-in."}
         </p>
-        <button onClick={onRequestWrite} className="btn-primary">
+        {/* Subtle, not primary: by its own copy this is the SECOND-best way
+            to get an entry. When it was the one bright thing on the page it
+            pulled people past the conversation. */}
+        <button onClick={onRequestWrite} className="btn-subtle">
           {talked ? "Write the entry" : "Write it from my notes"}
         </button>
       </div>
@@ -234,7 +245,7 @@ export default function EntryReview({ sessionId, date, transcript, writeNow, onW
   if (!draft) return null;
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-10 pt-5">
+    <div>
       <EntryFields
         date={date}
         paper={paper}
@@ -243,29 +254,29 @@ export default function EntryReview({ sessionId, date, transcript, writeNow, onW
         onChange={(d) => {
           setDraft(d);
           setUserEdited(true);
-          setWrittenByEmber(false);
+          setWrittenByElytra(false);
         }}
         onSave={handleSave}
         saveLabel={savedAt ? "Save changes" : "Save entry"}
-        savedAt={writtenByEmber ? null : savedAt}
+        savedAt={writtenByElytra ? null : savedAt}
         banner={
           phase === "fallback" && errorMessage ? (
-            <div className="rounded-lg bg-ember-wash/70 px-4 py-3 text-[14px] leading-relaxed text-ember-deep">
-              Ember couldn&rsquo;t write a clean entry ({errorMessage}). This is a rough page made from your notes,
+            <div className="rounded-lg bg-moss-wash/70 px-4 py-3 text-[14px] leading-relaxed text-moss">
+              Elytra couldn&rsquo;t write a clean entry ({errorMessage}). This is a rough page made from your notes,
               and it isn&rsquo;t saved yet. Edit it and save, or try Rewrite.
             </div>
           ) : confirmOverwrite ? (
-            <div className="flex flex-wrap items-center gap-2 rounded-lg bg-ember-wash/70 px-4 py-2.5 text-[14px] text-ember-deep">
+            <div className="flex flex-wrap items-center gap-2 rounded-lg bg-moss-wash/70 px-4 py-2.5 text-[14px] text-moss">
               <span>You edited this entry yourself. Rewrite it from the whole conversation anyway?</span>
-              <button onClick={() => runGeneration()} className="btn-subtle bg-sheet">
+              <button onClick={() => runGeneration()} className="btn-subtle bg-surface">
                 Rewrite
               </button>
               <button onClick={() => setConfirmOverwrite(false)} className="btn-ghost">
                 Keep mine
               </button>
             </div>
-          ) : writtenByEmber ? (
-            <p className="fade-up text-[13px] text-ink-faint">Written and saved by Ember. Tap anywhere on the page to change it.</p>
+          ) : writtenByElytra ? (
+            <p className="fade-up text-[13px] text-fg-faint">Written and saved by Elytra. Tap anywhere on the page to change it.</p>
           ) : undefined
         }
         extraActions={
@@ -303,7 +314,7 @@ export default function EntryReview({ sessionId, date, transcript, writeNow, onW
                 </button>
               </div>
               {userEdited && confirmDiscard && (
-                <div className="flex flex-wrap items-center gap-2 text-[13.5px] text-ember-deep">
+                <div className="flex flex-wrap items-center gap-2 text-[13.5px] text-moss">
                   <span>This replaces your own edits. Go ahead?</span>
                   <button onClick={handleRegenerate} className="btn-subtle">
                     Yes, rewrite

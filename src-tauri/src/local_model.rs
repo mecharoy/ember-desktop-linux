@@ -1,4 +1,4 @@
-// Keeps the local model (Ollama) ready while Ember is open: starts Ollama if
+// Keeps the local model (Ollama) ready while Elytra is open: starts Ollama if
 // it isn't running, loads the chosen model, and lets it go again on quit.
 // Also the path a paired phone's chat takes to reach that model.
 
@@ -14,8 +14,8 @@ use tokio::sync::oneshot;
 #[cfg(target_os = "windows")]
 use crate::CREATE_NO_WINDOW;
 
-/// How long Ollama keeps the model after the last request. Ember refreshes it
-/// well within this while open, so a crashed Ember doesn't pin it for ever.
+/// How long Ollama keeps the model after the last request. Elytra refreshes it
+/// well within this while open, so a crashed Elytra doesn't pin it for ever.
 pub const KEEP_ALIVE: &str = "15m";
 
 #[derive(Clone)]
@@ -45,7 +45,7 @@ impl Default for ModelStatus {
 struct Inner {
     config: Option<Config>,
     status: ModelStatus,
-    /// Ollama started by Ember, stopped again on quit.
+    /// Ollama started by Elytra, stopped again on quit.
     spawned: Option<std::process::Child>,
 }
 
@@ -222,7 +222,7 @@ impl LocalModel {
         }
     }
 
-    /// Unloads the model and stops an Ollama that Ember started.
+    /// Unloads the model and stops an Ollama that Elytra started.
     pub async fn release(&self) {
         let (config, child) = {
             let mut inner = self.inner.lock().unwrap();
@@ -389,7 +389,7 @@ async fn run_local_chat(
 }
 
 /// Streams Ollama's /api/chat reply lines to `on_event`. Only addresses on
-/// this computer, like the rest of Ember's local model settings.
+/// this computer, like the rest of Elytra's local model settings.
 #[tauri::command]
 pub async fn local_chat(
     model_state: tauri::State<'_, LocalModel>,

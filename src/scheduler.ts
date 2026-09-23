@@ -135,7 +135,7 @@ async function checkReminder(): Promise<void> {
   const count = await countUnjournaledCaptures(localDateKey());
   // Only the count, never what the notes say.
   await notify(
-    "Ember",
+    "Elytra",
     count > 0 ? `Ready to talk about today? (${count} note${count === 1 ? "" : "s"} waiting)` : "Ready to talk about today?",
   );
   await emit("reminder:fired");
@@ -148,7 +148,7 @@ async function checkTaskReminders(): Promise<void> {
   const due = await listDueReminders(nowLocalMinute());
   for (const r of due) {
     await markReminderFired(r.id);
-    await notify("Ember reminder", r.text);
+    await notify("Elytra reminder", r.text);
   }
   if (due.length > 0) await emit("reminders:changed");
 }

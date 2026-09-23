@@ -112,26 +112,220 @@ Action: Live test of the compact prompts on the local model, 2026-09-18.
 Cause: Small models get single fields wrong; the schema rejects the whole object for one bad item.
 Fix: cleanCompactPart drops bad list items and clamps numbers before validation; feeling words are split and kept only if typed; thinking traps are left to big models. Rerun passed (src/ai/liveSmall.test.ts).
 
-Problem: A Rust test written from a bash here-document had real line breaks inside a string where "\n" was meant.
-Location: src-tauri/src/terminal.rs (test open_starts_the_first_terminal_on_the_path)
-Action: Adding a test for the Linux terminal launcher, 2026-09-19.
-Cause: Same as the 2026-09-17 entry: the bash here-document changes backslashes before python sees them. It still compiled, which hid the mistake.
-Fix: Replaced the literal with "\n" escapes using the Edit tool. Use Edit or Write for any text with backslashes, never a here-document.
+Problem: moss green stopped being a legal text colour and silently failed WCAG AA everywhere "Connected.", "Found v1.2.3" and "You have the latest version." were shown.
+Location: tailwind.config.js, plus ~12 call sites using text-moss (Settings, UpdatesAndFeedback, ClaudeSubscriptionSetup, CodexSetup, SuggestionsModule, ReviewsModule, ChecklistPanel)
+Action: Swapping the Ember palette for Elytra's brand five during the rename, 2026-09-21.
+Cause: The old `moss` token was #3d6b35, a dark green that cleared 6.8:1 on paper. Elytra's moss is #6e9c6c, a light wing green: 2.8:1 on cream. The token name stayed the same, so every existing `text-moss` kept compiling and quietly became unreadable.
+Fix: Moved all success text to `text-forest` (#3d5a3a, 6.87:1 on cream, 6.2:1 on the washes) and the filled checklist tick to forest as well. `moss` is now documented in tailwind.config.js and CLAUDE.md as a fill-only colour. Verified every pair with a contrast script before committing to the values.
 
-Problem: The Linux build cannot be tested on the SSH servers.
-Location: user2@10.230.64.191 (Ubuntu 20.04) and user@10.228.44.149 (Ubuntu 22.04)
-Action: Trying to build and run the Linux app there, 2026-09-19.
-Cause: Neither server has Rust, Node or internet access; webkit2gtk-4.1 dev files are missing (20.04 has none in apt); sudo asks for a password.
-Fix: Cross-compiled the Linux-only terminal.rs to a static binary (x86_64-unknown-linux-musl) on Windows and ran its 3 tests on user2@10.230.64.191 (all passed). The full app is checked only with cargo check on Windows; nothing was built or run on Linux/Arch.
+Problem: The first candidate chart pair for mood and energy (green #4a9342 + clay #b35f16) failed the data-viz validator at CVD delta-E 4.0 under deutan.
+Location: src/components/insights/palette.ts
+Action: Re-deriving the chart palette from the brand colours, 2026-09-21.
+Cause: Green against orange is the classic red-green confusion; a colour-blind reader cannot separate the mood line from the energy line. Four separate green/clay pairings were tried and all failed the same check.
+Fix: mood #43903c with energy #1f6f9c (green and slate blue) passes every check: CVD 19.0 protan, normal-vision 19.7, both over 3:1 on the page. The one-hue ramp is #87b47e -> #255024; a lighter first step fails the 2:1 light-end floor against cream. Never eyeball this - run the validator.
 
-Problem: Linux keys and phone pairing keys would be lost at every reboot.
-Location: src-tauri/Cargo.toml (keyring feature "linux-native")
-Action: Reading the keyring crate before Linux work, 2026-09-19.
-Cause: "linux-native" stores secrets in the kernel keyring, which is empty after a reboot.
-Fix: Linux now uses "sync-secret-service" + "crypto-rust" (GNOME Keyring / KWallet / KeePassXC).
+Problem: The mascot kit could not be imported: it is a UMD bundle, so in a Vite ESM build `typeof module === 'object'` is false and it only ever assigns `self.ElytraMascot`.
+Location: src/mascot/mascot.js (vendored from elytra-package/mascot-kit)
+Action: Wiring the beetle into the React app, 2026-09-21.
+Cause: The kit ships for plain <script> tags and CommonJS, not for a bundler.
+Fix: Vendored the file with the UMD head and tail swapped for a plain IIFE plus `export default`, and wrote mascot.d.ts by hand because the project is strict TypeScript. Re-vendoring from the kit means re-applying that header; it says so at the top of the file.
 
-Problem: Test open_starts_the_first_terminal_on_the_path failed only on Arch: got "claude", expected "-e claude".
-Location: src-tauri/src/terminal.rs (test), GitHub Actions job "arch"
-Action: First CI run of linux-build, 2026-09-19.
-Cause: The fake terminal script used `echo "$@"`. On Arch /bin/sh is bash, and its echo treats a leading -e as its own option; on Ubuntu (dash) it printed it. A test bug, not an app bug.
-Fix: The script now uses printf '%s\n' "$*", which behaves the same in every shell.
+Problem: The waiting mark (two wing cases either side of the seam) read as a pause button at its real size.
+Location: src/index.css, .wingbeat
+Action: Looking at a screenshot of the built CSS in a headless browser, 2026-09-21.
+Cause: Two 4px upright rounded rectangles with square-ish corners are exactly the pause glyph. Nothing in the code was wrong, so nothing caught it.
+Fix: Gave each wing a tapered radius and a resting rotation of about 9 degrees, so the pair sits slightly parted the way a beetle at rest holds them, and widened the beat to 38 degrees. Only found by rendering the page and looking at it - typecheck and tests both passed the whole time.
+
+Problem: `tauri build` refused to build at all: "Found version mismatched Tauri packages" for tauri-plugin-http (v2.5.9 crate vs v2.6.1 npm) and tauri-plugin-notification (v2.3.3 vs v2.4.0).
+Location: package.json, against src-tauri/Cargo.lock
+Action: First installer build of the renamed app, 2026-09-21.
+Cause: The project copy was made without package-lock.json, so `npm install` resolved the "^2" ranges to the newest minors. The Rust crates stayed pinned by Cargo.lock, and the Tauri CLI refuses when the JS and Rust halves of a plugin are on different minors.
+Fix: Pinned both to exact versions matching the crates ("2.5.9" and "2.3.3", no caret). Copy package-lock.json next time instead of regenerating it.
+
+Problem: Installing the renamed app leaves the old one installed alongside it, both reading the same journal.
+Location: src-tauri/tauri.conf.json productName, as it reaches target/release/nsis/x64/installer.nsi
+Action: Checking what the rename does to an existing install, 2026-09-21.
+Cause: Tauri's NSIS template keys both the install directory ($LOCALAPPDATA\${PRODUCTNAME}) and the uninstall registry entry (...\Uninstall\${PRODUCTNAME}) on productName, not on the bundle identifier. Renaming Ember to Elytra therefore reads as a different product to the installer. tauri-plugin-single-instance goes the other way: it keys on config().identifier, which did not change, so the two builds also treat each other as the same running app.
+Fix: Nothing to change in code - the identifier had to stay so the journal stays put. Told people instead: an upgrade note at the top of README.md and in the GitHub release body says to uninstall Ember before installing Elytra. Android is unaffected; the package name is unchanged, so it installs as an ordinary update.
+
+Problem: The installed app opened to a blank cream window. No content at all - sidebar, chat and tabs all missing, only the title bar and the page background.
+Location: src/components/CounselorChat.tsx, the useMascotClaim("chat", "thinking", busy) call
+Action: Opening the NSIS-installed build against a real journal, 2026-09-21.
+Cause: React error #310, "rendered more hooks than during the previous render". The hook was inserted directly below the `if (!session) return <p>Loading...</p>` early return. On the first render session is null, the component returns early and the hook never runs; once the session loads the component renders past the return and the hook does run. React sees a different number of hooks between renders, throws, and with no error boundary above it unmounts the entire tree - which is exactly a blank window painted in the body's background colour.
+  Why nothing caught it: typecheck, all 366 tests and `vite build` passed the whole time, because none of them render the component twice. The static design preview missed it too - with an empty database the app sits in first-run onboarding and CounselorChat never mounts past its loading state. It only appears with an existing journal.
+Fix: Moved the hook above the early return in both apps, with a comment saying why it has to stay there. Then added the guard that should have existed: eslint with eslint-plugin-react-hooks, `rules-of-hooks` set to error, wired to `npm run lint` in both apps. CLAUDE.md had listed `npm run lint` under Commands for a long time, but no eslint was installed and no config existed, so the promise was empty. Confirmed the rule fires on the unfixed line before fixing it, and that both trees are clean after.
+Lesson: A blank Tauri window is almost always a React render throw. Reproduce it by serving the built dist/ with window.__TAURI_INTERNALS__ stubbed and reading the console - and stub the database with realistic rows, because an empty one takes a different path through the app and hides this class of bug.
+
+Problem: The regenerated app icon had solid white corners instead of transparent ones, so the rounded icon would have sat in a white square on the taskbar.
+Location: the PNG exports of public/logo.svg, and everything src-tauri/icons was then generated from
+Action: Enlarging the beetle in the app icon, 2026-09-21.
+Cause: headless Chrome's --screenshot composites onto an opaque white background by default. The SVG's own rounded rect does not cover the corners, so they came out white rather than transparent, and `tauri icon` propagated that into every size.
+Fix: Render with --default-background-color=00000000, then assert the corner pixel has alpha 0 before writing the file and again after each downscale. Also render once at 1024 and downscale with Pillow rather than screenshotting at each size: a 180x180 headless render came back blank, and a silent blank icon is easy to ship.
+
+Problem: On the dark ground the beetle vanished — only its pale wings showed, the body and head were invisible.
+Location: src/mascot/Beetle.tsx, the ElytraMascot.mount call
+Action: First render after switching the app to the dark "cabinet" ground, 2026-09-21.
+Cause: The mascot kit ships light-on-cream. Its default body token is --b-body:#1D221D, near-black, chosen to sit on a cream page. On the new #171B17 ground that is nearly the same colour, so the beetle's body disappeared and left two floating wings.
+Fix: Mount with { theme: "dark" }, which is the variant the kit already provides (cream body #E4E6D8, pale wings, dark eyes). Written into the Design language section of CLAUDE.md so it is not rediscovered.
+Lesson: A vendored asset carries its own colour assumptions. When the ground flips, audit every vendored thing that paints itself rather than inheriting currentColor.
+
+Problem: A long CSS file written through a quoted bash heredoc failed with "unexpected EOF while looking for matching `'`".
+Location: writing src/index.css
+Action: Replacing the stylesheet for the dark ground, 2026-09-21.
+Cause: The same shell-tool quoting problem already logged in this file on 2026-09-15. The file contains an inline SVG data URI with single-quoted XML attributes, which the tool's heredoc handling does not survive.
+Fix: Wrote the content to the scratchpad with the Write tool and copied it into place — exactly the workaround the earlier entry recommends. Worth reading the old entries before reaching for a heredoc.
+
+Problem: The journal entry page rendered with no paper at all — pale handwriting on the near-black ground instead of the light ruled card, in both apps. The single most visible thing in the design was silently gone.
+Location: src/components/EntryFields.tsx and src/windows/Journal.tsx (the className), against .paper-sheet in src/index.css
+Action: Clicking through to the Journal tab while checking the new dock, 2026-09-21.
+Cause: The step-1 token rename renamed a CSS CLASS whose name merely contained a token word. `paper-sheet` became `paper-surface` in the two .tsx call sites because "surface" is one of the new colour roles, but index.css kept `.paper-sheet`. The class then matched nothing, so the article had no background, no ruling, no margin line and no shadow — only the inline custom properties, which the missing rule never read. All the paper colours were correct and inert.
+Fix: Renamed the two call sites back to `paper-sheet` in both apps. Then swept for the whole class of error: extracted every class defined in index.css and every custom-looking class used in the .tsx files, and diffed the two lists. That turned up a second one — `seam-line` in Onboarding.tsx against `.seam-rule` in the stylesheet — which had silently removed the divider under the wordmark on the first-run screen.
+Lesson: A className is just a string. tsc, eslint, 366+357 tests and `vite build` all pass with a class that matches no rule, so nothing but looking at the page can catch it. After any scripted rename, diff the classes DEFINED in index.css against the classes USED in the components, both directions — defined-but-unused and used-but-undefined are both real bugs.
+
+Problem: In the first dock, pressing a tab moved the other three tabs sideways by up to 55px.
+Location: src/components/Dock.tsx and the .dock-tab rules in src/index.css
+Action: Clicking between Today, Journal and Patterns to check the dock, 2026-09-21.
+Cause: Only the active tab showed its name, and the name expanded sideways inside the button, so the active tab was much wider than the other three. With the row laid out `justify-evenly`, changing page changed which button was wide and the free space was redistributed — so every tab landed somewhere new. A bar that moves under the finger that just pressed it.
+Fix: Fixed every tab at 52px whatever its state and opened the name DOWNWARD inside that width instead (max-height, not max-width), with the row centred rather than evenly spread. Measured before and after by reading the four icons' x positions across a page change: the shift is now 0,0,0,0.
+Lesson: Any navigation whose active item is a different SIZE from its inactive ones will shuffle. Measure positions across a state change rather than trusting that it looks fine in one screenshot.
+
+Problem: The Settings page blanked the whole app — the React tree unmounted with "Cannot read properties of undefined (reading '0')". It looked exactly like the React #310 blank-window bug from earlier the same day.
+Location: the preview harness stub, not the app: scratchpad/preview/stub.js, the lan_info command
+Action: Clicking the Settings tab in the browser preview of the built dist, 2026-09-21.
+Cause: The stub returned `{ enabled, peers, port }` for lan_info. The real Rust command (src-tauri/src/lan_server.rs, struct LanInfo) returns seven more fields, among them `addresses`. PhoneLinkSettings.tsx line 55 reads `info.addresses[0]`, which threw on undefined. The app was fine; the harness was lying.
+Fix: Made the stub return the full LanInfo shape and left a comment there saying it must match the Rust struct. Located it by building once with `npx vite build --sourcemap` and decoding the minified frame through the source map — minified stacks alone say nothing.
+Lesson: A stub that is missing a field fails in exactly the same way as a real bug, and costs the same time. Before believing a crash found through a harness, check the stub's return shape against the real command's struct; and rebuild without --sourcemap afterwards so a 5MB .map does not ship.
+
+Problem: Copying CounselorChat.tsx from elytra-desktop to elytra-mobile silently deleted the phone's LAN live-sync. The mobile build then failed to typecheck on a missing module, which is the only reason it was caught.
+Location: elytra-mobile/src/components/CounselorChat.tsx
+Action: Porting the one-column day from the desktop app to the phone, 2026-09-22.
+Cause: I assumed the file was shared because several files beside it are. It is not: the phone keeps both devices in step with `startLiveSync()` from lan/phoneLink while the talk is open, where the desktop instead holds background jobs off the local model with `makeRoomForConversation()` / `noteConversation()`, and the desktop's composer sends on Enter while the phone's Enter is a newline. Copying wrote the desktop's version over all four differences at once.
+Fix: Rebuilt the mobile file by taking the new desktop version and re-applying exactly those four platform differences, which I recovered by diffing the untouched ember-desktop and ember-mobile copies of the same file. Then swept for the wider risk: no OTHER file that differs in Ember had been flattened in Elytra, so this was the only one. Wrote scratchpad/shared.ps1, which lists which src files really are identical across the two apps (ignoring line endings) and which have platform variants.
+Lesson: Before copying any file between the two apps, check that it is genuinely shared — hash both copies, or run shared.ps1. "It looks like a shared component" is not evidence. The untouched ember-desktop / ember-mobile pair is the reference for what the platform differences were.
+
+Problem: The first-run film played inside a cream letterbox on an otherwise dark app — a pale frame around a dark film, and the "Skip" button was dark-on-dark inside it.
+Location: src/components/Onboarding.tsx, the IntroFilm backdrop
+Action: Looking at first-run onboarding after switching the app to the dark ground, 2026-09-22.
+Cause: Another casualty of the step-1 token rename, and the same shape as the paper-sheet one. The backdrop was `bg-paper` when the app was cream, so the film sat on the app's own colour. The rename turned `paper` into `fg` — correct as a colour, wrong as a role — leaving `bg-fg`, which is the pale TEXT colour. Nothing failed; it just looked wrong, and only on first run, which no test and no ordinary session ever reaches.
+Fix: `bg-ground-deep` for the backdrop and pale tokens for the Skip button, in both apps. Added a `?blank` mode to the preview harness that forces the first-run path, so onboarding can actually be looked at without wiping a database.
+Lesson: A colour rename is safe; a ROLE rename is not. `paper` meant "the app's own surface" in some places and "the light thing" in others, and only the second survived the rename. After any token rename, open every screen that is not the default one — first run, empty states, error states — because that is where the wrong half hides.
+
+Problem: The Edit tool's multi-line replacements kept failing on Journal.tsx with "String to replace not found", although the text was visibly present; single-line replacements on the same file worked.
+Location: elytra-desktop/src/windows/Journal.tsx
+Action: Reworking the entry list into a drawer of cards, 2026-09-22.
+Cause: The file is LF-only, and the edits were being matched against CRLF. Most of this project is LF (163 of 196 files); 33 files are CRLF, and I had made it worse by rewriting two files through PowerShell, which writes CRLF by default.
+Fix: Did the multi-line edits with PowerShell against LF-normalised text, replacing by line range where the anchors were awkward. Put App.tsx and the mobile CounselorChat.tsx back to LF. When editing by line range, print the range first and check the result: I cut two lines too many and broke the JSX, which the typecheck caught immediately.
+Lesson: In this project, write files with LF. If an Edit fails on text you can see, check the file's line endings before assuming the text differs.
+
+Problem: The Android APK would not build at all. Gradle failed on `:app:mergeArm64ReleaseResources` with "Duplicate resources" for color/ic_launcher_background. The APK had not been built since the icon work the day before, so nobody had found out.
+Location: src-tauri/gen/android/app/src/main/res/values/ — colors.xml and ic_launcher_background.xml
+Action: Building the release APK after the UI rebuild, 2026-09-22.
+Cause: `tauri icon` writes its own res/values/ic_launcher_background.xml, and the rebrand had already put the same colour name in colors.xml by hand. Two files defined color/ic_launcher_background and Android refuses to merge that. Worse, the generated one was #fff while the hand-written one was the intended moss #FF3D5A3A — the same white-background mistake that had just been fixed for the Windows icon, arriving by a different route.
+Fix: Moved the generated ic_launcher_background.xml to trash/, leaving the moss definition in colors.xml. gen/android is committed and hand-edited in this project, so anything `tauri icon` or `tauri android init` drops in there has to be reviewed rather than kept.
+Lesson: Tauri's real error was buried under a thirty-deep Io(Env(...)) wrapper that names every environment variable and says nothing. The actual Gradle message ("What went wrong") is ~100 lines earlier in the log. Grep the log for "FAILURE:" or "What went wrong" rather than reading the tail. And a build that has not been run since a change is not a build that works: run the APK build after touching anything under gen/android.
+
+Problem: Opening a day scrolled it straight past the notes to the bottom of the column.
+Location: src/components/CounselorChat.tsx, the autoscroll effect and bottomRef
+Action: Comparing a headless screenshot of the phone layout against the same page in the browser, 2026-09-22.
+Cause: The autoscroll kept from the old design — "if you are near the bottom, follow the newest message" — was written when the chat had a scroller of its own. With the whole day in one column, "near the bottom" is true on mount whenever the day is short enough to nearly fit, so opening it scrolled the notes off the top. The anchor was also below the ENTRY, so a new reply jumped past the answer and down to the journal page.
+Fix: Skip the first pass after mount or a date change, so a day always opens at its beginning, and move the scroll anchor to the end of the TALK rather than the end of the page.
+Lesson: Two renderings of the same page disagreed — a tall headless viewport scrolled, a short one did not — and that disagreement was the bug. When two screenshots of the same state differ, work out why instead of picking the one that looks right.
+
+Problem: Calendar days that had an entry showed their number in the app's pale text on that day's pale paper — unreadable. Reported from a screenshot: "can't read the numbers".
+Location: src/windows/Journal.tsx, the month grid cell
+Action: Picking a day in the Journal calendar, 2026-09-22.
+Cause: The cell is painted with that entry's paper colour to show at a glance which days are written, but it kept `text-fg` — and `fg` is the colour of text ON THE APP'S GROUND, which is pale in the dark theme. Pale on pale.
+Fix: The cell now takes that paper's own ink (`paperById(...).ink`), every one of which is contrast-checked at 7:1 on its own paper in components/paper.ts. Dropped the little moss dot underneath at the same time: the paper already says there is an entry, and the dot was moss on cream, 2.8:1.
+Lesson: A token is only true against the surface it was measured on. The moment an element gets a background that is not `ground` or `surface`, its text colour has to come from wherever that background came from.
+
+Problem: Pressing "Write it from my notes" made a checklist appear under The talk, on a day that was now being written up.
+Location: src/components/CounselorChat.tsx, showChecklist / the preparing state
+Action: Opening a past day and choosing to write the entry rather than talk, 2026-09-22.
+Cause: The checklist is prepared in the background when a conversation starts. Nothing connected that to the decision to skip the conversation, so a request already in flight would land afterwards and render its "Getting ready…" row — reading as though pressing write had opened a checklist. Made worse by the one-column layout: the collapsed row sat directly above a bright "Write it from my notes" button, which was the only obvious thing to press.
+Fix: Wrapping the day, or asking for the entry, now hides the preparation and the checklist outright (`writingInstead`). The talk band says "No conversation this time. The entry was written from your notes." And the entry's own button is `btn-subtle` rather than `btn-primary` — by its own copy it is the second-best way to get an entry, so it should not be the one bright thing on the page.
+Lesson: Collapsing three tabs into one column puts states side by side that never used to be visible together. Every "meanwhile, in the background" state needs to be checked against every other band of the column, not just against the band it belongs to.
+
+Problem: Tapping the beetle gave a different line each time instead of one line about the day.
+Location: src/mascot/companion.ts
+Action: Using the dock companion, 2026-09-22.
+Cause: Each situation held two phrasings and picked between them. The pick was seeded by the date, so it was stable within one situation — but the situation itself moves (the hour band, the note count, the day's stage), and every move produced new wording. It read as a slot machine rather than as something paying attention.
+Fix: One line per situation, full stop. No variants, no seeded pick, no randomness. The words now change only when the day has actually changed.
+Lesson: Variety and attentiveness look the same in a spec and opposite in use. For anything that reports state, one stable sentence beats a rotation.
+
+Problem: `text-moss-deep` on `bg-moss-wash` — dark green on dark green, roughly 1.8:1, in five files.
+Location: windows/Journal.tsx, components/EntryReview.tsx, components/insights/{KeyedRows,ReviewsModule,WellbeingModule}.tsx
+Action: Auditing colour tokens while adding the light theme, 2026-09-22.
+Cause: Left over from the cream era, where `moss-deep` was the dark green you wrote ON a pale wash. When the ground flipped, `moss-wash` became a DARK tint and `moss-deep` stayed dark, so the pair collapsed. The step-1 rename moved the colours correctly and never asked whether the PAIRING still worked.
+Fix: `text-moss` in all five, which clears AA on the wash in both themes (7.1:1 dark, 7.9:1 light).
+Lesson: A palette audit has to check pairs, not tokens. Each colour here was individually correct and individually measured; the bug was only in which two were used together. When inverting a theme, list every foreground/background pair actually used in the code and measure those.
+
+Problem: Every single space in src/components/Onboarding.tsx was replaced by an asterisk, in BOTH apps at once. 5928 asterisks, zero spaces, the file unparseable.
+Location: elytra-desktop and elytra-mobile, src/components/Onboarding.tsx
+Action: A scripted edit to export the IntroFilm component, 2026-09-22.
+Cause: PowerShell array flattening, in a shape that had worked a dozen times that day. The script held its find/replace pairs as `$subs = @( @($old,$new) )` and looped `foreach ($s in $subs) { $t = $t.Replace($s[0], $s[1]) }`. With TWO OR MORE pairs, `@( @(a,b), @(c,d) )` keeps the nesting and `$s[0]` is the find string — which is why every earlier edit was correct. With exactly ONE pair, `@( @(a,b) )` FLATTENS to a two-element array of strings, `$s` becomes a string, and `$s[0]` is its first CHARACTER. The docstring being replaced began with a space and then an asterisk, so the loop ran `Replace(" ", "*")` across the whole file. `$t.Contains($s[0])` was of course true, so the script cheerfully reported "1 of 1".
+Fix: Recovered the file rather than rewriting it. The corruption was a pure byte mapping (0x20 -> 0x2A), so it is reversible given one fact: the only real asterisks in a .tsx file are comment syntax — `/*`, `*/`, `//` and the decorative `*` starting a JSDoc line. scratchpad/unspace.mjs walks the text with that rule, and then PROVES the result by re-applying the corruption to it and requiring a byte-for-byte match with the damaged file. Both files matched exactly; tsc and eslint then passed on both.
+Lesson: Two lessons. First, never write `@( @(a,b) )` in PowerShell — a single nested pair flattens and silently changes what the loop iterates over. Use `,@(a,b)` or two plain variables. Second, and more useful: a deterministic corruption is recoverable, and the corrupted file is its own checksum. Before rewriting a damaged file from memory or from an older copy, ask whether the damage is a reversible mapping — reversing it and proving the round trip loses nothing, where a rewrite silently drops whatever you had forgotten was in there.
+
+Problem: Restoring a backup failed with "Expected the backup file's bytes." Reported as Elytra refusing to take an Ember backup.
+Location: src-tauri/src/lib.rs, the backup_stage command (both apps)
+Action: Restoring a journal from a backup file, 2026-09-22.
+Cause: Nothing to do with the backup, the file, or the rename — the bytes never arrived in the form the command demanded. `backup_stage` accepted only `InvokeBody::Raw`, and Tauri only sends a raw request body over its custom-protocol IPC. On Android it NEVER does (the platform cannot read a request body, so Tauri always uses the postMessage interface), and on desktop it drops to that same fallback permanently after any single failure of the custom protocol. Over postMessage a Uint8Array is JSON-encoded as a list of numbers, so the command saw `InvokeBody::Json` and refused. Restoring on Android could therefore never have worked at all. This was inherited from Ember, unchanged; it only surfaced now because this was the first restore.
+Fix: `picked_bytes()` accepts either body — raw bytes, or a JSON array of numbers it converts back. Applied to both apps. `cargo check` clean.
+Lesson: A Tauri command that takes binary data must not assume the transport. `InvokeBody::Raw` is an optimisation, not a guarantee, and on Android it is never available. Accept both shapes, or send base64 and be explicit about it.
+
+Problem: The beetle's card only ever reported the day's state; it had nothing to say about what the app had actually noticed.
+Location: src/mascot/companion.ts
+Action: Asked for the companion's suggestions to be AI-assisted, 2026-09-22.
+Cause: By design at first — the card had to answer instantly, work offline, and be unable to invent anything about the person, so it was built from a local table only.
+Fix: Once the day is dealt with (written, or a streak milestone) the card asks about one of the suggestions the model ALREADY wrote for Patterns, read out of the `insight_patterns` setting: "Do you think 'morning walk' would work?". So it carries the model's reading of the last sixty days while still making no model call, needing no network, and inventing nothing — every word was either written in this file or written by the model about that person's own journal. The suggestion is chosen by day number, so it is the same all day and works through the list over following days.
+Lesson: "AI-assisted" did not have to mean "calls a model here". The model's output was already on disk, computed for another screen; reusing it kept every property that made the instant local version right.
+
+Problem: A journal entry on the PC never reached the phone, although the two were paired and syncing. Three entries were stuck this way.
+Location: src/db/sync.ts, the origin filter in collectChanges
+Action: Reported as "sync doesn't sync the journals", 2026-09-22.
+Cause: Found by reading the real journal (a copy, structure only). The 2026-09-19 entry had a clean change-log row — rev 2222, not deleted — but `origin = 56adc928…`, the phone's own id. `collectChanges` excludes anything tagged with the peer's id, so the PC would never offer it: as far as the log was concerned the phone wrote it and therefore has it. The phone had since been reinstalled and had nothing. 122 of 581 logged changes carried that tag, 3 of them entries. The rows existed on one device, were wanted on the other, and were invisible to the sync forever.
+  The tag is not wrong in itself — it stops a change bouncing straight back to its author, and it is part of how a reset travels. It is the PERMANENCE that is wrong: "you wrote it" only means "you still have it" while that device keeps its journal.
+Fix: `forgetPeerOrigin(peerId)` clears a peer's tags the moment we learn it holds nothing of ours: in `answerSyncRequest` when a KNOWN peer asks with `since = 0`, and in `finishSyncRound` on the existing `fresh` path. A device that was reinstalled, cleared or restored has no peer record or a reset one, so it asks from 0 — which is exactly the case that needs the rows back. Regression test reproduces the whole story: phone writes a day, it reaches the PC, the phone is wiped, and the next round brings the day back.
+  I first tried removing the origin filter altogether, on the grounds that an echo is harmless. Two tests said otherwise — a wrapped day came back skipped, and a reset stopped erasing what it should. The filter carries reset semantics as well as bandwidth, so the narrow fix is the right one.
+Lesson: Two things. Any "they already have it" optimisation needs an expiry, because the other device can always lose its copy; permanent suppression turns an optimisation into data loss. And when a sync bug is reported, read the change log rather than the code — one query over a copy of the real database named the exact row, the exact tag and the exact count in a couple of minutes, where reading sync.ts had produced three plausible theories and no answer.
+
+Problem: The checklist stopped being visible during a conversation on the desktop.
+Location: src/components/CounselorChat.tsx
+Action: Rebuilding the day as one column (step 3), 2026-09-22.
+Cause: The old layout had the checklist as a side panel on wide windows (`hidden md:flex`) and a compact inline version on narrow ones. Collapsing the three sub-tabs into one column, I kept only the compact inline version — so on the desktop the checklist scrolled away with the rest of the day, which defeats the point of having one while you talk.
+Fix: The day column and the checklist are side by side again on md and wider, with the checklist in its own scroller against the right edge; the compact inline one is now `md:hidden`.
+Lesson: When restructuring a layout, list what the OLD one did at each breakpoint before replacing it. This was a feature that only existed above a breakpoint, so it was invisible at the width I happened to be testing.
+
+Problem: In the Journal, opening a day and pressing "← Journal" sometimes dropped you on the Today tab instead of the Journal list.
+Location: src/useBackButton.ts (both apps); callers App.tsx and windows/Journal.tsx
+Action: Reported by the user, 2026-09-23. Reproduced in a test copy: open a day, switch to Today, come back to Journal, press "← Journal".
+Cause: Each open thing kept one history entry and closed when history dropped below its own depth, numbered in the order the effects ran. React runs a child's effects before its parent's, so when you came back to the Journal with the day still open, the day registered at depth 1 and the TAB at depth 2. Closing the day did history.back() to depth 1, which is below the tab's depth, so the tab closed and App went to Today.
+Fix: One popstate listener and a list of open layers, each with a level (BACK_TAB 0, BACK_PAGE 1, BACK_SHEET 2). Going back closes the deepest level first, whatever order they registered in; closing one any other way removes its own layer and entry. Also: picking a day now puts the calendar away.
+Lesson: Anything that relies on effect ORDER between parent and child will break the first time the child's state outlives a remount of the parent's condition. Give nesting an explicit level instead of inferring it from registration order.
+
+Problem: Headless Edge screenshots of the logo SVG came back as "File not found" or as the previous render.
+Location: elytra-refine-2026-09-23/logo/render.mjs
+Action: Rendering logo drafts to PNG, 2026-09-23.
+Cause: msedge --screenshot returns before it has read the page and written the file. Renaming the wrapper HTML straight after the call removed it before Edge loaded it; and waiting for "the output file exists" returned at once when an older render with the same name was already there.
+Fix: Inline the SVG into the wrapper page, write the screenshot to a fresh unique temp name, poll for THAT file, then copy it over the output.
+Lesson: When a tool finishes asynchronously, wait on something only the new run can produce, never on a path an earlier run may have left behind.
+
+Problem: A long python heredoc passed through the Bash tool failed with "unexpected EOF while looking for matching `'`" and ran nothing.
+Location: Bash tool, while rewriting windows/Insights.tsx
+Action: Applying the Patterns layout, 2026-09-23.
+Cause: A very long quoted heredoc containing JSX was mangled on the way to bash.
+Fix: Wrote the new code and the edit script to files (elytra-refine-2026-09-23/scripts/) and ran the script.
+Lesson: For big multi-line code edits, put the payload in a file with the Write tool; keep shell commands short.
+
+Problem: The recap slideshow opened UNDER the dock instead of over the whole window.
+Location: src/components/insights/Recap.tsx
+Action: First run of the recap, 2026-09-23.
+Cause: The page it opens from carries the `page` entry animation. A transform animation makes that element the containing block for position:fixed children, so "fixed, inset 0, z-70" only covered the page's own box, and the dock sat above it.
+Fix: createPortal(…, document.body).
+Lesson: Any full-screen overlay opened from inside an animated or transformed page must be portalled out; z-index cannot escape a containing block.
+Problem: The recap showed no slides on the phone; its words appeared unstyled at the very bottom of the Patterns page, pushing everything up. The installed desktop build had the same fault.
+Location: src/index.css (both apps)
+Action: Reported by the user after installing the 2026-09-23 build.
+Cause: The recap's styles were added to the DESKTOP index.css. Later, to share a small beetle-card change, the MOBILE index.css was copied over the desktop one — but the mobile copy predated the recap styles, so the copy silently deleted them from both apps. Every recap class became a string that matched no rule, so the portalled overlay rendered as plain text at the end of <body>. Type check, lint and tests all passed; only looking at it would have caught it.
+Fix: Put the recap block and its keyframes back in both files (with explicit per-tone colours instead of color-mix, for older WebViews), re-checked at phone size.
+Lesson: Never sync a shared file by copying one app's copy over the other's unless a diff shows the only difference is the change being shared. And after any file copy, run the class audit this CLAUDE.md already asks for: classes used in components against classes defined in index.css.

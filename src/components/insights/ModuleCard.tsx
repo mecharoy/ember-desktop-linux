@@ -42,8 +42,8 @@ function useInfo(title: string) {
       onClick={() => setOpen((v) => !v)}
       aria-expanded={open}
       aria-label={`About ${title}`}
-      className={`ml-2 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border font-serif text-[13px] italic leading-none transition-colors duration-150 ${
-        open ? "border-ember bg-ember text-paper" : "border-rule-strong text-ink-faint"
+      className={`ml-2.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border font-serif text-[11px] italic leading-none transition-colors duration-150 ${
+        open ? "border-moss bg-moss text-ground" : "border-line-strong text-fg-faint"
       }`}
     >
       i
@@ -54,20 +54,25 @@ function useInfo(title: string) {
     science && open ? (
       <div
         role="dialog"
-        className="fade-up absolute inset-x-0 top-full z-30 mt-2 flex flex-col gap-2 rounded-xl border border-rule bg-sheet p-4 shadow-[0_12px_32px_-12px_rgba(40,35,30,0.35)]"
+        className="fade-up absolute inset-x-0 top-full z-30 mt-2 flex flex-col gap-2 rounded-xl border border-line bg-surface p-4 shadow-[0_14px_34px_-14px_rgba(29,34,29,0.4)]"
       >
-        <p className="text-[14px] leading-relaxed text-ink">{science.read}</p>
-        <p className="text-[13.5px] leading-relaxed text-ink-soft">{science.basis}</p>
-        {science.caution && <p className="text-[13.5px] leading-relaxed text-ink-soft">{science.caution}</p>}
-        {unlock && <p className="text-[13.5px] font-medium leading-relaxed text-ember">{unlock}</p>}
-        <p className="border-t border-rule pt-2 font-serif text-[13px] italic leading-snug text-ink-faint">{science.source}</p>
+        <p className="text-[14px] leading-relaxed text-fg">{science.read}</p>
+        <p className="text-[13.5px] leading-relaxed text-fg-dim">{science.basis}</p>
+        {science.caution && <p className="text-[13.5px] leading-relaxed text-fg-dim">{science.caution}</p>}
+        {unlock && <p className="text-[13.5px] font-medium leading-relaxed text-moss">{unlock}</p>}
+        <p className="border-t border-line pt-2 font-mono text-[11px] leading-snug text-fg-faint">{science.source}</p>
       </div>
     ) : null;
 
   return { ref, button, note };
 }
 
-/** Shared chrome for an Insights section: a rule above, a serif title, no box. */
+/**
+ * Shared chrome for a Patterns section. The heading is a small monospaced
+ * label, the way a drawer is labelled; Instrument Serif is kept for the page
+ * title and for the numbers themselves, so a heading never competes with the
+ * data under it.
+ */
 export function ModuleCard({
   title,
   aside,
@@ -79,9 +84,9 @@ export function ModuleCard({
 }) {
   const info = useInfo(title);
   return (
-    <section className="fade-up border-t border-rule pt-5">
+    <section className="fade-up border-t border-line pt-5">
       <div ref={info.ref} className="relative mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <h2 className="section-title flex items-center">
+        <h2 className="spec flex items-center text-fg">
           {title}
           {info.button}
         </h2>
@@ -109,23 +114,23 @@ export function LockedModule({
   const pct = counted ? Math.min(100, Math.round((have / need) * 100)) : 0;
   const info = useInfo(title);
   return (
-    <section className="border-t border-dashed border-rule-strong pt-5">
+    <section className="border-t border-dashed border-line-strong pt-5">
       <div ref={info.ref} className="relative flex items-center justify-between gap-3">
         {info.note}
-        <h2 className="flex items-center font-serif text-[19px] leading-snug text-ink-faint">
+        <h2 className="spec flex items-center">
           {title}
           {info.button}
         </h2>
         {counted && (
-          <span className="shrink-0 text-[12.5px] tabular-nums text-ink-faint">
+          <span className="shrink-0 font-mono text-[11.5px] tabular-nums text-fg-faint">
             {Math.min(have, need)}/{need}
           </span>
         )}
       </div>
-      <p className="mt-1 font-serif text-[15.5px] italic leading-snug text-ink-soft">{teaser}</p>
+      <p className="mt-2 text-[14.5px] leading-snug text-fg-dim">{teaser}</p>
       {counted && (
-        <div className="mt-3 h-[3px] overflow-hidden rounded-full bg-paper-deep" aria-hidden="true">
-          <div className="h-full rounded-full bg-ember/70 transition-[width] duration-500" style={{ width: `${pct}%` }} />
+        <div className="mt-3 h-[3px] overflow-hidden rounded-full bg-surface-high" aria-hidden="true">
+          <div className="h-full rounded-full bg-moss/70 transition-[width] duration-500" style={{ width: `${pct}%` }} />
         </div>
       )}
     </section>

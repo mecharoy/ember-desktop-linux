@@ -45,7 +45,7 @@ export default function UpdatesAndFeedback({
 
   const effective = source.trim() || DEFAULT_UPDATE_SOURCE;
   const sourceValid = source.trim() === "" || manifestUrlFor(source) !== null;
-  const about = includeAbout ? `Ember ${version || "?"} · ${systemName(navigator.userAgent)}` : null;
+  const about = includeAbout ? `Elytra ${version || "?"} · ${systemName(navigator.userAgent)}` : null;
   const input = { kind, text, about };
   const issueUrl = feedbackIssueUrl(effective, input);
 
@@ -70,21 +70,21 @@ export default function UpdatesAndFeedback({
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
-        <p className="text-[14px] text-ink">This is Ember {version || "…"}.</p>
-        <label className="flex items-center gap-3 text-[14.5px] text-ink">
-          <input type="checkbox" checked={autoCheck} onChange={(e) => onAutoCheckChange(e.target.checked)} className="h-5 w-5 accent-ember" />
-          Look for a new version when Ember opens
+        <p className="text-[14px] text-fg">This is Elytra {version || "…"}.</p>
+        <label className="flex items-center gap-3 text-[14.5px] text-fg">
+          <input type="checkbox" checked={autoCheck} onChange={(e) => onAutoCheckChange(e.target.checked)} className="h-5 w-5 accent-moss" />
+          Look for a new version when Elytra opens
         </label>
         <div className="flex flex-wrap items-center gap-3">
           <button onClick={handleCheck} disabled={check.busy || !sourceValid} className="btn-subtle">
             {check.busy ? "Checking…" : "Check for updates"}
           </button>
           {r?.status === "current" && <span className="text-[13.5px] text-moss">You have the latest version.</span>}
-          {r?.status === "unconfigured" && <span className="text-[13.5px] text-ink-faint">No update source set.</span>}
-          {r?.status === "unreachable" && <span className="text-[13.5px] text-ink-faint">Couldn&rsquo;t reach GitHub.</span>}
+          {r?.status === "unconfigured" && <span className="text-[13.5px] text-fg-faint">No update source set.</span>}
+          {r?.status === "unreachable" && <span className="text-[13.5px] text-fg-faint">Couldn&rsquo;t reach GitHub.</span>}
           {r?.status === "available" && (
-            <span className="flex items-center gap-2 text-[13.5px] text-ink">
-              Ember {r.release.version} is out.
+            <span className="flex items-center gap-2 text-[13.5px] text-fg">
+              Elytra {r.release.version} is out.
               <button onClick={() => openUrl(r.release.downloadUrl).catch(() => {})} className="btn-primary">
                 Download
               </button>
@@ -108,11 +108,11 @@ export default function UpdatesAndFeedback({
           value={text}
           maxLength={MAX_FEEDBACK_CHARS}
           onChange={(e) => setText(e.target.value)}
-          placeholder={kind === "bug" ? "What happened, and what did you expect instead?" : "What would make Ember better for you?"}
+          placeholder={kind === "bug" ? "What happened, and what did you expect instead?" : "What would make Elytra better for you?"}
         />
-        <label className="flex items-center gap-2.5 text-[13px] text-ink-soft">
-          <input type="checkbox" checked={includeAbout} onChange={(e) => setIncludeAbout(e.target.checked)} className="h-3.5 w-3.5 accent-ember" />
-          Include the version and system ({`Ember ${version || "?"} · ${systemName(navigator.userAgent)}`})
+        <label className="flex items-center gap-2.5 text-[13px] text-fg-dim">
+          <input type="checkbox" checked={includeAbout} onChange={(e) => setIncludeAbout(e.target.checked)} className="h-3.5 w-3.5 accent-moss" />
+          Include the version and system ({`Elytra ${version || "?"} · ${systemName(navigator.userAgent)}`})
         </label>
         <div className="flex flex-wrap items-center gap-2">
           <button

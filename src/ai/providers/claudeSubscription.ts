@@ -47,7 +47,7 @@ export async function waitForClaudeCli(
 
 /** Opens a terminal running bare `claude` so its own first-run login flow —
  * which opens the Anthropic login page in the user's browser — takes over.
- * Ember never sees the OAuth token; the CLI writes its own credentials file. */
+ * Elytra never sees the OAuth token; the CLI writes its own credentials file. */
 export async function openClaudeLogin(): Promise<{ ok: true; message: string } | { ok: false; message: string }> {
   try {
     const cliPath = await cliPathOverride();

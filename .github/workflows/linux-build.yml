@@ -1,6 +1,6 @@
 name: linux-build
 
-# Builds and checks Ember on Linux, twice:
+# Builds and checks Elytra on Linux, twice:
 #   ubuntu  - typecheck, unit tests, Rust tests, .deb/.rpm/AppImage, and a short
 #             headless start-up test (Xvfb + a private D-Bus session).
 #   arch    - inside an Arch Linux container: Rust tests, a release build and the
@@ -63,8 +63,8 @@ jobs:
           xvfb-run -a dbus-run-session -- timeout 20 src-tauri/target/release/ember-desktop > run.log 2>&1
           code=$?
           cat run.log
-          if [ "$code" -ne 124 ]; then echo "Ember exited early with code $code"; exit 1; fi
-          if grep -qi "panicked" run.log; then echo "Ember panicked"; exit 1; fi
+          if [ "$code" -ne 124 ]; then echo "Elytra exited early with code $code"; exit 1; fi
+          if grep -qi "panicked" run.log; then echo "Elytra panicked"; exit 1; fi
 
       - uses: actions/upload-artifact@v4
         with:

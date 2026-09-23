@@ -67,7 +67,7 @@ vi.mock("../../db/settings", () => ({
 
 const { createClaudeSubscriptionProvider, forgetCliSession } = await import("./claudeSubscription");
 
-const SYSTEM = "You are Ember.";
+const SYSTEM = "You are Elytra.";
 const CONVO = { conversationId: "7" };
 
 async function drain(iterable: AsyncIterable<string>): Promise<string> {

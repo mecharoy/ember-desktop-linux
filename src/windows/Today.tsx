@@ -8,6 +8,9 @@ import { dismissReminder, listPendingReminders } from "../db/reminders";
 import type { Capture, Reminder } from "../db/types";
 import CounselorChat from "../components/CounselorChat";
 import ReminderBanner from "../components/ReminderBanner";
+import DaySeam from "../components/DaySeam";
+import { flash } from "../mascot/pulse";
+import { getSetting, setSetting } from "../db/settings";
 
 function formatTime(isoLocal: string): string {
   // created_at is already local wall-clock time (see db/captures.ts isoNow),
@@ -29,9 +32,13 @@ function formatDue(dueAt: string): string {
 
 /**
  * The day being journaled: today, or an earlier day opened from the Journal
- * calendar ("Talk it through"), in which case onBackToToday is set. On the
- * phone the day is three pages under one header: the day's notes, the
- * conversation, and the entry it becomes.
+ * calendar ("Talk it through"), in which case onBackToToday is set.
+ *
+ * The day is ONE column, in the order the day happened: what you noted, then
+ * the talk, then the entry it becomes. It used to be three sub-tabs called
+ * Notes / Talk / Journal — with "Journal" also being a top-level tab meaning
+ * something else — so reaching one day took two navigations and the same word
+ * meant two things. The column is the fix.
  */
 export default function Today({
   date,
@@ -52,7 +59,18 @@ export default function Today({
     // Not just this day's: a day that was never journaled keeps its notes here
     // until an entry covers them, so nothing quietly disappears at midnight.
     setCaptures(await listUnjournaledCaptures(date));
-    setStreak(await computeStreak());
+    const run = await computeStreak();
+    setStreak(run);
+    // One hop per whole week reached, ever — not once per page view, and not
+    // again every time the app is opened on the same day. Kept in settings
+    // because the page remounts on every new day and on every launch.
+    if (run > 0 && run % 7 === 0) {
+      const cheered = Number(await getSetting("streak_cheered")) || 0;
+      if (run > cheered) {
+        await setSetting("streak_cheered", String(run));
+        flash("celebrate");
+      }
+    }
     setReminders(await listPendingReminders());
   }
 
@@ -84,31 +102,35 @@ export default function Today({
   const isToday = date === localDateKey();
   const day = new Date(`${date}T12:00:00`);
   const weekday = day.toLocaleDateString(undefined, { weekday: "long" });
-  const monthDay = day.toLocaleDateString(undefined, { month: "long", day: "numeric" });
+  // The drawer label above the heading: "Thu 18 Sep 2026", in small capitals.
+  const stamp = day
+    .toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short", year: "numeric" })
+    .replace(/,/g, "");
 
+  /** The top band of the day's column: what you noted as it happened. */
   const notesPanel = (goTalk: () => void) => (
-    <div className="flex flex-col gap-6 px-5 pb-8 pt-5">
+    <div className="flex flex-col gap-6">
       {isToday && <ReminderBanner onTalk={goTalk} />}
 
-      <button
-        onClick={onQuickNote}
-        className="flex min-h-[56px] w-full items-center gap-3 rounded-xl border border-dashed border-rule-strong bg-sheet/60 px-4 text-left transition-transform duration-150 active:scale-[0.98]"
-      >
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ember text-[20px] leading-none text-paper" aria-hidden="true">
-          +
-        </span>
-        <span className="font-serif text-[17px] text-ink-soft">Jot something down&hellip;</span>
-      </button>
+      <section className="flex flex-col gap-2">
+        <DaySeam
+          label="Notes"
+          trailing={
+            <button onClick={onQuickNote} className="btn-chip gap-1.5" aria-label="Note something">
+              <span aria-hidden="true" className="text-[14px] leading-none text-moss">
+                +
+              </span>
+              Note
+            </button>
+          }
+        />
 
-      <section className="flex flex-col gap-1">
-        <h2 className="font-serif text-[15px] italic text-ink-faint">Notes</h2>
-
-        {captures === null && <p className="text-[14px] text-ink-faint">Loading&hellip;</p>}
+        {captures === null && <p className="text-[14px] text-fg-faint">Loading&hellip;</p>}
 
         {captures !== null && captures.length === 0 && (
-          <p className="text-[14px] leading-relaxed text-ink-soft">
+          <p className="punct-field rounded-lg px-4 py-5 text-[14px] leading-relaxed text-fg-dim">
             {isToday
-              ? "Nothing jotted down yet. Drop a note whenever something happens. The conversation starts along with them."
+              ? "Nothing yet. Note things as they happen — the evening conversation starts from them."
               : "No notes are waiting from that day."}
           </p>
         )}
@@ -120,29 +142,27 @@ export default function Today({
                 {/* Only labelled once there is more than one day in view, so
                     the ordinary case stays a plain list. */}
                 {!d.isToday && (
-                  <h3 className="mb-0.5 mt-1 text-[12.5px] text-ink-faint">
-                    {d.label} · <span className="italic">still unwritten</span>
-                  </h3>
+                  <h3 className="spec mb-1.5 mt-2">{d.label} &middot; still unwritten</h3>
                 )}
                 <ul className="flex flex-col">
                   {d.captures.map((c, i) => (
                     <li
                       key={c.id}
-                      className="ink-in flex items-baseline gap-3 border-b border-rule/70 py-2.5 last:border-b-0"
+                      className="ink-in group flex items-baseline gap-3 py-1.5"
                       style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}
                     >
-                      <span className="w-10 shrink-0 text-[12.5px] tabular-nums text-ink-faint">
+                      <span className="w-11 shrink-0 font-mono text-[11.5px] tabular-nums text-fg-faint">
                         {formatTime(c.created_at)}
                       </span>
                       <span
-                        className={`selectable flex-1 font-serif text-[16.5px] leading-snug ${d.isToday ? "text-ink" : "text-ink-soft"}`}
+                        className={`selectable flex-1 text-[15.5px] leading-snug ${d.isToday ? "text-fg" : "text-fg-dim"}`}
                       >
                         {c.mood_emoji && <span className="mr-1.5 text-[14px]">{c.mood_emoji}</span>}
                         {c.text}
                       </span>
                       <button
                         onClick={() => handleDelete(c.id)}
-                        className="-my-2 -mr-2 flex h-9 w-9 shrink-0 items-center justify-center self-center text-[18px] leading-none text-ink-faint active:text-danger"
+                        className="-my-2 -mr-2 flex h-9 w-9 shrink-0 items-center justify-center self-center text-[18px] leading-none text-fg-faint opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 active:text-danger"
                         aria-label="Delete note"
                       >
                         &times;
@@ -157,16 +177,16 @@ export default function Today({
       </section>
 
       {isToday && reminders.length > 0 && (
-        <section className="flex flex-col gap-1">
-          <h2 className="font-serif text-[15px] italic text-ink-faint">Reminders</h2>
+        <section className="flex flex-col gap-2">
+          <DaySeam label="Reminders" />
           <ul className="flex flex-col">
             {reminders.map((r) => (
-              <li key={r.id} className="flex items-baseline gap-3 border-b border-rule/70 py-2.5 last:border-b-0">
-                <span className="flex-1 text-[15px] text-ink">{r.text}</span>
-                <span className="shrink-0 text-[12.5px] tabular-nums text-ink-faint">{formatDue(r.due_at)}</span>
+              <li key={r.id} className="group flex items-baseline gap-3 py-1.5">
+                <span className="flex-1 text-[15px] text-fg">{r.text}</span>
+                <span className="shrink-0 font-mono text-[11.5px] tabular-nums text-fg-faint">{formatDue(r.due_at)}</span>
                 <button
                   onClick={() => handleDismissReminder(r.id)}
-                  className="-my-2 -mr-2 flex h-9 w-9 shrink-0 items-center justify-center self-center text-[18px] leading-none text-ink-faint active:text-ink"
+                  className="-my-2 -mr-2 flex h-9 w-9 shrink-0 items-center justify-center self-center text-[18px] leading-none text-fg-faint opacity-0 transition-opacity focus-visible:opacity-100 group-hover:opacity-100 active:text-fg"
                   aria-label="Dismiss reminder"
                 >
                   &times;
@@ -181,33 +201,34 @@ export default function Today({
 
   return (
     <div className="flex h-full flex-col">
-      <header className="flex items-end justify-between gap-3 px-5 pb-3 pt-4">
-        <div className="min-w-0">
-          {onBackToToday && (
-            <button onClick={onBackToToday} className="btn-ghost -ml-3 mb-1 min-h-[34px] py-1">
-              &larr; Back to today
-            </button>
-          )}
-          <h1 className="page-title">{weekday}</h1>
-          <p className="page-subtitle">
-            {monthDay}
-            {!isToday && " · looking back"}
-          </p>
-        </div>
-        <div className="flex shrink-0 flex-col items-end gap-1.5 pb-0.5">
+      <header className="px-5 pb-3 pt-4">
+        {/* The drawer rail: what day this is, and how long the run is. */}
+        <div className="flex items-center justify-between gap-3">
+          <span className="spec">{stamp}</span>
           {isToday && streak !== null && streak > 0 && (
-            <p className="text-[13px] text-ink-soft">
-              <span className="font-serif text-[19px] text-ember">{streak}</span> {streak === 1 ? "day" : "days"} in a row
-            </p>
+            <span className="spec-strong">
+              day {streak} &middot; streak
+            </span>
           )}
-          <button onClick={onQuickNote} className="btn-subtle min-h-[36px] rounded-full px-3.5 py-1.5 text-[13.5px]">
-            + Note
-          </button>
+          {!isToday && <span className="spec">looking back</span>}
+        </div>
+        <div className="mt-2 flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            {onBackToToday && (
+              <button onClick={onBackToToday} className="btn-ghost -ml-3 mb-1 min-h-[34px] py-1">
+                &larr; Back to today
+              </button>
+            )}
+            <h1 className="page-title">{weekday}</h1>
+          </div>
+          {/* Nothing sits on the right any more. The beetle and the note
+              button both moved into the dock, which carries them on every
+              page and on both platforms — one mascot, one place. */}
         </div>
       </header>
 
       <div className="min-h-0 flex-1">
-        <CounselorChat date={date} notes={notesPanel} notesCount={captures?.length ?? 0} />
+        <CounselorChat date={date} notes={notesPanel} />
       </div>
     </div>
   );

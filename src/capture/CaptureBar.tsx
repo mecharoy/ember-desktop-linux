@@ -99,7 +99,7 @@ export default function CaptureBar() {
 
   return (
     <div
-      className={`flex w-full items-start gap-3 rounded-[14px] border border-rule bg-sheet px-4 py-3 shadow-[0_1px_6px_rgba(40,35,30,0.14)] transition-[opacity,transform] ease-settle ${
+      className={`flex w-full items-start gap-3 rounded-[14px] border border-line border-l-[3px] border-l-moss bg-surface px-4 py-3 shadow-[0_2px_6px_rgba(0,0,0,0.5),0_16px_36px_-14px_rgba(0,0,0,0.9)] transition-[opacity,transform] ease-settle ${
         visible ? "translate-y-0 opacity-100" : "-translate-y-1 opacity-0"
       }`}
       style={{ transitionDuration: `${FADE_MS}ms` }}
@@ -110,10 +110,10 @@ export default function CaptureBar() {
         value={text}
         onChange={(e) => setText(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="What's on your mind?"
-        className="flex-1 resize-none overflow-y-auto bg-transparent font-serif text-[16px] leading-[1.5] text-ink placeholder:text-ink-faint/80 outline-none"
+        placeholder="What just happened?"
+        className="flex-1 resize-none overflow-y-auto bg-transparent text-[16px] leading-[1.5] text-fg placeholder:text-fg-faint/80 outline-none"
       />
-      {/* Grey until picked, so the row of faces stays quiet on the paper. */}
+      {/* Grey until picked, so the row of faces stays quiet on the ground. */}
       <div className="flex items-center gap-0.5 pt-0.5">
         {MOODS.map(({ emoji, label }) => (
           <button
@@ -124,15 +124,15 @@ export default function CaptureBar() {
             onClick={() => setMood((current) => (current === emoji ? null : emoji))}
             aria-pressed={mood === emoji}
             className={`rounded-md px-1 py-0.5 text-[15px] leading-none transition duration-200 ${
-              mood === emoji ? "bg-paper-deep" : "opacity-45 grayscale hover:opacity-100 hover:grayscale-0"
+              mood === emoji ? "bg-surface-high" : "opacity-45 grayscale hover:opacity-100 hover:grayscale-0"
             }`}
           >
             {emoji}
           </button>
         ))}
       </div>
-      <span className="whitespace-nowrap pt-1 text-[11.5px] tabular-nums text-ink-faint">
-        {count} {count === 1 ? "note" : "notes"} today
+      <span className="spec whitespace-nowrap pt-[7px] tabular-nums">
+        {count} today
       </span>
     </div>
   );

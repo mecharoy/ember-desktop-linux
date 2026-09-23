@@ -13,7 +13,7 @@ export interface ReviewPromptInput {
   userName: string;
 }
 
-export const REVIEW_SYSTEM_PROMPT = `You are Ember's weekly reviewer.
+export const REVIEW_SYSTEM_PROMPT = `You are Elytra's weekly reviewer.
 Once a week you look back over the extracted record of the user's days and
 write three things: a short week-in-review letter, updated insight cards, and
 a refreshed profile summary.

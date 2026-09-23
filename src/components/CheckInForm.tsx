@@ -12,7 +12,7 @@ import type { Instrument } from "../db/types";
 import WellbeingCheck from "./WellbeingCheck";
 import FaceSlider from "./FaceSlider";
 
-const Optional = () => <span className="font-normal text-ink-faint"> (optional)</span>;
+const Optional = () => <span className="font-normal text-fg-faint"> (optional)</span>;
 
 /** One point in the day: a time, or "not yet" / "skipped". Picking one clears
  *  the other; tapping the active choice again clears it. */
@@ -35,7 +35,7 @@ function DayPointRow({
       onClick={() => onChange(value === id ? "" : id)}
       aria-pressed={value === id}
       className={`min-h-[36px] rounded-full border px-3 py-1 text-[13px] transition-colors duration-200 ${
-        value === id ? "border-ember bg-ember text-paper" : "border-rule text-ink-soft"
+        value === id ? "border-moss bg-moss text-ground" : "border-line text-fg-dim"
       }`}
     >
       {text}
@@ -44,7 +44,7 @@ function DayPointRow({
   const isTime = /^\d{2}:\d{2}$/.test(value);
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="w-14 shrink-0 text-[13.5px] text-ink">{label}</span>
+      <span className="w-14 shrink-0 text-[13.5px] text-fg">{label}</span>
       <input
         type="time"
         aria-label={`${label} time`}
@@ -62,8 +62,8 @@ function DayPointRow({
 /** What they did in one stretch of the day. */
 function StretchNote({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
   return (
-    <label className="ml-3 flex flex-col gap-1 border-l border-rule pl-4">
-      <span className="text-[12.5px] text-ink-faint">{label}</span>
+    <label className="ml-3 flex flex-col gap-1 border-l border-line pl-4">
+      <span className="text-[12.5px] text-fg-faint">{label}</span>
       <textarea
         rows={1}
         className="input min-h-[44px] resize-y py-2"
@@ -201,7 +201,7 @@ export default function CheckInForm({
     setDue([]);
   }
 
-  if (!loaded) return <p className="p-8 text-[13px] text-ink-faint">Loading&hellip;</p>;
+  if (!loaded) return <p className="p-8 text-[13px] text-fg-faint">Loading&hellip;</p>;
 
   if (answering && answering.length > 0) {
     const [current, ...rest] = answering;
@@ -242,8 +242,8 @@ export default function CheckInForm({
       <h2 className="section-title">{isToday ? "Check-in" : `Check-in · ${weekday}`}</h2>
 
       {due.length > 0 && (
-        <div className="flex max-w-xl flex-col gap-2 border-l-2 border-ember/60 pl-4">
-          <p className="text-[13.5px] leading-relaxed text-ink">
+        <div className="flex max-w-xl flex-col gap-2 border-l-2 border-moss/60 pl-4">
+          <p className="text-[13.5px] leading-relaxed text-fg">
             Wellbeing check due: {due.map((i) => INSTRUMENTS[i].name).join(" and ")}. About a minute.
           </p>
           <div className="flex gap-2">
@@ -303,15 +303,15 @@ export default function CheckInForm({
           <Optional />
         </span>
         <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1 text-[12px] text-ink-faint">
+          <label className="flex flex-col gap-1 text-[12px] text-fg-faint">
             Got into bed
             <input type="time" className="input w-full" value={bedtime} onChange={(e) => setBedtime(e.target.value)} />
           </label>
-          <label className="flex flex-col gap-1 text-[12px] text-ink-faint">
+          <label className="flex flex-col gap-1 text-[12px] text-fg-faint">
             Got up
             <input type="time" className="input w-full" value={wakeTime} onChange={(e) => setWakeTime(e.target.value)} />
           </label>
-          <label className="flex flex-col gap-1 text-[12px] text-ink-faint">
+          <label className="flex flex-col gap-1 text-[12px] text-fg-faint">
             Minutes to fall asleep
             <input
               type="number"
@@ -325,7 +325,7 @@ export default function CheckInForm({
               placeholder="15"
             />
           </label>
-          <div className="flex flex-col gap-1 text-[12px] text-ink-faint">
+          <div className="flex flex-col gap-1 text-[12px] text-fg-faint">
             How well you slept
             <div className="flex gap-1" role="group" aria-label="How well you slept, 1 to 5">
               {[1, 2, 3, 4, 5].map((n) => (
@@ -336,7 +336,7 @@ export default function CheckInForm({
                   aria-pressed={quality === n}
                   title={n === 1 ? "very poorly" : n === 5 ? "very well" : undefined}
                   className={`h-9 w-9 rounded-full border text-[13.5px] tabular-nums transition duration-200 ease-settle active:scale-90 ${
-                    quality === n ? "border-ember bg-ember text-paper" : "border-rule text-ink-soft"
+                    quality === n ? "border-moss bg-moss text-ground" : "border-line text-fg-dim"
                   }`}
                 >
                   {n}
@@ -345,7 +345,7 @@ export default function CheckInForm({
             </div>
           </div>
         </div>
-        {hoursAsleep !== null && <p className="text-[12.5px] text-ink-faint">About {hoursAsleep} hours asleep.</p>}
+        {hoursAsleep !== null && <p className="text-[12.5px] text-fg-faint">About {hoursAsleep} hours asleep.</p>}
       </div>
 
       <label className="flex max-w-md flex-col gap-1.5">
@@ -365,7 +365,7 @@ export default function CheckInForm({
           <ul className="flex flex-col gap-1.5">
             {pinned.map((key) => (
               <li key={key} className="flex items-center gap-3">
-                <span className="min-w-0 flex-1 truncate text-[15px] text-ink">{key}</span>
+                <span className="min-w-0 flex-1 truncate text-[15px] text-fg">{key}</span>
                 {([true, false] as const).map((done) => (
                   <button
                     key={String(done)}
@@ -374,8 +374,8 @@ export default function CheckInForm({
                     aria-pressed={habits[key] === done}
                     className={`min-h-[36px] rounded-full border px-3.5 py-1 text-[13.5px] transition-colors duration-200 ${
                       habits[key] === done
-                        ? "border-ember bg-ember text-paper"
-                        : "border-rule text-ink-soft hover:border-ink-faint hover:text-ink"
+                        ? "border-moss bg-moss text-ground"
+                        : "border-line text-fg-dim hover:border-fg-faint hover:text-fg"
                     }`}
                   >
                     {done ? "done" : isToday ? "not today" : "not that day"}

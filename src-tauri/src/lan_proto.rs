@@ -1,4 +1,4 @@
-// The wire format between Ember on a computer and Ember on a phone.
+// The wire format between Elytra on a computer and Elytra on a phone.
 // This file is the same in ember-desktop and ember-mobile.
 //
 // Everything after pairing is sealed with AES-256-GCM under a key only the two

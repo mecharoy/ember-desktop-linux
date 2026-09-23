@@ -1,4 +1,4 @@
-// What Ember knows about them, in a few short files they can read and edit
+// What Elytra knows about them, in a few short files they can read and edit
 // (migration 0014). "About me" is the profile table; the rest live here.
 // Written by ai/memoryFiles.ts after each weekly review; read by the
 // conversation, whole for big models and a few relevant lines for small ones.

@@ -23,7 +23,7 @@ export async function summarizeBackup(db: Reader): Promise<BackupSummary> {
                               UNION ALL SELECT MAX(substr(created_at, 1, 10)) FROM captures)) AS lastDay`,
     );
   } catch {
-    throw new Error("That file isn't an Ember backup. Look for \"Ember backup.db\" in Documents/Ember.");
+    throw new Error('That file has no journal in it. Look for "Elytra backup.db" in Documents/Elytra — or "Ember backup.db", if it was saved before the rename.');
   }
   const row = rows[0];
   return {
