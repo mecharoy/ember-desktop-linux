@@ -60,7 +60,7 @@ function Wordmark({ size, mark = true }: { size: "large" | "medium"; mark?: bool
     <div className="flex items-center gap-3">
       {mark && (
         <img
-          src="/logo.svg"
+          src={`${import.meta.env.BASE_URL}logo.svg`}
           alt=""
           aria-hidden="true"
           draggable={false}
@@ -124,7 +124,7 @@ export function IntroFilm({ onDone }: { onDone: () => void }) {
       <video
         ref={videoRef}
         className="h-full w-full object-contain"
-        src="/intro.mp4"
+        src={`${import.meta.env.BASE_URL}intro.mp4`}
         autoPlay
         muted
         playsInline

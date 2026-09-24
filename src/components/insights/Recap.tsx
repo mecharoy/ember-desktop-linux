@@ -105,7 +105,7 @@ function SlideBody({ slide, period, onOpenEntry }: {
               : `Nothing written up between ${longDate(slide.from)} and ${longDate(slide.to)} yet.`
           }
         >
-          <img src="/logo.svg" alt="" aria-hidden="true" className="h-12 w-12 rounded-[12px]" draggable={false} />
+          <img src={`${import.meta.env.BASE_URL}logo.svg`} alt="" aria-hidden="true" className="h-12 w-12 rounded-[12px]" draggable={false} />
         </Frame>
       );
     case "mood": {
