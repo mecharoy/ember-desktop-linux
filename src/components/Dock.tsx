@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Beetle from "../mascot/Beetle";
-import { claim, release } from "../mascot/pulse";
+import { claim, release, usePerchHidden } from "../mascot/pulse";
 import { companionLine, readDay } from "../mascot/companion";
 
 /**
@@ -163,8 +163,14 @@ export default function Dock({ active, onSelect, onQuickNote, hint, status }: Do
 function Perch({ active, onSelect, status }: { active: string; onSelect: (tab: string) => void; status?: string }) {
   const [said, setSaid] = useState<{ line: string; insight: string | null } | null>(null);
   const companionRef = useRef<HTMLDivElement>(null);
+  // While the chat composer's own beetle is on screen, this one steps aside.
+  // It keeps its place in the row, so the dock never shifts under a finger.
+  const away = usePerchHidden();
 
   const hush = useCallback(() => setSaid(null), []);
+  useEffect(() => {
+    if (away) hush();
+  }, [away, hush]);
 
   async function ask() {
     if (said !== null) {
@@ -197,7 +203,7 @@ function Perch({ active, onSelect, status }: { active: string; onSelect: (tab: s
   }, [said, hush]);
 
   return (
-    <div ref={companionRef} className="perch">
+    <div ref={companionRef} className={away ? "perch away" : "perch"} aria-hidden={away || undefined}>
       {said !== null && (
         <div className="companion-card" role="status">
           <p className="text-fg">{said.line}</p>
@@ -229,6 +235,7 @@ function Perch({ active, onSelect, status }: { active: string; onSelect: (tab: s
         onPointerLeave={() => release("hover")}
         className="perch-beetle"
         aria-expanded={said !== null}
+        tabIndex={away ? -1 : undefined}
         aria-label="How today is going"
         title={status ?? undefined}
       >

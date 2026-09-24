@@ -34,7 +34,7 @@ import type { AgendaItem } from "../db/types";
 import Wingbeat from "./Wingbeat";
 import DaySeam from "./DaySeam";
 import Beetle from "../mascot/Beetle";
-import { typing, useMascotClaim } from "../mascot/pulse";
+import { typing, useHidePerch, useMascotClaim } from "../mascot/pulse";
 
 // A synthetic first turn so the API (which expects the conversation to open
 // with a user message) has something to respond to for the AI's own opening
@@ -73,8 +73,11 @@ type Turn = { history: { role: "user" | "assistant"; content: string }[]; sessio
 export default function CounselorChat({
   date,
   notes,
+  active = true,
 }: {
   date: string;
+  /** False while the page is kept mounted but hidden behind another tab. */
+  active?: boolean;
   /** The day's notes, the top band of the column. Gets a callback that brings
    *  the talk into view and puts the cursor in the composer. */
   notes?: (goTalk: () => void) => React.ReactNode;
@@ -429,6 +432,9 @@ export default function CounselorChat({
   const readingTheDay = agendaState === "making";
   useMascotClaim("prepare", "flying", readingTheDay);
   useMascotClaim("chat", "thinking", busy && !readingTheDay);
+  // The composer (below) carries its own beetle, so while it shows, the
+  // perch's beetle steps aside: one beetle on screen at a time.
+  useHidePerch("composer", active && session !== null && messages.length > 0 && session.status !== "wrapped");
 
   if (!session) {
     return <p className="py-2 text-[13px] text-fg-faint">Loading&hellip;</p>;
@@ -627,7 +633,8 @@ export default function CounselorChat({
             {/* In the composer, where your eyes already are. It is not driven
                 from here: it follows whatever the app has claimed through
                 mascot/pulse.ts — listening while you type, idle when you stop,
-                the save snap, and thinking while a reply is on its way. */}
+                the save snap, and thinking while a reply is on its way. While it
+                shows, the perch beside the dock steps aside (useHidePerch). */}
             <Beetle size={44} className="mb-0.5 shrink-0 self-end" />
             <textarea
               ref={inputRef}

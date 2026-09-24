@@ -3,7 +3,7 @@
 # The package, binary and icon keep the ember-desktop name (the app was Ember),
 # so an installed Ember upgrades in place and keeps its journal.
 pkgname=ember-desktop
-pkgver=0.6.0
+pkgver=0.6.1
 pkgrel=1
 pkgdesc="Elytra: a local-first journal that writes itself"
 arch=('x86_64' 'aarch64')

@@ -111,6 +111,44 @@ export function useMascotClaim(id: string, state: MascotState, on: boolean): voi
   useEffect(() => () => release(id), [id]);
 }
 
+// ---------- one beetle on screen ----------
+// The perch beside the dock is the beetle's home, but the chat composer has
+// a beetle of its own, where your eyes are while you write. Two on one screen
+// read as two creatures, so while the composer shows, the perch steps aside.
+
+const perchHiders = new Set<string>();
+const perchListeners = new Set<(hidden: boolean) => void>();
+
+function announcePerch() {
+  const hidden = perchHiders.size > 0;
+  for (const fn of perchListeners) fn(hidden);
+}
+
+/** Hide the perch's beetle while `on` is true (another beetle is showing). */
+export function useHidePerch(id: string, on: boolean): void {
+  useEffect(() => {
+    if (on) perchHiders.add(id);
+    else perchHiders.delete(id);
+    announcePerch();
+    return () => {
+      if (perchHiders.delete(id)) announcePerch();
+    };
+  }, [id, on]);
+}
+
+/** Whether the perch should step aside right now. */
+export function usePerchHidden(): boolean {
+  const [hidden, setHidden] = useState(perchHiders.size > 0);
+  useEffect(() => {
+    perchListeners.add(setHidden);
+    setHidden(perchHiders.size > 0);
+    return () => {
+      perchListeners.delete(setHidden);
+    };
+  }, []);
+  return hidden;
+}
+
 /** Only used by tests and by the beetle itself. */
 export function reset(): void {
   claims.clear();

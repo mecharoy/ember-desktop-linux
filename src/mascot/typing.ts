@@ -42,9 +42,9 @@ export function startTypingWatch(): void {
     (e) => {
       if (!isTextField(e.target)) return;
       clear();
-      claim("typing", "listening");
-      pause = setTimeout(() => claim("typing", "thinking"), PAUSE_MS);
-      done = setTimeout(() => release("typing"), DONE_MS);
+      claim("writing", "listening");
+      pause = setTimeout(() => claim("writing", "thinking"), PAUSE_MS);
+      done = setTimeout(() => release("writing"), DONE_MS);
     },
     true,
   );
@@ -53,7 +53,7 @@ export function startTypingWatch(): void {
     (e) => {
       if (!isTextField(e.target)) return;
       clear();
-      release("typing");
+      release("writing");
     },
     true,
   );

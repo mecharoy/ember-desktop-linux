@@ -674,6 +674,8 @@ html.capture-window #root {
   .perch-beetle:hover { transform: translateY(-2px); background: theme(colors.surface.high); }
   .perch-beetle:active { transform: translateY(0) scale(0.95); }
   .perch-art { width: 38px !important; margin-top: -2px; }
+  .perch { transition: opacity 240ms ease; }
+  .perch.away { opacity: 0; pointer-events: none; }
   @media (min-width: 768px) {
     .perch {
       position: fixed;

@@ -1,6 +1,6 @@
 [package]
 name = "ember-desktop"
-version = "0.6.0"
+version = "0.6.1"
 description = "Elytra - tell it your day, it writes the page"
 authors = ["Elytra"]
 edition = "2021"

@@ -228,7 +228,7 @@ export default function Today({
       </header>
 
       <div className="min-h-0 flex-1">
-        <CounselorChat date={date} notes={notesPanel} />
+        <CounselorChat date={date} notes={notesPanel} active={active} />
       </div>
     </div>
   );
